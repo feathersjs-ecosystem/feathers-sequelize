@@ -6,7 +6,7 @@ import errors from 'feathers-errors';
 import service from '../src';
 
 describe('Feathers Sequelize Service', () => {
-  const sequelize = new Sequelize('sequelize', null, null, {
+  const sequelize = new Sequelize('sequelize', '', '', {
     dialect: 'sqlite',
     storage: './db.sqlite',
     logging: false
