@@ -1,3 +1,5 @@
+require('babel-polyfill');
+
 import Proto from 'uberproto';
 import filter from 'feathers-query-filters';
 import { types as errors } from 'feathers-errors';
@@ -29,57 +31,83 @@ function getWhere(query) {
 	return where;
 }
 
-// Create the service.
-export const Service = Proto.extend({
-	init(Model) {
-    this.Model = Model;
-	},
+class Service {
+	constructor(options) {
+		this.paginate = options.paginate || {};
+    this.Model = options.Model;
+	}
 
-	find(params, callback) {
+	extend(obj) {
+		return Proto.extend(obj, this);
+	}
+
+	find(params) {
 		let where = getWhere(params.query);
 		let filters = filter(where);
 		let order = getOrder(filters.$sort || {});
-
-    this.Model.findAll({
+		let query = {
 			where, order,
 			limit: filters.$limit,
 			offset: filters.$skip,
 			attributes: filters.$select || null
-		}).then(items => callback(null, items), callback);
-	},
+		};
 
-	get(id, params, callback) {
-		if(typeof id === 'function') {
-			return id(new errors.BadRequest('An id needs to be provided'));
+		if(this.paginate.default) {
+			const limit = Math.min(filters.$limit || this.paginate.default,
+				this.paginate.max || Number.MAX_VALUE);
+
+			query.limit = limit;
+
+			return this.Model.findAndCount(query).then(result => {
+				return {
+					total: result.count,
+					limit,
+					skip: filters.$skip || 0,
+					data: result.rows
+				};
+			});
 		}
 
-		this.Model.findById(id).then(instance => {
+		return this.Model.findAll(query);
+	}
+
+	get(id) {
+		return this.Model.findById(id).then(instance => {
 			if(!instance) {
 				throw new errors.NotFound(`No record found for id '${id}'`);
 			}
 
 			return instance;
-		}).then(instance => callback(null, instance), callback);
-	},
+		});
+	}
 
-	create(data, params, callback) {
-		let promise = Array.isArray(data) ?
+	create(data) {
+		return Array.isArray(data) ?
 			this.Model.bulkCreate(data) : this.Model.create(data);
+	}
 
-		promise.then(instance => callback(null, instance), callback);
-	},
+	patch(id, data, params) {
+		const where = Object.assign({}, params.query);
 
-	patch(id, data, params, callback) {
-		this.Model.findById(id).then(instance => {
-			if(!instance) {
-				throw new errors.NotFound(`No record found for id '${id}'`);
+		if(id !== null) {
+			where.id = id;
+		}
+
+		return this.Model.update(data, { where }).then(() => {
+			if(id === null) {
+				return this.find(params);
 			}
-			return instance.update(data);
-		}).then(data => callback(null, data), callback);
-	},
 
-	update(id, data, params, callback) {
-		this.Model.findById(id).then(instance => {
+			return this.get(id, params);
+		});
+	}
+
+	update(id, data) {
+		if(Array.isArray(data)) {
+			return Promise.reject('Not replacing multiple records. Did you mean `patch`?');
+		}
+
+		return this.Model.findById(id).then(instance => {
 			if(!instance) {
 				throw new errors.NotFound(`No record found for id '${id}'`);
 			}
@@ -94,16 +122,26 @@ export const Service = Proto.extend({
 			});
 
 			return instance.update(copy);
-		}).then(data => callback(null, data), callback);
-	},
-
-	remove(id, params, callback) {
-		this.Model.findById(id).then(instance => {
-			return instance.destroy().then(() => instance);
-		}).then(data => callback(null, data), callback);
+		});
 	}
-});
 
-export default module.exports = function() {
-  return Proto.create.apply(Service, arguments);
-};
+	remove(id, params) {
+		const promise = id === null ? this.find(params) : this.get(id);
+
+		return promise.then(data => {
+			const where = Object.assign({}, params.query);
+
+			if(id !== null) {
+				where.id = id;
+			}
+
+			return this.Model.destroy({ where }).then(() => data);
+		});
+	}
+}
+
+export default function init(Model) {
+  return new Service(Model);
+}
+
+init.Service = Service;
