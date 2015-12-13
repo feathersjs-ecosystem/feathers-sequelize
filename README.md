@@ -2,7 +2,7 @@
 
 [![Build Status](https://travis-ci.org/feathersjs/feathers-sequelize.png?branch=master)](https://travis-ci.org/feathersjs/feathers-sequelize)
 
-> A service adapter for [Sequelize](http://sequelizejs.com) an SQL ORM
+> A service adapter for [Sequelize](http://sequelizejs.com), an SQL ORM
 
 ## Installation
 
@@ -16,9 +16,12 @@ npm install feathers-sequelize --save
 `feathers-sequelize` hooks a Sequelize Model up as a service.
 
 ```js
-var feathersSequelize = require('feathers-sequelize');
+var SequelizeModel = require('./models/mymodel');
+var sequelize = require('feathers-sequelize');
 
-app.use('/todos', feathersSequelize(Model));
+app.use('/todos', sequelize({
+  Model: SequelizeModel
+}));
 ```
 
 ### Complete Example
@@ -26,30 +29,33 @@ app.use('/todos', feathersSequelize(Model));
 Here is an example of a Feathers server with a `todos` SQLite Sequelize Model:
 
 ```js
+var path = require('path');
 var feathers = require('feathers');
 var bodyParser = require('body-parser');
-var sequelizeService = require('feathers-sequelize');
 var Sequelize = require('sequelize');
+var sequelizeService = require('feathers-sequelize');
 var sequelize = new Sequelize('sequelize', '', '', {
   dialect: 'sqlite',
-  storage: './db.sqlite',
+  storage: path.join(__dirname, 'db.sqlite'),
   logging: false
 });
+
 var Todo = sequelize.define('todo', {
   text: {
     type: Sequelize.STRING
   },
-  completed: {
+  complete: {
     type: Sequelize.BOOLEAN
   }
 }, {
   freezeTableName: true
 });
 
+// Removes all database content
+Todo.sync({ force: true });
+
 // Create a feathers instance.
 var app = feathers()
-  // Setup the public folder.
-  .use(feathers.static(__dirname + '/public'))
   // Enable Socket.io
   .configure(feathers.socketio())
   // Enable REST services
@@ -57,78 +63,138 @@ var app = feathers()
   // Turn on JSON parser for REST services
   .use(bodyParser.json())
   // Turn on URL-encoded parser for REST services
-  .use(bodyParser.urlencoded({ extended: true }))
+  .use(bodyParser.urlencoded({ extended: true }));
 
-// Create a /todos endpoint with a service that hooks up to the Todo model
-app.use('/todos', sequelizeService(Todo));
+// Create an in-memory Feathers service with a default page size of 2 items
+// and a maximum size of 4
+app.use('/todos', sequelizeService({
+  Model: Todo,
+  paginate: {
+    default: 2,
+    max: 4
+  }
+}));
 
-// Start the server.
-var port = 8080;
-app.listen(port, function() {
-  console.log('Feathers server listening on port ' + port);
-});
+// Start the server
+app.listen(3030);
+
+console.log('Feathers Todo Sequelize service running on 127.0.0.1:3030');
 ```
 
 You can run this example by using `node examples/basic` and going to [localhost:8080/todos](http://localhost:8080/todos). You should see an empty array. That's because you don't have any Todos yet but you now have full CRUD for your new todos service.
 
-### Extending
+## Extending
 
-You can also extend any of the feathers services to do something custom.
+There are several ways to extend the basic CRUD functionality of this service.
 
-```js
-var feathers = require('feathers');
-var UserModel = require('./models/user');
-var sequelizeService = require('feathers-sequelize');
-var app = feathers();
+_Keep in mind that calling the original service methods will return a Promise that resolves with the value._
 
-var myUserService = sequelizeService(UserModel).extend({
-  find: function(params, cb){
-    // Do something awesome!
+### feathers-hooks
 
-    console.log('I am extending the find method');
-
-    this._super.apply(this, arguments);
-  }
-});
-
-app.configure(feathers.rest())
-   .use('/users', myUserService)
-   .listen(8080);
-```
-
-### With hooks
-
-Another option is to weave functionality into your existing services using [feathers-hooks](https://github.com/feathersjs/feathers-hooks), for example the above `createdAt` and `updatedAt` functionality:
+The most flexible option is weaving in functionality through [feathers-hooks](https://github.com/feathersjs/feathers-hooks), for example, the
+user that made the request could be added like this:
 
 ```js
 var feathers = require('feathers');
 var hooks = require('feathers-hooks');
-var sequelizeService = require('feathers-sequelize');
-var UserModel = require('./models/user');
+var sequelize = require('feathers-sequelize');
+// Assuming todo.js exports the Sequelize model definition
+var Todo = require('./models/todo.js');
 
-// Initialize a MongoDB service with the users collection on a local MongoDB instance
 var app = feathers()
   .configure(hooks())
-  .use('/users', sequelizeService(UserModel));
+  .use('/todos', sequelize({
+    Model: Todo,
+    paginate: {
+      default: 2,
+      max: 4
+    }
+  }));
 
-app.lookup('users').before({
+app.service('todos').before({
+  // You can create a single hook like this
   create: function(hook, next) {
-    hook.data.createdAt = new Date();
-    next();
-  },
-
-  update: function(hook, next) {
-    hook.data.updatedAt = new Date();
+    hook.data.user_id = hook.params.user.id;
     next();
   }
 });
 
-app.listen(8080);
+app.listen(3030);
 ```
+
+### Classes (ES6)
+
+The module also exports a Babel transpiled ES6 class as `Service` that can be directly extended like this:
+
+```js
+import Todo from './models/todo';
+import { Service } from 'feathers-sequelize';
+
+class MyService extends Service {
+  create(data, params) {
+    data.user_id = params.user.id;
+
+    return super.create(data, params);
+  }
+}
+
+app.use('/todos', new MyService({
+  Model: Todo,
+  paginate: {
+    default: 2,
+    max: 4
+  }
+}));
+```
+
+### Uberproto (ES5)
+
+You can also use `.extend` on a service instance (extension is provided by [Uberproto](https://github.com/daffl/uberproto)):
+
+```js
+var myService = memory({
+  Model: Todo,
+  paginate: {
+    default: 2,
+    max: 4
+  }
+}).extend({
+  create: function(data, params) {
+    data.user_id = params.user.id;
+
+    return this._super.apply(this, arguments);
+  }
+});
+
+app.use('/todos', myService);
+```
+
+**Note:** _this is more for backwards compatibility. We recommend the usage of hooks as they are easier to test, easier to maintain and are more flexible._
 
 ## Options
 
-All that needs to be passed to create a service is the Sequelize model instance.
+Creating a new Sequelize service currently offers two options:
+
+- `Model` - The Sequelize model definition
+- `paginate` [optional] - A pagination object containing a `default` and `max` page size (see below)
+
+## Pagination
+
+When initializing the service you can set the following pagination options in the `paginate` object:
+
+- `default` - Sets the default number of items
+- `max` - Sets the maximum allowed number of items per page (even if the `$limit` query parameter is set higher)
+
+When `paginate.default` is set, `find` will return an object (instead of the normal array) in the following form:
+
+```
+{
+  "total": "<total number of records>",
+  "limit": "<max number of items per page>",
+  "skip": "<number of skipped items (offset)>",
+  "data": [/* data */]
+}
+```
 
 ## Query Parameters
 
@@ -136,9 +202,9 @@ The `find` API allows the use of `$limit`, `$skip`, `$sort`, and `$select` in th
 
 ```js
 // Find all recipes that include salt, limit to 10, only include name field.
-{"ingredients":"salt", "$limit":10, "$select": { "name" :1 } } // JSON
+{"ingredients":"salt", "$limit":10, "$select": ["name"] } } // JSON
 
-GET /?ingredients=salt&$limit=10&$select[name]=1 // HTTP
+GET /?ingredients=salt&$limit=10&$select[]=name // HTTP
 ```
 
 As a result of allowing these to be put directly into the query string, you won't want to use `$limit`, `$skip`, `$sort`, or `$select` as the name of fields in your document schema.

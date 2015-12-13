@@ -1,9 +1,11 @@
 // jshint expr:true
 
-import baseTests from 'feathers-service-tests';
+import { base, example } from 'feathers-service-tests';
 import Sequelize from 'sequelize';
 import errors from 'feathers-errors';
+import feathers from 'feathers';
 import service from '../src';
+import server from '../example/app';
 
 describe('Feathers Sequelize Service', () => {
   const sequelize = new Sequelize('sequelize', '', '', {
@@ -11,22 +13,29 @@ describe('Feathers Sequelize Service', () => {
     storage: './db.sqlite',
     logging: false
   });
-  const Person = sequelize.define('user', {
+  const Model = sequelize.define('user', {
     name: {
       type: Sequelize.STRING
     },
     age: {
+      type: Sequelize.INTEGER
+    },
+    created: {
+      type: Sequelize.BOOLEAN
+    },
+    time: {
       type: Sequelize.INTEGER
     }
   }, {
     freezeTableName: true
   });
   const _ids = {};
-  const people = service(Person);
+  const app = feathers().use('/people', service({ Model }));
+  const people = app.service('people');
 
   beforeEach(done => {
-    Person.sync({ force: true }).then(() => {
-      return Person.create({
+    Model.sync({ force: true }).then(() => {
+      return Model.create({
         name: 'Doug',
         age: 32
       });
@@ -36,5 +45,11 @@ describe('Feathers Sequelize Service', () => {
     });
   });
 
-  baseTests(people, _ids, errors.types);
+  base(people, _ids, errors.types);
+});
+
+describe('Sequelize service example test', () => {
+  after(done => server.close(() => done()));
+
+  example();
 });
