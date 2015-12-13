@@ -35,6 +35,7 @@ class Service {
 	constructor(options) {
 		this.paginate = options.paginate || {};
     this.Model = options.Model;
+		this.id = options.id || 'id';
 	}
 
 	extend(obj) {
@@ -90,8 +91,10 @@ class Service {
 		const where = Object.assign({}, params.query);
 
 		if(id !== null) {
-			where.id = id;
+			where[this.id] = id;
 		}
+
+		delete data[this.id];
 
 		return this.Model.update(data, { where }).then(() => {
 			if(id === null) {
@@ -106,6 +109,8 @@ class Service {
 		if(Array.isArray(data)) {
 			return Promise.reject('Not replacing multiple records. Did you mean `patch`?');
 		}
+
+		delete data[this.id];
 
 		return this.Model.findById(id).then(instance => {
 			if(!instance) {

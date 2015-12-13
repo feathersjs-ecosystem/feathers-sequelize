@@ -173,9 +173,10 @@ app.use('/todos', myService);
 
 ## Options
 
-Creating a new Sequelize service currently offers two options:
+Creating a new Sequelize service currently offers the following options:
 
 - `Model` - The Sequelize model definition
+- `id` (default: `id`) - The name of the id property
 - `paginate` [optional] - A pagination object containing a `default` and `max` page size (see below)
 
 ## Pagination
