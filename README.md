@@ -346,6 +346,11 @@ query: {
 
 ## Changelog
 
+__0.2.0__
+
+- Use ES6 classes and Promises
+- Support for pagination
+
 __0.1.0__
 
 - Initial release
