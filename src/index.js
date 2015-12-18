@@ -1,4 +1,4 @@
-require('babel-polyfill');
+if(!global._babelPolyfill) { require('babel-polyfill'); }
 
 import Proto from 'uberproto';
 import filter from 'feathers-query-filters';
