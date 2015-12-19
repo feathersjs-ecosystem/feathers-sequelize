@@ -1,38 +1,39 @@
 // jshint expr:true
 
-import { base, example } from 'feathers-service-tests';
+import { base, orm, example } from 'feathers-service-tests';
 import Sequelize from 'sequelize';
 import errors from 'feathers-errors';
 import feathers from 'feathers';
 import service from '../src';
 import server from '../example/app';
 
-describe('Feathers Sequelize Service', () => {
-  const sequelize = new Sequelize('sequelize', '', '', {
-    dialect: 'sqlite',
-    storage: './db.sqlite',
-    logging: false
-  });
-  const Model = sequelize.define('user', {
-    name: {
-      type: Sequelize.STRING
-    },
-    age: {
-      type: Sequelize.INTEGER
-    },
-    created: {
-      type: Sequelize.BOOLEAN
-    },
-    time: {
-      type: Sequelize.INTEGER
-    }
-  }, {
-    freezeTableName: true
-  });
-  const _ids = {};
-  const app = feathers().use('/people', service({ Model }));
-  const people = app.service('people');
+const sequelize = new Sequelize('sequelize', '', '', {
+  dialect: 'sqlite',
+  storage: './db.sqlite',
+  logging: false
+});
+const Model = sequelize.define('user', {
+  name: {
+    type: Sequelize.STRING,
+    allowNull: false
+  },
+  age: {
+    type: Sequelize.INTEGER
+  },
+  created: {
+    type: Sequelize.BOOLEAN
+  },
+  time: {
+    type: Sequelize.INTEGER
+  }
+}, {
+  freezeTableName: true
+});
+const _ids = {};
+const app = feathers().use('/people', service({ Model }));
+const people = app.service('people');
 
+describe('Feathers Sequelize Service', () => {
   beforeEach(done => {
     Model.sync({ force: true }).then(() => {
       return Model.create({
@@ -45,7 +46,11 @@ describe('Feathers Sequelize Service', () => {
     });
   });
 
-  base(people, _ids, errors.types);
+  base(people, _ids, errors);
+});
+
+describe('Sequelize service ORM errors', () => {
+  orm(people, _ids, errors);
 });
 
 describe('Sequelize service example test', () => {

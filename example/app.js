@@ -10,10 +10,12 @@ var sequelize = new Sequelize('sequelize', '', '', {
 });
 var Todo = sequelize.define('todo', {
   text: {
-    type: Sequelize.STRING
+    type: Sequelize.STRING,
+    allowNull: false
   },
   complete: {
-    type: Sequelize.BOOLEAN
+    type: Sequelize.BOOLEAN,
+    defaultValue: false
   }
 }, {
   freezeTableName: true
@@ -46,4 +48,4 @@ app.use('/todos', sequelizeService({
 // Start the server
 module.exports = app.listen(3030);
 
-console.log('Feathers Todo memory service running on 127.0.0.1:3030');
+console.log('Feathers Todo sequelize service running on 127.0.0.1:3030');
