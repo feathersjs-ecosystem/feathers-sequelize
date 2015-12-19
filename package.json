@@ -68,7 +68,7 @@
     "body-parser": "^1.14.1",
     "chai": "^3.4.1",
     "feathers": "^1.2.0",
-    "feathers-service-tests": "^0.5.1",
+    "feathers-service-tests": "^0.5.2",
     "jshint": "^2.8.0",
     "mocha": "^2.3.3",
     "sequelize": "^3.14.1",
