@@ -2,34 +2,8 @@ if(!global._babelPolyfill) { require('babel-polyfill'); }
 
 import Proto from 'uberproto';
 import filter from 'feathers-query-filters';
-import { types as errors } from 'feathers-errors';
-
-function getOrder(sort) {
-	let order = [];
-
-	Object.keys(sort).forEach(name =>
-		order.push([ name, sort[name] === 1 ? 'ASC' : 'DESC' ]));
-
-	return order;
-}
-
-function getWhere(query) {
-	let where = Object.assign({}, query);
-
-	Object.keys(where).forEach(prop => {
-		let value = where[prop];
-		if(value.$nin) {
-			value = Object.assign({}, value);
-
-			value.$notIn = value.$nin;
-			delete value.$nin;
-
-			where[prop] = value;
-		}
-	});
-
-	return where;
-}
+import errors from 'feathers-errors';
+import {errorHandler, getOrder, getWhere} from './utils';
 
 class Service {
 	constructor(options) {
@@ -53,7 +27,7 @@ class Service {
 			attributes: filters.$select || null
 		};
 
-		if(this.paginate.default) {
+		if (this.paginate.default) {
 			const limit = Math.min(filters.$limit || this.paginate.default,
 				this.paginate.max || Number.MAX_VALUE);
 
@@ -66,10 +40,10 @@ class Service {
 					skip: filters.$skip || 0,
 					data: result.rows
 				};
-			});
+			}).catch(errorHandler);
 		}
 
-		return this.Model.findAll(query);
+		return this.Model.findAll(query).catch(errorHandler);
 	}
 
 	get(id) {
@@ -79,12 +53,16 @@ class Service {
 			}
 
 			return instance;
-		});
+		})
+		.catch(errorHandler);
 	}
 
 	create(data) {
-		return Array.isArray(data) ?
-			this.Model.bulkCreate(data) : this.Model.create(data);
+		if (Array.isArray(data)) {
+			return this.Model.bulkCreate(data).catch(errorHandler);
+		}
+
+		return this.Model.create(data).catch(errorHandler);
 	}
 
 	patch(id, data, params) {
@@ -102,7 +80,8 @@ class Service {
 			}
 
 			return this.get(id, params);
-		});
+		})
+		.catch(errorHandler);
 	}
 
 	update(id, data) {
@@ -127,7 +106,8 @@ class Service {
 			});
 
 			return instance.update(copy);
-		});
+		})
+		.catch(errorHandler);
 	}
 
 	remove(id, params) {
@@ -141,7 +121,8 @@ class Service {
 			}
 
 			return this.Model.destroy({ where }).then(() => data);
-		});
+		})
+		.catch(errorHandler);
 	}
 }
 
