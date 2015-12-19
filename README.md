@@ -346,6 +346,11 @@ query: {
 
 ## Changelog
 
+__1.0.0__
+
+- First official release
+- Compatibility with Feathers Errors
+
 __0.2.0__
 
 - Use ES6 classes and Promises
