@@ -83,6 +83,32 @@ console.log('Feathers Todo Sequelize service running on 127.0.0.1:3030');
 
 You can run this example by using `node examples/app` and going to [localhost:8080/todos](http://localhost:8080/todos). You should see an empty array. That's because you don't have any Todos yet but you now have full CRUD for your new todos service.
 
+## Options
+
+Creating a new Sequelize service currently offers the following options:
+
+- `Model` (**required**) - The Sequelize model definition
+- `id` (default: `id`) [optional] - The name of the id property
+- `paginate` [optional] - A pagination object containing a `default` and `max` page size (see below)
+
+## Pagination
+
+When initializing the service you can set the following pagination options in the `paginate` object:
+
+- `default` - Sets the default number of items
+- `max` - Sets the maximum allowed number of items per page (even if the `$limit` query parameter is set higher)
+
+When `paginate.default` is set, `find` will return an object (instead of the normal array) in the following form:
+
+```
+{
+  "total": "<total number of records>",
+  "limit": "<max number of items per page>",
+  "skip": "<number of skipped items (offset)>",
+  "data": [/* data */]
+}
+```
+
 ## Extending
 
 There are several ways to extend the basic CRUD functionality of this service.
@@ -170,32 +196,6 @@ app.use('/todos', myService);
 ```
 
 **Note:** _this is more for backwards compatibility. We recommend the usage of hooks as they are easier to test, easier to maintain and are more flexible._
-
-## Options
-
-Creating a new Sequelize service currently offers the following options:
-
-- `Model` - The Sequelize model definition
-- `id` (default: `id`) - The name of the id property
-- `paginate` [optional] - A pagination object containing a `default` and `max` page size (see below)
-
-## Pagination
-
-When initializing the service you can set the following pagination options in the `paginate` object:
-
-- `default` - Sets the default number of items
-- `max` - Sets the maximum allowed number of items per page (even if the `$limit` query parameter is set higher)
-
-When `paginate.default` is set, `find` will return an object (instead of the normal array) in the following form:
-
-```
-{
-  "total": "<total number of records>",
-  "limit": "<max number of items per page>",
-  "skip": "<number of skipped items (offset)>",
-  "data": [/* data */]
-}
-```
 
 ## Query Parameters
 
