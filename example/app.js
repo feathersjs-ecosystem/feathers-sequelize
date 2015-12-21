@@ -45,6 +45,11 @@ app.use('/todos', sequelizeService({
   }
 }));
 
+// A basic error handler, just like Express
+app.use(function(error, req, res, next){
+  res.json(error);
+});
+
 // Start the server
 module.exports = app.listen(3030);
 
