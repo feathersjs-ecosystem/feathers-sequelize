@@ -32,7 +32,7 @@ export function errorHandler(error) {
   throw feathersError;
 }
 
-export function getOrder(sort) {
+export function getOrder(sort={}) {
   let order = [];
 
   Object.keys(sort).forEach(name =>

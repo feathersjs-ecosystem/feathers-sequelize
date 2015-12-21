@@ -3,7 +3,7 @@ if(!global._babelPolyfill) { require('babel-polyfill'); }
 import Proto from 'uberproto';
 import filter from 'feathers-query-filters';
 import errors from 'feathers-errors';
-import {errorHandler, getOrder, getWhere} from './utils';
+import * as utils from './utils';
 
 class Service {
   constructor(options) {
@@ -17,9 +17,9 @@ class Service {
   }
 
   find(params) {
-    let where = getWhere(params.query);
+    let where = utils.getWhere(params.query);
     let filters = filter(where);
-    let order = getOrder(filters.$sort || {});
+    let order = utils.getOrder(filters.$sort);
     let query = {
       where, order,
       limit: filters.$limit,
@@ -40,10 +40,10 @@ class Service {
           skip: filters.$skip || 0,
           data: result.rows
         };
-      }).catch(errorHandler);
+      }).catch(utils.errorHandler);
     }
 
-    return this.Model.findAll(query).catch(errorHandler);
+    return this.Model.findAll(query).catch(utils.errorHandler);
   }
 
   get(id) {
@@ -54,15 +54,15 @@ class Service {
 
       return instance;
     })
-    .catch(errorHandler);
+    .catch(utils.errorHandler);
   }
 
   create(data) {
     if (Array.isArray(data)) {
-      return this.Model.bulkCreate(data).catch(errorHandler);
+      return this.Model.bulkCreate(data).catch(utils.errorHandler);
     }
 
-    return this.Model.create(data).catch(errorHandler);
+    return this.Model.create(data).catch(utils.errorHandler);
   }
 
   patch(id, data, params) {
@@ -81,7 +81,7 @@ class Service {
 
       return this.get(id, params);
     })
-    .catch(errorHandler);
+    .catch(utils.errorHandler);
   }
 
   update(id, data) {
@@ -107,7 +107,7 @@ class Service {
 
       return instance.update(copy);
     })
-    .catch(errorHandler);
+    .catch(utils.errorHandler);
   }
 
   remove(id, params) {
@@ -122,7 +122,7 @@ class Service {
 
       return this.Model.destroy({ where }).then(() => data);
     })
-    .catch(errorHandler);
+    .catch(utils.errorHandler);
   }
 }
 
