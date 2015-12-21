@@ -6,7 +6,15 @@
   "main": "lib/",
   "keywords": [
     "feathers",
-    "feathers-plugin"
+    "feathers-plugin",
+    "sequel",
+    "sequelize",
+    "mysql",
+    "sqlite",
+    "mariadb",
+    "postgres",
+    "pg",
+    "mssql"
   ],
   "licenses": [
     {
