@@ -81,7 +81,7 @@ app.listen(3030);
 console.log('Feathers Todo Sequelize service running on 127.0.0.1:3030');
 ```
 
-You can run this example by using `node examples/app` and going to [localhost:8080/todos](http://localhost:8080/todos). You should see an empty array. That's because you don't have any Todos yet but you now have full CRUD for your new todos service.
+You can run this example by using `node examples/app` and going to [localhost:3030/todos](http://localhost:3030/todos). You should see an empty array. That's because you don't have any Todos yet but you now have full CRUD for your new todos service.
 
 ## Options
 
