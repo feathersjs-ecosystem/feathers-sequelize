@@ -1,7 +1,7 @@
 {
   "name": "feathers-sequelize",
   "description": "A service adapter for Sequelize an SQL ORM",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "homepage": "https://github.com/feathersjs/feathers-sequelize",
   "main": "lib/",
   "keywords": [
