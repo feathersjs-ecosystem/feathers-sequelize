@@ -3,7 +3,7 @@ import errors from 'feathers-errors';
 import * as utils from '../src/utils';
 import Sequelize from 'sequelize';
 
-describe.only('Feathers Sequelize Utils', () => {
+describe('Feathers Sequelize Utils', () => {
   describe('errorHandler', () => {
     it('throws a feathers error', () => {
       let e = new errors.GeneralError();
