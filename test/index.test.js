@@ -1,5 +1,6 @@
 // jshint expr:true
 
+import { expect } from 'chai';
 import { base, orm, example } from 'feathers-service-tests';
 import Sequelize from 'sequelize';
 import errors from 'feathers-errors';
@@ -34,19 +35,47 @@ const app = feathers().use('/people', service({ Model }));
 const people = app.service('people');
 
 describe('Feathers Sequelize Service', () => {
-  beforeEach(done => {
-    Model.sync({ force: true }).then(() => {
-      return Model.create({
-        name: 'Doug',
-        age: 32
+  describe('Initialization', () => {
+    describe('when missing options', () => {
+      it('throws an error', () => {
+        expect(service.bind(null)).to.throw('Sequelize options have to be provided');
       });
-    }).then(user => {
-      _ids.Doug = user.id;
-      done();
+    });
+
+    describe('when missing a Model', () => {
+      it('throws an error', () => {
+        expect(service.bind(null, { name: 'Test' })).to.throw(/You must provide a Sequelize Model/);
+      });
+    });
+
+    describe('when missing the id option', () => {
+      it('sets the default to be id', () => {
+        expect(people.id).to.equal('id');
+      });
+    });
+
+    describe('when missing the paginate option', () => {
+      it('sets the default to be {}', () => {
+        expect(people.paginate).to.deep.equal({});
+      });
     });
   });
 
-  base(people, _ids, errors);
+  describe('Common functionality', () => {
+    beforeEach(done => {
+      Model.sync({ force: true }).then(() => {
+        return Model.create({
+          name: 'Doug',
+          age: 32
+        });
+      }).then(user => {
+        _ids.Doug = user.id;
+        done();
+      });
+    });
+
+    base(people, _ids, errors);
+  });
 });
 
 describe('Sequelize service ORM errors', () => {

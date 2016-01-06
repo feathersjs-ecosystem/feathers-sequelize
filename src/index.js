@@ -7,6 +7,14 @@ import * as utils from './utils';
 
 class Service {
   constructor(options) {
+    if (!options) {
+      throw new Error('Sequelize options have to be provided');
+    }
+
+    if (!options.Model) {
+      throw new Error('You must provide a Sequelize Model');
+    }
+
     this.paginate = options.paginate || {};
     this.Model = options.Model;
     this.id = options.id || 'id';
