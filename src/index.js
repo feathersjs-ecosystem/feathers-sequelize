@@ -119,7 +119,7 @@ class Service {
   }
 
   remove(id, params) {
-    const promise = id === null ? this.find(params) : this.get(id);
+    const promise = id === null ? this.find(params) : this.Model.findById(id);
 
     return promise.then(data => {
       const where = Object.assign({}, params.query);
