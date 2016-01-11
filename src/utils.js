@@ -28,7 +28,7 @@ export function errorHandler(error) {
         break;
     }
   }
-  
+
   throw feathersError;
 }
 
@@ -36,7 +36,7 @@ export function getOrder(sort={}) {
   let order = [];
 
   Object.keys(sort).forEach(name =>
-    order.push([ name, sort[name] === 1 ? 'ASC' : 'DESC' ]));
+    order.push([ name, parseInt(sort[name], 10) === 1 ? 'ASC' : 'DESC' ]));
 
   return order;
 }
