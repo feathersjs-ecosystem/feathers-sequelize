@@ -1,14 +1,16 @@
-var feathers = require('feathers');
-var bodyParser = require('body-parser');
-var Sequelize = require('sequelize');
-var path = require('path');
-var sequelizeService = require('../lib');
-var sequelize = new Sequelize('sequelize', '', '', {
+import path from 'path';
+import feathers from 'feathers';
+import rest from 'feathers-rest';
+import bodyParser from 'body-parser';
+import Sequelize from 'sequelize';
+import service from '../lib';
+
+const sequelize = new Sequelize('sequelize', '', '', {
   dialect: 'sqlite',
   storage: path.join(__dirname, 'db.sqlite'),
   logging: false
 });
-var Todo = sequelize.define('todo', {
+const Todo = sequelize.define('todo', {
   text: {
     type: Sequelize.STRING,
     allowNull: false
@@ -26,10 +28,8 @@ Todo.sync({ force: true });
 
 // Create a feathers instance.
 var app = feathers()
-  // Enable Socket.io
-  .configure(feathers.socketio())
   // Enable REST services
-  .configure(feathers.rest())
+  .configure(rest())
   // Turn on JSON parser for REST services
   .use(bodyParser.json())
   // Turn on URL-encoded parser for REST services
@@ -37,7 +37,7 @@ var app = feathers()
 
 // Create an in-memory Feathers service with a default page size of 2 items
 // and a maximum size of 4
-app.use('/todos', sequelizeService({
+app.use('/todos', service({
   Model: Todo,
   paginate: {
     default: 2,
@@ -51,6 +51,6 @@ app.use(function(error, req, res, next){
 });
 
 // Start the server
-module.exports = app.listen(3030);
+export default app.listen(3030);
 
 console.log('Feathers Todo sequelize service running on 127.0.0.1:3030');
