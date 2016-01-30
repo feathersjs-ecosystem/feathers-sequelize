@@ -23,10 +23,10 @@ class Service {
   extend(obj) {
     return Proto.extend(obj, this);
   }
-
-  find(params) {
+  
+  _find(params, getFilter = filter) {
     let where = utils.getWhere(params.query);
-    let filters = filter(where);
+    let filters = getFilter(where);
     let order = utils.getOrder(filters.$sort);
     let query = {
       where, order,
@@ -34,27 +34,28 @@ class Service {
       offset: filters.$skip,
       attributes: filters.$select || null
     };
-
-    if (this.paginate.default) {
-      const limit = Math.min(filters.$limit || this.paginate.default,
-        this.paginate.max || Number.MAX_VALUE);
-
-      query.limit = limit;
-
-      return this.Model.findAndCount(query).then(result => {
-        return {
-          total: result.count,
-          limit,
-          skip: filters.$skip || 0,
-          data: result.rows
-        };
-      }).catch(utils.errorHandler);
-    }
-
-    return this.Model.findAll(query).catch(utils.errorHandler);
+    
+    return this.Model.findAndCount(query).then(result => {
+      return {
+        total: result.count,
+        limit: filters.$limit,
+        skip: filters.$skip || 0,
+        data: result.rows
+      };
+    }).catch(utils.errorHandler);
   }
 
-  get(id) {
+  find(params) {
+    const result = this._find(params, where => filter(where, this.paginate));
+    
+    if(!this.paginate.default) {
+      return result.then(page => page.data);
+    }
+    
+    return result;
+  }
+  
+  _get(id) {
     return this.Model.findById(id).then(instance => {
       if(!instance) {
         throw new errors.NotFound(`No record found for id '${id}'`);
@@ -63,6 +64,20 @@ class Service {
       return instance;
     })
     .catch(utils.errorHandler);
+  }
+  
+  // returns either the model intance for an id or all unpaginated
+  // items for `params` if id is null
+  _getOrFind(id, params) {
+    if(id === null) {
+      return this._find(params).then(page => page.data);
+    }
+    
+    return this._get(id, params);
+  }
+  
+  get(id, params) {
+    return this._get(id, params);
   }
 
   create(data) {
@@ -82,14 +97,9 @@ class Service {
 
     delete data[this.id];
 
-    return this.Model.update(data, { where }).then(() => {
-      if(id === null) {
-        return this.find(params);
-      }
-
-      return this.get(id, params);
-    })
-    .catch(utils.errorHandler);
+    return this.Model.update(data, { where })
+      .then(() => this._getOrFind(id, params))
+      .catch(utils.errorHandler);
   }
 
   update(id, data) {
@@ -119,9 +129,7 @@ class Service {
   }
 
   remove(id, params) {
-    const promise = id === null ? this.find(params) : this.Model.findById(id);
-
-    return promise.then(data => {
+    return this._getOrFind(id, params).then(data => {
       const where = Object.assign({}, params.query);
 
       if(id !== null) {

@@ -81,6 +81,10 @@ You can run this example by using `node examples/app` and going to [localhost:30
 
 ## Changelog
 
+__1.1.0__
+
+- Use internal methods instead of service methods directly  ([#8](https://github.com/feathersjs/feathers-sequelize/issues/8))
+
 __1.0.0__
 
 - First official release
