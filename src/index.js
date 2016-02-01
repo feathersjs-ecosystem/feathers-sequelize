@@ -23,18 +23,18 @@ class Service {
   extend(obj) {
     return Proto.extend(obj, this);
   }
-  
+
   _find(params, getFilter = filter) {
     let where = utils.getWhere(params.query);
     let filters = getFilter(where);
     let order = utils.getOrder(filters.$sort);
-    let query = {
+    let query = Object.assign({
       where, order,
       limit: filters.$limit,
       offset: filters.$skip,
       attributes: filters.$select || null
-    };
-    
+    }, params.sequelize);
+
     return this.Model.findAndCount(query).then(result => {
       return {
         total: result.count,
@@ -47,14 +47,14 @@ class Service {
 
   find(params) {
     const result = this._find(params, where => filter(where, this.paginate));
-    
+
     if(!this.paginate.default) {
       return result.then(page => page.data);
     }
-    
+
     return result;
   }
-  
+
   _get(id) {
     return this.Model.findById(id).then(instance => {
       if(!instance) {
@@ -65,17 +65,17 @@ class Service {
     })
     .catch(utils.errorHandler);
   }
-  
+
   // returns either the model intance for an id or all unpaginated
   // items for `params` if id is null
   _getOrFind(id, params) {
     if(id === null) {
       return this._find(params).then(page => page.data);
     }
-    
+
     return this._get(id, params);
   }
-  
+
   get(id, params) {
     return this._get(id, params);
   }
