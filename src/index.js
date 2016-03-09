@@ -80,12 +80,12 @@ class Service {
     return this._get(id, params);
   }
 
-  create(data) {
+  create(data, options) {
     if (Array.isArray(data)) {
-      return this.Model.bulkCreate(data).catch(utils.errorHandler);
+      return this.Model.bulkCreate(data, options).catch(utils.errorHandler);
     }
 
-    return this.Model.create(data).catch(utils.errorHandler);
+    return this.Model.create(data, options).catch(utils.errorHandler);
   }
 
   patch(id, data, params) {
