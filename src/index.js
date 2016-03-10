@@ -80,7 +80,9 @@ class Service {
     return this._get(id, params);
   }
 
-  create(data, options) {
+  create(data, params) {
+    const options = params.sequelize || {};
+    
     if (Array.isArray(data)) {
       return this.Model.bulkCreate(data, options).catch(utils.errorHandler);
     }
@@ -95,14 +97,18 @@ class Service {
       where[this.id] = id;
     }
 
+    const options = Object.assign({}, params.sequelize, { where });
+
     delete data[this.id];
 
-    return this.Model.update(data, { where })
+    return this.Model.update(data, options)
       .then(() => this._getOrFind(id, params))
       .catch(utils.errorHandler);
   }
 
-  update(id, data) {
+  update(id, data, params) {
+    const options = Object.assign({}, params.sequelize);
+
     if(Array.isArray(data)) {
       return Promise.reject('Not replacing multiple records. Did you mean `patch`?');
     }
@@ -123,7 +129,7 @@ class Service {
         }
       });
 
-      return instance.update(copy);
+      return instance.update(copy, options);
     })
     .catch(utils.errorHandler);
   }
@@ -136,7 +142,9 @@ class Service {
         where.id = id;
       }
 
-      return this.Model.destroy({ where }).then(() => data);
+      const options = Object.assign({}, params.sequelize, { where });
+
+      return this.Model.destroy(options).then(() => data);
     })
     .catch(utils.errorHandler);
   }
