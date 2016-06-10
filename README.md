@@ -79,26 +79,6 @@ console.log('Feathers Todo Sequelize service running on 127.0.0.1:3030');
 
 You can run this example by using `node examples/app` and going to [localhost:3030/todos](http://localhost:3030/todos). You should see an empty array. That's because you don't have any Todos yet but you now have full CRUD for your new todos service.
 
-## Changelog
-
-__1.1.0__
-
-- Use internal methods instead of service methods directly  ([#8](https://github.com/feathersjs/feathers-sequelize/issues/8))
-
-__1.0.0__
-
-- First official release
-- Compatibility with Feathers Errors
-
-__0.2.0__
-
-- Use ES6 classes and Promises
-- Support for pagination
-
-__0.1.0__
-
-- Initial release
-
 ## License
 
 Copyright (c) 2015
