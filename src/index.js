@@ -55,8 +55,8 @@ class Service {
     return result;
   }
 
-  _get(id) {
-    return this.Model.findById(id).then(instance => {
+  _get(id, params) {
+    return this.Model.findById(id, params.sequelize).then(instance => {
       if(!instance) {
         throw new errors.NotFound(`No record found for id '${id}'`);
       }
@@ -82,7 +82,7 @@ class Service {
 
   create(data, params) {
     const options = params.sequelize || {};
-    
+
     if (Array.isArray(data)) {
       return this.Model.bulkCreate(data, options).catch(utils.errorHandler);
     }
