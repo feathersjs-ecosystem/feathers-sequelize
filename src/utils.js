@@ -46,7 +46,7 @@ export function getWhere(query) {
 
   Object.keys(where).forEach(prop => {
     let value = where[prop];
-    if(value.$nin) {
+    if(value && value.$nin) {
       value = Object.assign({}, value);
 
       value.$notIn = value.$nin;

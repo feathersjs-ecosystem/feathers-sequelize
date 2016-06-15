@@ -1,5 +1,6 @@
 // jshint expr:true
 
+import assert from 'assert';
 import { expect } from 'chai';
 import { base, orm, example } from 'feathers-service-tests';
 import Sequelize from 'sequelize';
@@ -72,6 +73,17 @@ describe('Feathers Sequelize Service', () => {
         _ids.Doug = user.id;
         done();
       });
+    });
+
+    it('allows querying for null values (#45)', done => {
+      const name = 'Null test';
+      people.create({ name }).then(person =>
+        people.find({ query: { age: null } }).then(people => {
+          assert.equal(people.length, 1);
+          assert.equal(people[0].name, name);
+          assert.equal(people[0].age, null);
+        }).then(() => people.remove(person.id))
+      ).then(() => done()).catch(done);
     });
 
     base(people, _ids, errors);
