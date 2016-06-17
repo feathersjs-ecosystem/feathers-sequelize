@@ -46,9 +46,11 @@ class Service {
   }
 
   find(params) {
-    const result = this._find(params, where => filter(where, this.paginate));
+    const paginate = (params && typeof params.paginate !== 'undefined') ?
+      params.paginate : this.paginate;
+    const result = this._find(params, where => filter(where, paginate));
 
-    if(!this.paginate.default) {
+    if(!paginate.default) {
       return result.then(page => page.data);
     }
 
