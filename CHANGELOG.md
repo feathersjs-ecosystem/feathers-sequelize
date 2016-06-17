@@ -1,5 +1,23 @@
 # Change Log
 
+## [v1.2.0](https://github.com/feathersjs/feathers-sequelize/tree/v1.2.0) (2016-06-17)
+[Full Changelog](https://github.com/feathersjs/feathers-sequelize/compare/v1.1.6...v1.2.0)
+
+**Merged pull requests:**
+
+- Update feathers-service-tests to version 0.6.0 🚀 [\#48](https://github.com/feathersjs/feathers-sequelize/pull/48) ([greenkeeperio-bot](https://github.com/greenkeeperio-bot))
+
+## [v1.1.6](https://github.com/feathersjs/feathers-sequelize/tree/v1.1.6) (2016-06-15)
+[Full Changelog](https://github.com/feathersjs/feathers-sequelize/compare/v1.1.5...v1.1.6)
+
+**Closed issues:**
+
+- TypeError: Cannot read property '$nin' of undefined [\#45](https://github.com/feathersjs/feathers-sequelize/issues/45)
+
+**Merged pull requests:**
+
+- Allow querying for null values [\#47](https://github.com/feathersjs/feathers-sequelize/pull/47) ([daffl](https://github.com/daffl))
+
 ## [v1.1.5](https://github.com/feathersjs/feathers-sequelize/tree/v1.1.5) (2016-06-10)
 [Full Changelog](https://github.com/feathersjs/feathers-sequelize/compare/v1.1.4...v1.1.5)
 
