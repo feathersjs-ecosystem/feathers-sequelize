@@ -1,5 +1,4 @@
-if(!global._babelPolyfill) { require('babel-polyfill'); }
-
+import omit from 'lodash.omit';
 import Proto from 'uberproto';
 import filter from 'feathers-query-filters';
 import errors from 'feathers-errors';
@@ -101,9 +100,7 @@ class Service {
 
     const options = Object.assign({}, params.sequelize, { where });
 
-    delete data[this.id];
-
-    return this.Model.update(data, options)
+    return this.Model.update(omit(data, this.id), options)
       .then(() => this._getOrFind(id, params))
       .catch(utils.errorHandler);
   }
@@ -114,8 +111,6 @@ class Service {
     if(Array.isArray(data)) {
       return Promise.reject('Not replacing multiple records. Did you mean `patch`?');
     }
-
-    delete data[this.id];
 
     return this.Model.findById(id).then(instance => {
       if(!instance) {
