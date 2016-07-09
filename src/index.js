@@ -24,17 +24,18 @@ class Service {
   }
 
   _find(params, getFilter = filter) {
-    let where = utils.getWhere(params.query);
-    let filters = getFilter(where);
-    let order = utils.getOrder(filters.$sort);
-    let query = Object.assign({
+    const { filters, query } = getFilter(params.query || {});
+    const where = utils.getWhere(query);
+    const order = utils.getOrder(filters.$sort);
+
+    const q = Object.assign({
       where, order,
       limit: filters.$limit,
       offset: filters.$skip,
       attributes: filters.$select || null
     }, params.sequelize);
 
-    return this.Model.findAndCount(query).then(result => {
+    return this.Model.findAndCount(q).then(result => {
       return {
         total: result.count,
         limit: filters.$limit,
