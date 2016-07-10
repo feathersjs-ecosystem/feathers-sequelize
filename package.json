@@ -50,7 +50,7 @@
   },
   "dependencies": {
     "feathers-errors": "^2.0.1",
-    "feathers-query-filters": "^1.5.1",
+    "feathers-query-filters": "^2.0.0",
     "lodash.omit": "^4.3.0",
     "uberproto": "^1.1.2"
   },
