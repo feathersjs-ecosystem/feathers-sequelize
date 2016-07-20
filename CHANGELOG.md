@@ -1,8 +1,7 @@
 # Change Log
 
-## [Unreleased](https://github.com/feathersjs/feathers-sequelize/tree/HEAD)
-
-[Full Changelog](https://github.com/feathersjs/feathers-sequelize/compare/v1.3.0...HEAD)
+## [v1.3.1](https://github.com/feathersjs/feathers-sequelize/tree/v1.3.1) (2016-07-20)
+[Full Changelog](https://github.com/feathersjs/feathers-sequelize/compare/v1.3.0...v1.3.1)
 
 **Merged pull requests:**
 
