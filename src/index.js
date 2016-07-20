@@ -31,9 +31,12 @@ class Service {
     const q = Object.assign({
       where, order,
       limit: filters.$limit,
-      offset: filters.$skip,
-      attributes: filters.$select || null
+      offset: filters.$skip
     }, params.sequelize);
+
+    if(filters.$select) {
+      q.attributes = filters.$select;
+    }
 
     return this.Model.findAndCount(q).then(result => {
       return {
