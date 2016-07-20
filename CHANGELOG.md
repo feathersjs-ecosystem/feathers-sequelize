@@ -1,5 +1,14 @@
 # Change Log
 
+## [Unreleased](https://github.com/feathersjs/feathers-sequelize/tree/HEAD)
+
+[Full Changelog](https://github.com/feathersjs/feathers-sequelize/compare/v1.3.0...HEAD)
+
+**Merged pull requests:**
+
+- sequelize@3.23.6 breaks build 🚨 [\#54](https://github.com/feathersjs/feathers-sequelize/pull/54) ([greenkeeperio-bot](https://github.com/greenkeeperio-bot))
+- Update feathers-query-filters to version 2.0.0 🚀 [\#51](https://github.com/feathersjs/feathers-sequelize/pull/51) ([greenkeeperio-bot](https://github.com/greenkeeperio-bot))
+
 ## [v1.3.0](https://github.com/feathersjs/feathers-sequelize/tree/v1.3.0) (2016-07-08)
 [Full Changelog](https://github.com/feathersjs/feathers-sequelize/compare/v1.2.0...v1.3.0)
 
