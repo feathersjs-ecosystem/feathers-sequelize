@@ -1,5 +1,19 @@
 # Change Log
 
+## [v1.3.2](https://github.com/feathersjs/feathers-sequelize/tree/v1.3.2) (2016-08-25)
+[Full Changelog](https://github.com/feathersjs/feathers-sequelize/compare/v1.3.1...v1.3.2)
+
+**Closed issues:**
+
+- Cannot call remove service method when id field name is custom [\#60](https://github.com/feathersjs/feathers-sequelize/issues/60)
+- Make params optional [\#59](https://github.com/feathersjs/feathers-sequelize/issues/59)
+- Exporting utils.js [\#58](https://github.com/feathersjs/feathers-sequelize/issues/58)
+
+**Merged pull requests:**
+
+- Use correct id property when removing items [\#62](https://github.com/feathersjs/feathers-sequelize/pull/62) ([daffl](https://github.com/daffl))
+- Update mocha to version 3.0.0 🚀 [\#57](https://github.com/feathersjs/feathers-sequelize/pull/57) ([greenkeeperio-bot](https://github.com/greenkeeperio-bot))
+
 ## [v1.3.1](https://github.com/feathersjs/feathers-sequelize/tree/v1.3.1) (2016-07-20)
 [Full Changelog](https://github.com/feathersjs/feathers-sequelize/compare/v1.3.0...v1.3.1)
 
