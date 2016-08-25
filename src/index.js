@@ -140,7 +140,7 @@ class Service {
       const where = Object.assign({}, params.query);
 
       if(id !== null) {
-        where.id = id;
+        where[this.id] = id;
       }
 
       const options = Object.assign({}, params.sequelize, { where });
