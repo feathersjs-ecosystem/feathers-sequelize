@@ -1,5 +1,13 @@
 # Change Log
 
+## [Unreleased](https://github.com/feathersjs/feathers-sequelize/tree/HEAD)
+
+[Full Changelog](https://github.com/feathersjs/feathers-sequelize/compare/v1.3.2...HEAD)
+
+**Merged pull requests:**
+
+- Update service tests, id and events option [\#65](https://github.com/feathersjs/feathers-sequelize/pull/65) ([greenkeeperio-bot](https://github.com/greenkeeperio-bot))
+
 ## [v1.3.2](https://github.com/feathersjs/feathers-sequelize/tree/v1.3.2) (2016-08-25)
 [Full Changelog](https://github.com/feathersjs/feathers-sequelize/compare/v1.3.1...v1.3.2)
 
