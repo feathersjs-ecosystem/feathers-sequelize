@@ -2,7 +2,7 @@
 
 import assert from 'assert';
 import { expect } from 'chai';
-import { base, orm, example } from 'feathers-service-tests';
+import { base, example } from 'feathers-service-tests';
 import Sequelize from 'sequelize';
 import errors from 'feathers-errors';
 import feathers from 'feathers';
@@ -14,7 +14,7 @@ const sequelize = new Sequelize('sequelize', '', '', {
   storage: './db.sqlite',
   logging: false
 });
-const Model = sequelize.define('user', {
+const Model = sequelize.define('people', {
   name: {
     type: Sequelize.STRING,
     allowNull: false
@@ -31,67 +31,73 @@ const Model = sequelize.define('user', {
 }, {
   freezeTableName: true
 });
-const _ids = {};
-const app = feathers().use('/people', service({ Model }));
-const people = app.service('people');
+const CustomId = sequelize.define('people-customid', {
+  customid: {
+      type: Sequelize.INTEGER,
+      autoIncrement: true,
+      primaryKey: true
+  },
+  name: {
+    type: Sequelize.STRING,
+    allowNull: false
+  },
+  age: {
+    type: Sequelize.INTEGER
+  },
+  created: {
+    type: Sequelize.BOOLEAN
+  },
+  time: {
+    type: Sequelize.INTEGER
+  }
+}, {
+  freezeTableName: true
+});
 
 describe('Feathers Sequelize Service', () => {
+  before(() =>
+    Model.sync({ force: true })
+      .then(() => CustomId.sync({ force: true }))
+  );
+
   describe('Initialization', () => {
-    describe('when missing options', () => {
-      it('throws an error', () => {
-        expect(service.bind(null)).to.throw('Sequelize options have to be provided');
-      });
+    it('throws an error when missing options', () => {
+      expect(service.bind(null)).to.throw('Sequelize options have to be provided');
     });
 
-    describe('when missing a Model', () => {
-      it('throws an error', () => {
-        expect(service.bind(null, { name: 'Test' })).to.throw(/You must provide a Sequelize Model/);
-      });
-    });
-
-    describe('when missing the id option', () => {
-      it('sets the default to be id', () => {
-        expect(people.id).to.equal('id');
-      });
-    });
-
-    describe('when missing the paginate option', () => {
-      it('sets the default to be {}', () => {
-        expect(people.paginate).to.deep.equal({});
-      });
+    it('throws an error when missing a Model', () => {
+      expect(service.bind(null, { name: 'Test' })).to.throw(/You must provide a Sequelize Model/);
     });
   });
 
   describe('Common functionality', () => {
-    beforeEach(done => {
-      Model.sync({ force: true }).then(() => {
-        return Model.create({
-          name: 'Doug',
-          age: 32
-        });
-      }).then(user => {
-        _ids.Doug = user.id;
-        done();
-      });
-    });
+    const app = feathers()
+      .use('/people', service({
+        Model,
+        events: [ 'testing' ]
+      }))
+      .use('/people-customid', service({
+        Model: CustomId,
+        events: [ 'testing' ],
+        id: 'customid'
+      }));
 
-    it('allows querying for null values (#45)', done => {
+    it('allows querying for null values (#45)', () => {
       const name = 'Null test';
-      people.create({ name }).then(person =>
+      const people = app.service('people');
+
+      return people.create({ name }).then(person =>
         people.find({ query: { age: null } }).then(people => {
           assert.equal(people.length, 1);
           assert.equal(people[0].name, name);
           assert.equal(people[0].age, null);
         }).then(() => people.remove(person.id))
-      ).then(() => done()).catch(done);
+      );
     });
 
-    base(people, _ids, errors);
+    base(app, errors);
+    base(app, errors, 'people-customid', 'customid');
   });
-});
-
-describe('Sequelize service ORM errors', () => {
-  orm(people, _ids, errors);
 });
 
 describe('Sequelize service example test', () => {

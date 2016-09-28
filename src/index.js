@@ -17,6 +17,7 @@ class Service {
     this.paginate = options.paginate || {};
     this.Model = options.Model;
     this.id = options.id || 'id';
+    this.events = options.events;
   }
 
   extend(obj) {
@@ -97,6 +98,21 @@ class Service {
 
   patch(id, data, params) {
     const where = Object.assign({}, params.query);
+    const patchQuery = {};
+
+    // Account for potentially modified data
+    Object.keys(where).forEach(key => {
+      if(where[key] !== undefined && data[key] !== undefined &&
+          typeof data[key] !== 'object') {
+        patchQuery[key] = data[key];
+      } else {
+        patchQuery[key] = where[key];
+      }
+    });
+
+    const patchParams = Object.assign({}, params, {
+      query: patchQuery
+    });
 
     if(id !== null) {
       where[this.id] = id;
@@ -105,7 +121,7 @@ class Service {
     const options = Object.assign({}, params.sequelize, { where });
 
     return this.Model.update(omit(data, this.id), options)
-      .then(() => this._getOrFind(id, params))
+      .then(() => this._getOrFind(id, patchParams))
       .catch(utils.errorHandler);
   }
 
