@@ -33,7 +33,7 @@ class Service {
       where, order,
       limit: filters.$limit,
       offset: filters.$skip
-    }, include, params.sequelize);
+    }, params.sequelize);
 
     if(filters.$select) {
       q.attributes = filters.$select;
