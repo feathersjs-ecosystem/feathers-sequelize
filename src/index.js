@@ -33,10 +33,14 @@ class Service {
       where, order,
       limit: filters.$limit,
       offset: filters.$skip
-    }, params.sequelize);
+    }, include, params.sequelize);
 
     if(filters.$select) {
       q.attributes = filters.$select;
+    }
+
+    if (query.$associations) {
+      q.include = query.$associations;
     }
 
     return this.Model.findAndCount(q).then(result => {
