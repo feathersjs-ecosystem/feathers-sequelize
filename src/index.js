@@ -39,8 +39,8 @@ class Service {
       q.attributes = filters.$select;
     }
 
-    if (query.$associations) {
-      q.include = query.$associations;
+    if (query.$populate) {
+      q.include = query.$populate;
     }
 
     return this.Model.findAndCount(q).then(result => {
