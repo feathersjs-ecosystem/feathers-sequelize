@@ -46,7 +46,7 @@ app.use('/todos', service({
 }));
 
 // A basic error handler, just like Express
-app.use(function(error, req, res, next){
+app.use(function (error, req, res, next) {
   res.json(error);
 });
 

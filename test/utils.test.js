@@ -24,8 +24,7 @@ describe('Feathers Sequelize Utils', () => {
       let e = new Sequelize.ValidationError('Invalid Email');
       try {
         utils.errorHandler(e);
-      }
-      catch(error) {
+      } catch (error) {
         expect(error.message).to.equal('Invalid Email');
       }
     });
@@ -41,8 +40,7 @@ describe('Feathers Sequelize Utils', () => {
       let e = new Sequelize.ValidationError('Invalid Email', [emailError]);
       try {
         utils.errorHandler(e);
-      }
-      catch(error) {
+      } catch (error) {
         expect(error.errors).to.deep.equal([emailError]);
       }
     });
@@ -122,15 +120,15 @@ describe('Feathers Sequelize Utils', () => {
     });
 
     it('returns where conditions properly converted', () => {
-      let where = utils.getWhere({ name: 'Joe', age: { $lte: 25 }});
+      let where = utils.getWhere({ name: 'Joe', age: { $lte: 25 } });
 
-      expect(where).to.deep.equal({ name: 'Joe', age: { $lte: 25 }});
+      expect(where).to.deep.equal({ name: 'Joe', age: { $lte: 25 } });
     });
 
     it('converts $nin to $notIn', () => {
-      let where = utils.getWhere({ name: { $nin: ['Joe', 'Alice'] }});
+      let where = utils.getWhere({ name: { $nin: ['Joe', 'Alice'] } });
 
-      expect(where).to.deep.equal({ name: { $notIn: ['Joe', 'Alice'] }});
+      expect(where).to.deep.equal({ name: { $notIn: ['Joe', 'Alice'] } });
     });
   });
 });

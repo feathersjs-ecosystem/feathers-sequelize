@@ -1,5 +1,3 @@
-// jshint expr:true
-
 import assert from 'assert';
 import { expect } from 'chai';
 import { base, example } from 'feathers-service-tests';
@@ -33,9 +31,9 @@ const Model = sequelize.define('people', {
 });
 const CustomId = sequelize.define('people-customid', {
   customid: {
-      type: Sequelize.INTEGER,
-      autoIncrement: true,
-      primaryKey: true
+    type: Sequelize.INTEGER,
+    autoIncrement: true,
+    primaryKey: true
   },
   name: {
     type: Sequelize.STRING,
