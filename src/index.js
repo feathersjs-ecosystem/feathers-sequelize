@@ -2,6 +2,7 @@ import omit from 'lodash.omit';
 import Proto from 'uberproto';
 import filter from 'feathers-query-filters';
 import errors from 'feathers-errors';
+import { select } from 'feathers-commons';
 import * as utils from './utils';
 
 class Service {
@@ -51,8 +52,7 @@ class Service {
   }
 
   find (params) {
-    const paginate = (params && typeof params.paginate !== 'undefined')
-      ? params.paginate : this.paginate;
+    const paginate = (params && typeof params.paginate !== 'undefined') ? params.paginate : this.paginate;
     const result = this._find(params, where => filter(where, paginate));
 
     if (!paginate.default) {
@@ -70,6 +70,7 @@ class Service {
 
       return instance;
     })
+    .then(select(params, this.id))
     .catch(utils.errorHandler);
   }
 
@@ -84,7 +85,7 @@ class Service {
   }
 
   get (id, params) {
-    return this._get(id, params);
+    return this._get(id, params).then(select(params, this.id));
   }
 
   create (data, params) {
@@ -94,26 +95,20 @@ class Service {
       return this.Model.bulkCreate(data, options).catch(utils.errorHandler);
     }
 
-    return this.Model.create(data, options).catch(utils.errorHandler);
+    return this.Model.create(data, options)
+      .then(select(params, this.id))
+      .catch(utils.errorHandler);
   }
 
   patch (id, data, params) {
-    const where = Object.assign({}, params.query);
-    const patchQuery = {};
+    const where = Object.assign({}, filter(params.query || {}).query);
+    const mapIds = page => page.data.map(current => current[this.id]);
 
-    // Account for potentially modified data
-    Object.keys(where).forEach(key => {
-      if (where[key] !== undefined && data[key] !== undefined &&
-          typeof data[key] !== 'object') {
-        patchQuery[key] = data[key];
-      } else {
-        patchQuery[key] = where[key];
-      }
-    });
-
-    const patchParams = Object.assign({}, params, {
-      query: patchQuery
-    });
+    // By default we will just query for the one id. For multi patch
+    // we create a list of the ids of all items that will be changed
+    // to re-query them after the update
+    const ids = id === null ? this._find(params)
+        .then(mapIds) : Promise.resolve([ id ]);
 
     if (id !== null) {
       where[this.id] = id;
@@ -121,8 +116,18 @@ class Service {
 
     const options = Object.assign({}, params.sequelize, { where });
 
-    return this.Model.update(omit(data, this.id), options)
-      .then(() => this._getOrFind(id, patchParams))
+    return ids
+      .then(idList => {
+        // Create a new query that re-queries all ids that
+        // were originally changed
+        const findParams = Object.assign({}, params, {
+          query: { [this.id]: { $in: idList } }
+        });
+
+        return this.Model.update(omit(data, this.id), options)
+            .then(() => this._getOrFind(id, findParams));
+      })
+      .then(select(params, this.id))
       .catch(utils.errorHandler);
   }
 
@@ -149,12 +154,13 @@ class Service {
 
       return instance.update(copy, options);
     })
+    .then(select(params, this.id))
     .catch(utils.errorHandler);
   }
 
   remove (id, params) {
     return this._getOrFind(id, params).then(data => {
-      const where = Object.assign({}, params.query);
+      const where = Object.assign({}, filter(params.query || {}).query);
 
       if (id !== null) {
         where[this.id] = id;
@@ -164,6 +170,7 @@ class Service {
 
       return this.Model.destroy(options).then(() => data);
     })
+    .then(select(params, this.id))
     .catch(utils.errorHandler);
   }
 }
