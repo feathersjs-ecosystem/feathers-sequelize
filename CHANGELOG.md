@@ -1,8 +1,24 @@
 # Change Log
 
-## [Unreleased](https://github.com/feathersjs/feathers-sequelize/tree/HEAD)
+## [v1.4.0](https://github.com/feathersjs/feathers-sequelize/tree/v1.4.0) (2016-11-11)
+[Full Changelog](https://github.com/feathersjs/feathers-sequelize/compare/v1.3.3...v1.4.0)
 
-[Full Changelog](https://github.com/feathersjs/feathers-sequelize/compare/v1.3.2...HEAD)
+**Closed issues:**
+
+- TypeError: Cannot read property '2' of null [\#71](https://github.com/feathersjs/feathers-sequelize/issues/71)
+- ES6/Babel [\#68](https://github.com/feathersjs/feathers-sequelize/issues/68)
+
+**Merged pull requests:**
+
+- Update feathers-service-tests to version 0.9.0 🚀 [\#79](https://github.com/feathersjs/feathers-sequelize/pull/79) ([greenkeeperio-bot](https://github.com/greenkeeperio-bot))
+- sequelize@3.25.0 breaks build 🚨 [\#78](https://github.com/feathersjs/feathers-sequelize/pull/78) ([greenkeeperio-bot](https://github.com/greenkeeperio-bot))
+- sequelize@3.24.8 breaks build 🚨 [\#77](https://github.com/feathersjs/feathers-sequelize/pull/77) ([greenkeeperio-bot](https://github.com/greenkeeperio-bot))
+- 👻😱 Node.js 0.10 is unmaintained 😱👻 [\#76](https://github.com/feathersjs/feathers-sequelize/pull/76) ([greenkeeperio-bot](https://github.com/greenkeeperio-bot))
+- babel-preset-es2015@6.18.0 breaks build 🚨 [\#75](https://github.com/feathersjs/feathers-sequelize/pull/75) ([greenkeeperio-bot](https://github.com/greenkeeperio-bot))
+- jshint —\> semistandard [\#72](https://github.com/feathersjs/feathers-sequelize/pull/72) ([corymsmith](https://github.com/corymsmith))
+
+## [v1.3.3](https://github.com/feathersjs/feathers-sequelize/tree/v1.3.3) (2016-09-28)
+[Full Changelog](https://github.com/feathersjs/feathers-sequelize/compare/v1.3.2...v1.3.3)
 
 **Merged pull requests:**
 
