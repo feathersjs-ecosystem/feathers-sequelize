@@ -66,7 +66,7 @@ const app = feathers()
 // Removes all database content
 Todo.sync({ force: true });
 
-// Create an in-memory Feathers service with a default page size of 2 items
+// Create an sqlite backed Feathers service with a default page size of 2 items
 // and a maximum size of 4
 app.use('/todos', service({
   Model: Todo,
