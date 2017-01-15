@@ -175,8 +175,8 @@ class Service {
   }
 }
 
-export default function init (Model) {
-  return new Service(Model);
+export default function init (options) {
+  return new Service(options);
 }
 
 init.Service = Service;
