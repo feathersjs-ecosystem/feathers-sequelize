@@ -44,6 +44,7 @@ class Service {
     return this.Model.findAndCount(q).then(result => {
       return {
         total: result.count,
+        distinct: true,
         limit: filters.$limit,
         skip: filters.$skip || 0,
         data: result.rows
