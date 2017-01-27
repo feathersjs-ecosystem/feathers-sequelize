@@ -34,7 +34,8 @@ class Service {
       where,
       order,
       limit: filters.$limit,
-      offset: filters.$skip
+      offset: filters.$skip,
+      distinct: true
     }, params.sequelize);
 
     if (filters.$select) {
@@ -44,7 +45,6 @@ class Service {
     return this.Model.findAndCount(q).then(result => {
       return {
         total: result.count,
-        distinct: true,
         limit: filters.$limit,
         skip: filters.$skip || 0,
         data: result.rows
