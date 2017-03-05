@@ -64,7 +64,16 @@ class Service {
 
   _get (id, params) {
     if(params.sequelize && params.sequelize.include) { //If eager-loading is used, we need to use the find method
-      return this.Model.findAll(Object.assign({where: {id:id}}, params.sequelize)).then(result => {
+      
+      const { filters, query } = getFilter(params.query || {});
+      const where = utils.getWhere(query);
+
+      //Attach where constraints, if any where used.
+      const q = Object.assign({
+        Object.assign({id:id},where)
+      }, params.sequelize);
+
+      return this.Model.findAll(q).then(result => {
         if (result.length===0) throw new errors.NotFound(`No record found for id '${id}'`);
         return result[0];
       })
