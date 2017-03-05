@@ -63,15 +63,25 @@ class Service {
   }
 
   _get (id, params) {
-    return this.Model.findById(id, params.sequelize).then(instance => {
-      if (!instance) {
-        throw new errors.NotFound(`No record found for id '${id}'`);
-      }
+    if(params.sequelize && params.sequelize.include) { //If eager-loading is used, we need to use the find method
+      return this.Model.findAll(Object.assign({where: {id:id}}, params.sequelize)).then(result => {
+        if (result.length===0) throw new errors.NotFound(`No record found for id '${id}'`);
+        return result[0];
+      })
+      .then(select(params, this.id))
+      .catch(utils.errorHandler);
+    }else{
+      return this.Model.findById(id, params.sequelize).then(instance => {
+        if (!instance) {
+          throw new errors.NotFound(`No record found for id '${id}'`);
+        }
 
-      return instance;
-    })
-    .then(select(params, this.id))
-    .catch(utils.errorHandler);
+        return instance;
+      })
+      .then(select(params, this.id))
+      .catch(utils.errorHandler);
+    }
+    
   }
 
   // returns either the model intance for an id or all unpaginated
