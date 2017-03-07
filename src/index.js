@@ -69,9 +69,9 @@ class Service {
       const where = utils.getWhere(query);
 
       //Attach where constraints, if any where used.
-      const q = Object.assign({
+      const q = Object.assign(
         Object.assign({id:id},where)
-      }, params.sequelize);
+      , params.sequelize);
 
       return this.Model.findAll(q).then(result => {
         if (result.length===0) throw new errors.NotFound(`No record found for id '${id}'`);
