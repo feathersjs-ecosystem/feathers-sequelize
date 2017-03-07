@@ -64,7 +64,7 @@ class Service {
 
   _get (id, params) {
     if(params.sequelize && params.sequelize.include) { //If eager-loading is used, we need to use the find method
-      const where = utils.getWhere(query);
+      const where = utils.getWhere(params.query);
 
       //Attach where constraints, if any where used.
       const q = Object.assign(
