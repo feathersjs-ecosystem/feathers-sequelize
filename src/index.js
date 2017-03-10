@@ -63,32 +63,33 @@ class Service {
   }
 
   _get (id, params) {
+    let promise;
+
     if(params.sequelize && params.sequelize.include) { //If eager-loading is used, we need to use the find method
       const where = utils.getWhere(params.query);
 
       //Attach where constraints, if any where used.
-      const q = Object.assign(
-        Object.assign({id:id},where)
-      , params.sequelize);
+      const q = Object.assign(Object.assign({ id },where), params.sequelize);
 
-      return this.Model.findAll(q).then(result => {
-        if (result.length===0) throw new errors.NotFound(`No record found for id '${id}'`);
+      promise = this.Model.findAll(q).then(result => {
+        if (result.length===0) {
+          throw new errors.NotFound(`No record found for id '${id}'`);
+        }
+
         return result[0];
-      })
-      .then(select(params, this.id))
-      .catch(utils.errorHandler);
-    }else{
-      return this.Model.findById(id, params.sequelize).then(instance => {
+      });
+    } else {
+      promise = this.Model.findById(id, params.sequelize).then(instance => {
         if (!instance) {
           throw new errors.NotFound(`No record found for id '${id}'`);
         }
 
         return instance;
-      })
-      .then(select(params, this.id))
-      .catch(utils.errorHandler);
+      });
     }
-    
+
+    return promise.then(select(params, this.id))
+      .catch(utils.errorHandler);
   }
 
   // returns either the model intance for an id or all unpaginated
