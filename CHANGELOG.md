@@ -1,5 +1,24 @@
 # Change Log
 
+## [v1.4.1](https://github.com/feathersjs/feathers-sequelize/tree/v1.4.1) (2017-03-10)
+[Full Changelog](https://github.com/feathersjs/feathers-sequelize/compare/v1.4.0...v1.4.1)
+
+**Closed issues:**
+
+- $populate does not seem to work [\#89](https://github.com/feathersjs/feathers-sequelize/issues/89)
+- updated\_at column does not get updated at PATCH request [\#88](https://github.com/feathersjs/feathers-sequelize/issues/88)
+- Suggested pattern to create a multi model service [\#86](https://github.com/feathersjs/feathers-sequelize/issues/86)
+- GroupBy issue [\#84](https://github.com/feathersjs/feathers-sequelize/issues/84)
+- Concat and other sequelize functions [\#81](https://github.com/feathersjs/feathers-sequelize/issues/81)
+- Solved: How to add relationship [\#80](https://github.com/feathersjs/feathers-sequelize/issues/80)
+- Consider creating a sequelize instance during updates: [\#63](https://github.com/feathersjs/feathers-sequelize/issues/63)
+
+**Merged pull requests:**
+
+- Enable eager-loading for GET endpoint [\#91](https://github.com/feathersjs/feathers-sequelize/pull/91) ([eikaramba](https://github.com/eikaramba))
+- Update index.js [\#83](https://github.com/feathersjs/feathers-sequelize/pull/83) ([Ryanthegiantlion](https://github.com/Ryanthegiantlion))
+- doc: fix README.md comment. [\#82](https://github.com/feathersjs/feathers-sequelize/pull/82) ([omeid](https://github.com/omeid))
+
 ## [v1.4.0](https://github.com/feathersjs/feathers-sequelize/tree/v1.4.0) (2016-11-11)
 [Full Changelog](https://github.com/feathersjs/feathers-sequelize/compare/v1.3.3...v1.4.0)
 
