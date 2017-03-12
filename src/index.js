@@ -66,10 +66,12 @@ class Service {
     let promise;
 
     if (params.sequelize && params.sequelize.include) { // If eager-loading is used, we need to use the find method
+      params.query = params.query || {};
+      params.query.id = id;
       const where = utils.getWhere(params.query);
 
-      // Attach where constraints, if any where used.
-      const q = Object.assign(Object.assign({ id }, where), params.sequelize);
+      // Attach 'where' constraints, if any were used.
+      const q = Object.assign({where:where)}, params.sequelize);
 
       promise = this.Model.findAll(q).then(result => {
         if (result.length === 0) {
