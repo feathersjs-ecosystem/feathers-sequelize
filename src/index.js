@@ -71,7 +71,7 @@ class Service {
       const where = utils.getWhere(params.query);
 
       // Attach 'where' constraints, if any were used.
-      const q = Object.assign({where:where)}, params.sequelize);
+      const q = Object.assign({where:where}, params.sequelize);
 
       promise = this.Model.findAll(q).then(result => {
         if (result.length === 0) {
