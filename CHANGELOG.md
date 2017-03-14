@@ -1,5 +1,12 @@
 # Change Log
 
+## [v1.4.2](https://github.com/feathersjs/feathers-sequelize/tree/v1.4.2) (2017-03-14)
+[Full Changelog](https://github.com/feathersjs/feathers-sequelize/compare/v1.4.1...v1.4.2)
+
+**Merged pull requests:**
+
+- Fixed missing where clause [\#92](https://github.com/feathersjs/feathers-sequelize/pull/92) ([eikaramba](https://github.com/eikaramba))
+
 ## [v1.4.1](https://github.com/feathersjs/feathers-sequelize/tree/v1.4.1) (2017-03-10)
 [Full Changelog](https://github.com/feathersjs/feathers-sequelize/compare/v1.4.0...v1.4.1)
 
