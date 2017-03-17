@@ -69,7 +69,7 @@ class Service {
       const where = utils.getWhere(params.query);
 
       // Attach 'where' constraints, if any were used.
-      const q = Object.assign({where:Object.assign({id:id},where)}, params.sequelize);
+      const q = Object.assign({where: Object.assign({id: id}, where)}, params.sequelize);
 
       promise = this.Model.findAll(q).then(result => {
         if (result.length === 0) {
@@ -122,17 +122,26 @@ class Service {
     const where = Object.assign({}, filter(params.query || {}).query);
     const mapIds = page => page.data.map(current => current[this.id]);
 
-    // By default we will just query for the one id. For multi patch
-    // we create a list of the ids of all items that will be changed
-    // to re-query them after the update
-    const ids = id === null ? this._find(params)
-        .then(mapIds) : Promise.resolve([ id ]);
-
     if (id !== null) {
       where[this.id] = id;
     }
 
     const options = Object.assign({}, params.sequelize, { where });
+
+    // This is the best way to implement patch in sql, the other dialects 'should' use a transaction.
+    if (this.Model.sequelize.options.dialect === 'postgres') {
+      options.returning = true;
+      return this.Model.update(omit(data, this.id), options)
+            .then(results => results[1])
+            .then(select(params, this.id))
+            .catch(utils.errorHandler);
+    }
+
+    // By default we will just query for the one id. For multi patch
+    // we create a list of the ids of all items that will be changed
+    // to re-query them after the update
+    const ids = id === null ? this._find(params)
+        .then(mapIds) : Promise.resolve([ id ]);
 
     return ids
       .then(idList => {
