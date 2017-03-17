@@ -1,5 +1,12 @@
 # Change Log
 
+## [v1.4.3](https://github.com/feathersjs/feathers-sequelize/tree/v1.4.3) (2017-03-17)
+[Full Changelog](https://github.com/feathersjs/feathers-sequelize/compare/v1.4.2...v1.4.3)
+
+**Merged pull requests:**
+
+- use 'returning: true' for postgres to keep patch and its response atomic [\#93](https://github.com/feathersjs/feathers-sequelize/pull/93) ([MichaelErmer](https://github.com/MichaelErmer))
+
 ## [v1.4.2](https://github.com/feathersjs/feathers-sequelize/tree/v1.4.2) (2017-03-14)
 [Full Changelog](https://github.com/feathersjs/feathers-sequelize/compare/v1.4.1...v1.4.2)
 
