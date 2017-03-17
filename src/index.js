@@ -129,7 +129,7 @@ class Service {
     const options = Object.assign({}, params.sequelize, { where });
 
     // This is the best way to implement patch in sql, the other dialects 'should' use a transaction.
-    if (options.Model.sequelize.options.dialect === 'postgres') {
+    if (this.Model.sequelize.options.dialect === 'postgres') {
       options.returning = true;
       return this.Model.update(omit(data, this.id), options)
             .then(results => results[1])
