@@ -1,5 +1,18 @@
 # Change Log
 
+## [v1.4.4](https://github.com/feathersjs/feathers-sequelize/tree/v1.4.4) (2017-03-24)
+[Full Changelog](https://github.com/feathersjs/feathers-sequelize/compare/v1.4.3...v1.4.4)
+
+**Closed issues:**
+
+- Relation between Models not working. [\#98](https://github.com/feathersjs/feathers-sequelize/issues/98)
+- Can we create nested models in one go? [\#97](https://github.com/feathersjs/feathers-sequelize/issues/97)
+- Add example for model relations [\#20](https://github.com/feathersjs/feathers-sequelize/issues/20)
+
+**Merged pull requests:**
+
+- checking for the toJSON method on the instance before calling it [\#100](https://github.com/feathersjs/feathers-sequelize/pull/100) ([lowip](https://github.com/lowip))
+
 ## [v1.4.3](https://github.com/feathersjs/feathers-sequelize/tree/v1.4.3) (2017-03-17)
 [Full Changelog](https://github.com/feathersjs/feathers-sequelize/compare/v1.4.2...v1.4.3)
 
