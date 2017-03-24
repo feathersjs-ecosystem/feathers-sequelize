@@ -165,7 +165,7 @@ class Service {
       return Promise.reject('Not replacing multiple records. Did you mean `patch`?');
     }
 
-    return this.Model.findById(id).then(instance => {
+    return this.Model.findById(id, {raw: false}).then(instance => {
       if (!instance) {
         throw new errors.NotFound(`No record found for id '${id}'`);
       }
