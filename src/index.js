@@ -171,7 +171,7 @@ class Service {
       }
 
       let copy = {};
-      Object.keys(instance.toJSON()).forEach(key => {
+      Object.keys(typeof instance.toJSON === 'function' ? instance.toJSON() : instance).forEach(key => {
         if (typeof data[key] === 'undefined') {
           copy[key] = null;
         } else {
