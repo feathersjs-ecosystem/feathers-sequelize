@@ -170,6 +170,7 @@ class Service {
 
       let copy = {};
       Object.keys(typeof instance.toJSON === 'function' ? instance.toJSON() : instance).forEach(key => {
+        if (key === 'createdAt' || key === 'updatedAt') { return; }
         if (typeof data[key] === 'undefined') {
           copy[key] = null;
         } else {
@@ -177,16 +178,16 @@ class Service {
         }
       });
 
-      const where = { id };
+      const where = { [this.id]: id };
       const options = Object.assign({}, params.sequelize, { where });
 
       if (this.Model.sequelize.options.dialect === 'postgres') {
         options.returning = true;
-        return this.Model.update(copy, options)
+        return this.Model.update(omit(copy, this.id), options)
           .then(results => results[1]);
       }
 
-      return this.Model.update(copy, options)
+      return this.Model.update(omit(copy, this.id), options)
         .then(() => this._getOrFind(id, params));
     })
     .then(select(params, this.id))
