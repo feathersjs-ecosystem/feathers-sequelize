@@ -159,13 +159,11 @@ class Service {
   }
 
   update (id, data, params) {
-    const options = Object.assign({}, params.sequelize);
-
     if (Array.isArray(data)) {
       return Promise.reject('Not replacing multiple records. Did you mean `patch`?');
     }
 
-    return this.Model.findById(id, {raw: false}).then(instance => {
+    return this.Model.findById(id).then(instance => {
       if (!instance) {
         throw new errors.NotFound(`No record found for id '${id}'`);
       }
@@ -179,7 +177,17 @@ class Service {
         }
       });
 
-      return instance.update(copy, options);
+      const where = { id };
+      const options = Object.assign({}, params.sequelize, { where });
+
+      if (this.Model.sequelize.options.dialect === 'postgres') {
+        options.returning = true;
+        return this.Model.update(copy, options)
+          .then(results => results[1]);
+      }
+
+      return this.Model.update(copy, options)
+        .then(() => this._getOrFind(id, params));
     })
     .then(select(params, this.id))
     .catch(utils.errorHandler);
