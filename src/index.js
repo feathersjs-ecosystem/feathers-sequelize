@@ -165,13 +165,15 @@ class Service {
       return Promise.reject('Not replacing multiple records. Did you mean `patch`?');
     }
 
-    return this.Model.findById(id).then(instance => {
+    // Force the {raw: false} option as the instance is needed to properly
+    // update
+    return this.Model.findById(id, { raw: false }).then(instance => {
       if (!instance) {
         throw new errors.NotFound(`No record found for id '${id}'`);
       }
 
       let copy = {};
-      Object.keys(typeof instance.toJSON === 'function' ? instance.toJSON() : instance).forEach(key => {
+      Object.keys(instance.toJSON()).forEach(key => {
         if (typeof data[key] === 'undefined') {
           copy[key] = null;
         } else {
