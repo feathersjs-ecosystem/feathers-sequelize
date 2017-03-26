@@ -1,5 +1,12 @@
 # Change Log
 
+## [v1.4.5](https://github.com/feathersjs/feathers-sequelize/tree/v1.4.5) (2017-03-26)
+[Full Changelog](https://github.com/feathersjs/feathers-sequelize/compare/v1.4.4...v1.4.5)
+
+**Merged pull requests:**
+
+- Fix update no dao [\#101](https://github.com/feathersjs/feathers-sequelize/pull/101) ([lowip](https://github.com/lowip))
+
 ## [v1.4.4](https://github.com/feathersjs/feathers-sequelize/tree/v1.4.4) (2017-03-24)
 [Full Changelog](https://github.com/feathersjs/feathers-sequelize/compare/v1.4.3...v1.4.4)
 
