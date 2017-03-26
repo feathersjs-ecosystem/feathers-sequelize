@@ -159,18 +159,21 @@ class Service {
   }
 
   update (id, data, params) {
+    const options = Object.assign({}, params.sequelize);
+
     if (Array.isArray(data)) {
       return Promise.reject('Not replacing multiple records. Did you mean `patch`?');
     }
 
-    return this.Model.findById(id).then(instance => {
+    // Force the {raw: false} option as the instance is needed to properly
+    // update
+    return this.Model.findById(id, { raw: false }).then(instance => {
       if (!instance) {
         throw new errors.NotFound(`No record found for id '${id}'`);
       }
 
       let copy = {};
-      Object.keys(typeof instance.toJSON === 'function' ? instance.toJSON() : instance).forEach(key => {
-        if (key === 'createdAt' || key === 'updatedAt') { return; }
+      Object.keys(instance.toJSON()).forEach(key => {
         if (typeof data[key] === 'undefined') {
           copy[key] = null;
         } else {
@@ -178,17 +181,7 @@ class Service {
         }
       });
 
-      const where = { [this.id]: id };
-      const options = Object.assign({}, params.sequelize, { where });
-
-      if (this.Model.sequelize.options.dialect === 'postgres') {
-        options.returning = true;
-        return this.Model.update(omit(copy, this.id), options)
-          .then(results => results[1]);
-      }
-
-      return this.Model.update(omit(copy, this.id), options)
-        .then(() => this._getOrFind(id, params));
+      return instance.update(copy, options);
     })
     .then(select(params, this.id))
     .catch(utils.errorHandler);
