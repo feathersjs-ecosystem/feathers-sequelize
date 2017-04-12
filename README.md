@@ -1,5 +1,7 @@
 # feathers-sequelize
 
+[![Greenkeeper badge](https://badges.greenkeeper.io/feathersjs/feathers-sequelize.svg)](https://greenkeeper.io/)
+
 [![Build Status](https://travis-ci.org/feathersjs/feathers-sequelize.png?branch=master)](https://travis-ci.org/feathersjs/feathers-sequelize)
 [![Code Climate](https://codeclimate.com/github/feathersjs/feathers-sequelize.png)](https://codeclimate.com/github/feathersjs/feathers-sequelize)
 [![Test Coverage](https://codeclimate.com/github/feathersjs/feathers-sequelize/badges/coverage.svg)](https://codeclimate.com/github/feathersjs/feathers-sequelize/coverage)
