@@ -162,7 +162,7 @@ class Service {
     const options = Object.assign({}, params.sequelize);
 
     if (Array.isArray(data)) {
-      return Promise.reject('Not replacing multiple records. Did you mean `patch`?');
+      return Promise.reject(new errors.BadRequest('Not replacing multiple records. Did you mean `patch`?'));
     }
 
     // Force the {raw: false} option as the instance is needed to properly
