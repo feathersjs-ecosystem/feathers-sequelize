@@ -132,7 +132,17 @@ class Service {
     if (this.Model.sequelize.options.dialect === 'postgres') {
       options.returning = true;
       return this.Model.update(omit(data, this.id), options)
-            .then(results => results[1])
+            .then(results => {
+              if (id === null) {
+                return results[1];
+              }
+
+              if (!results[1].length) {
+                throw new errors.NotFound(`No record found for id '${id}'`);
+              }
+
+              return results[1][0];
+            })
             .then(select(params, this.id))
             .catch(utils.errorHandler);
     }
