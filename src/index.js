@@ -34,7 +34,8 @@ class Service {
       where,
       order,
       limit: filters.$limit,
-      offset: filters.$skip
+      offset: filters.$skip,
+      distinct: true
     }, params.sequelize);
 
     if (filters.$select) {
