@@ -19,6 +19,7 @@ class Service {
     this.Model = options.Model;
     this.id = options.id || 'id';
     this.events = options.events;
+    this.raw = options.raw !== false;
   }
 
   extend (obj) {
@@ -35,7 +36,7 @@ class Service {
       order,
       limit: filters.$limit,
       offset: filters.$skip,
-      raw: true
+      raw: this.raw
     }, params.sequelize);
 
     if (filters.$select) {
@@ -82,7 +83,7 @@ class Service {
         return result[0];
       });
     } else {
-      const options = Object.assign({ raw: true }, params.sequelize);
+      const options = Object.assign({ raw: this.raw }, params.sequelize);
       promise = this.Model.findById(id, options).then(instance => {
         if (!instance) {
           throw new errors.NotFound(`No record found for id '${id}'`);
@@ -111,7 +112,7 @@ class Service {
   }
 
   create (data, params) {
-    const options = params.sequelize || {};
+    const options = Object.assign({raw: this.raw}, params.sequelize);
     const isArray = Array.isArray(data);
     let promise;
 
@@ -174,7 +175,7 @@ class Service {
   }
 
   update (id, data, params) {
-    const options = Object.assign({}, params.sequelize);
+    const options = Object.assign({ raw: this.raw }, params.sequelize);
 
     if (Array.isArray(data)) {
       return Promise.reject(new errors.BadRequest('Not replacing multiple records. Did you mean `patch`?'));
@@ -197,7 +198,6 @@ class Service {
       });
 
       return instance.update(copy, options).then(instance => {
-        // Allow users to specify raw: false - return the instance
         if (options.raw === false) {
           return instance;
         }
@@ -209,7 +209,8 @@ class Service {
   }
 
   remove (id, params) {
-    return this._getOrFind(id, params).then(data => {
+    const opts = Object.assign({ raw: this.raw }, params);
+    return this._getOrFind(id, opts).then(data => {
       const where = Object.assign({}, filter(params.query || {}).query);
 
       if (id !== null) {
