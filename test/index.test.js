@@ -1,6 +1,6 @@
 import assert from 'assert';
 import { expect } from 'chai';
-import { base, example } from 'feathers-service-tests';
+import { base, example, orm } from 'feathers-service-tests';
 import Sequelize from 'sequelize';
 import errors from 'feathers-errors';
 import feathers from 'feathers';
@@ -95,6 +95,69 @@ describe('Feathers Sequelize Service', () => {
 
     base(app, errors);
     base(app, errors, 'people-customid', 'customid');
+  });
+
+  describe('ORM functionality', () => {
+    const app = feathers()
+      .use('/people', service({
+        Model,
+        events: [ 'testing' ]
+      }));
+    const people = app.service('people');
+
+    describe('Model Instance queries', () => {
+      const _ids = {};
+      const _data = {};
+
+      beforeEach(() =>
+        people.create({name: 'David'}).then(result => {
+          _data.David = result;
+          _ids.David = result.id;
+        })
+      );
+
+      afterEach(() =>
+        people.remove(_ids.David)
+      );
+
+      it('`raw: false` works for find()', () =>
+        people.find({sequelize: {raw: false}}).then(results =>
+          expect(results[0] instanceof Model.Instance).to.be.ok
+        )
+      );
+
+      it('`raw: false` works for get()', () =>
+        people.get(_ids.David, {sequelize: {raw: false}}).then(instance =>
+          expect(instance instanceof Model.Instance).to.be.ok
+        )
+      );
+
+      it('`raw: false` works for create()', () =>
+        people.create({name: 'Sarah'}, {sequelize: {raw: false}}).then(instance =>
+          expect(instance instanceof Model.Instance).to.be.ok
+        )
+      );
+
+      it('`raw: false` works for bulk create()', () =>
+        people.create([{name: 'Sarah'}], {sequelize: {raw: false}}).then(results =>
+          expect(results[0] instanceof Model.Instance).to.be.ok
+        )
+      );
+
+      it('`raw: false` works for patch()', () =>
+        people.patch(_ids.David, {name: 'Sarah'}, {sequelize: {raw: false}}).then(instance =>
+          expect(instance instanceof Model.Instance).to.be.ok
+        )
+      );
+
+      it('`raw: false` works for update()', () =>
+        people.update(_ids.David, _data.David, {sequelize: {raw: false}}).then(instance =>
+          expect(instance instanceof Model.Instance).to.be.ok
+        )
+      );
+    });
+
+    orm(people, errors);
   });
 });
 

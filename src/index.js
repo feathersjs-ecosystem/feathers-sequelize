@@ -34,7 +34,8 @@ class Service {
       where,
       order,
       limit: filters.$limit,
-      offset: filters.$skip
+      offset: filters.$skip,
+      raw: true
     }, params.sequelize);
 
     if (filters.$select) {
@@ -69,7 +70,9 @@ class Service {
       const where = utils.getWhere(params.query);
 
       // Attach 'where' constraints, if any were used.
-      const q = Object.assign({where: Object.assign({id: id}, where)}, params.sequelize);
+      const q = Object.assign({
+        where: Object.assign({id: id}, where)
+      }, params.sequelize);
 
       promise = this.Model.findAll(q).then(result => {
         if (result.length === 0) {
@@ -79,7 +82,8 @@ class Service {
         return result[0];
       });
     } else {
-      promise = this.Model.findById(id, params.sequelize).then(instance => {
+      const options = Object.assign({ raw: true }, params.sequelize);
+      promise = this.Model.findById(id, options).then(instance => {
         if (!instance) {
           throw new errors.NotFound(`No record found for id '${id}'`);
         }
@@ -108,14 +112,25 @@ class Service {
 
   create (data, params) {
     const options = params.sequelize || {};
+    const isArray = Array.isArray(data);
+    let promise;
 
-    if (Array.isArray(data)) {
-      return this.Model.bulkCreate(data, options).catch(utils.errorHandler);
+    if (isArray) {
+      promise = this.Model.bulkCreate(data, options);
+    } else {
+      promise = this.Model.create(data, options);
     }
 
-    return this.Model.create(data, options)
-      .then(select(params, this.id))
-      .catch(utils.errorHandler);
+    return promise.then(result => {
+      const sel = select(params, this.id);
+      if (options.raw === false) {
+        return result;
+      }
+      if (isArray) {
+        return result.map(item => sel(item.toJSON()));
+      }
+      return sel(result.toJSON());
+    }).catch(utils.errorHandler);
   }
 
   patch (id, data, params) {
@@ -181,7 +196,13 @@ class Service {
         }
       });
 
-      return instance.update(copy, options);
+      return instance.update(copy, options).then(instance => {
+        // Allow users to specify raw: false - return the instance
+        if (options.raw === false) {
+          return instance;
+        }
+        return instance.toJSON();
+      });
     })
     .then(select(params, this.id))
     .catch(utils.errorHandler);
