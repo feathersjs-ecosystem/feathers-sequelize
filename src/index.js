@@ -19,6 +19,7 @@ class Service {
     this.Model = options.Model;
     this.id = options.id || 'id';
     this.events = options.events;
+    this.raw = options.raw !== false;
   }
 
   extend (obj) {
@@ -34,7 +35,8 @@ class Service {
       where,
       order,
       limit: filters.$limit,
-      offset: filters.$skip
+      offset: filters.$skip,
+      raw: this.raw
     }, params.sequelize);
 
     if (filters.$select) {
@@ -69,7 +71,9 @@ class Service {
       const where = utils.getWhere(params.query);
 
       // Attach 'where' constraints, if any were used.
-      const q = Object.assign({where: Object.assign({id: id}, where)}, params.sequelize);
+      const q = Object.assign({
+        where: Object.assign({id: id}, where)
+      }, params.sequelize);
 
       promise = this.Model.findAll(q).then(result => {
         if (result.length === 0) {
@@ -79,7 +83,8 @@ class Service {
         return result[0];
       });
     } else {
-      promise = this.Model.findById(id, params.sequelize).then(instance => {
+      const options = Object.assign({ raw: this.raw }, params.sequelize);
+      promise = this.Model.findById(id, options).then(instance => {
         if (!instance) {
           throw new errors.NotFound(`No record found for id '${id}'`);
         }
@@ -107,15 +112,26 @@ class Service {
   }
 
   create (data, params) {
-    const options = params.sequelize || {};
+    const options = Object.assign({raw: this.raw}, params.sequelize);
+    const isArray = Array.isArray(data);
+    let promise;
 
-    if (Array.isArray(data)) {
-      return this.Model.bulkCreate(data, options).catch(utils.errorHandler);
+    if (isArray) {
+      promise = this.Model.bulkCreate(data, options);
+    } else {
+      promise = this.Model.create(data, options);
     }
 
-    return this.Model.create(data, options)
-      .then(select(params, this.id))
-      .catch(utils.errorHandler);
+    return promise.then(result => {
+      const sel = select(params, this.id);
+      if (options.raw === false) {
+        return result;
+      }
+      if (isArray) {
+        return result.map(item => sel(item.toJSON()));
+      }
+      return sel(result.toJSON());
+    }).catch(utils.errorHandler);
   }
 
   patch (id, data, params) {
@@ -169,7 +185,7 @@ class Service {
   }
 
   update (id, data, params) {
-    const options = Object.assign({}, params.sequelize);
+    const options = Object.assign({ raw: this.raw }, params.sequelize);
 
     if (Array.isArray(data)) {
       return Promise.reject(new errors.BadRequest('Not replacing multiple records. Did you mean `patch`?'));
@@ -191,14 +207,20 @@ class Service {
         }
       });
 
-      return instance.update(copy, options);
+      return instance.update(copy, options).then(instance => {
+        if (options.raw === false) {
+          return instance;
+        }
+        return instance.toJSON();
+      });
     })
     .then(select(params, this.id))
     .catch(utils.errorHandler);
   }
 
   remove (id, params) {
-    return this._getOrFind(id, params).then(data => {
+    const opts = Object.assign({ raw: this.raw }, params);
+    return this._getOrFind(id, opts).then(data => {
       const where = Object.assign({}, filter(params.query || {}).query);
 
       if (id !== null) {
