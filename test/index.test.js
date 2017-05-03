@@ -12,7 +12,11 @@ const sequelize = new Sequelize('sequelize', '', '', {
   storage: './db.sqlite',
   logging: false
 });
-const postgres = new Sequelize('postgres://postgres:postgres@localhost:5432/sequelize');
+const postgres = new Sequelize('sequelize', 'postgres', '', {
+  host: 'localhost',
+  dialect: 'postgres'
+});
+
 const Model = sequelize.define('people', {
   name: {
     type: Sequelize.STRING,
@@ -331,6 +335,7 @@ describe('Feathers Sequelize Service', () => {
         events: [ 'testing' ]
       }));
 
+    before(() => PostgresModel.sync({ force: true }));
     base(app, errors);
   });
 });
