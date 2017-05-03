@@ -1,5 +1,20 @@
 # Change Log
 
+## [v2.0.0](https://github.com/feathersjs/feathers-sequelize/tree/v2.0.0) (2017-05-03)
+[Full Changelog](https://github.com/feathersjs/feathers-sequelize/compare/v1.4.5...v2.0.0)
+
+**Closed issues:**
+
+- update\(\) breaks when sequelize configured with raw:true [\#99](https://github.com/feathersjs/feathers-sequelize/issues/99)
+- Discuss querying of NULL values [\#96](https://github.com/feathersjs/feathers-sequelize/issues/96)
+
+**Merged pull requests:**
+
+- Update all methods to return plain JS objects [\#106](https://github.com/feathersjs/feathers-sequelize/pull/106) ([DesignByOnyx](https://github.com/DesignByOnyx))
+- Fixed return value of patch method for postgresql dialect [\#104](https://github.com/feathersjs/feathers-sequelize/pull/104) ([msimulcik](https://github.com/msimulcik))
+- Update semistandard to the latest version 🚀 [\#103](https://github.com/feathersjs/feathers-sequelize/pull/103) ([greenkeeper[bot]](https://github.com/integration/greenkeeper))
+- Update dependencies to enable Greenkeeper 🌴 [\#102](https://github.com/feathersjs/feathers-sequelize/pull/102) ([greenkeeper[bot]](https://github.com/integration/greenkeeper))
+
 ## [v1.4.5](https://github.com/feathersjs/feathers-sequelize/tree/v1.4.5) (2017-03-26)
 [Full Changelog](https://github.com/feathersjs/feathers-sequelize/compare/v1.4.4...v1.4.5)
 
