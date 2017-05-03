@@ -12,6 +12,7 @@ const sequelize = new Sequelize('sequelize', '', '', {
   storage: './db.sqlite',
   logging: false
 });
+const postgres = new Sequelize('postgres://postgres:postgres@localhost:5432/sequelize');
 const Model = sequelize.define('people', {
   name: {
     type: Sequelize.STRING,
@@ -44,6 +45,23 @@ const Model = sequelize.define('people', {
       }
     }
   }
+});
+const PostgresModel = postgres.define('people', {
+  name: {
+    type: Sequelize.STRING,
+    allowNull: false
+  },
+  age: {
+    type: Sequelize.INTEGER
+  },
+  created: {
+    type: Sequelize.BOOLEAN
+  },
+  time: {
+    type: Sequelize.INTEGER
+  }
+}, {
+  freezeTableName: true
 });
 const CustomId = sequelize.define('people-customid', {
   customid: {
@@ -304,6 +322,16 @@ describe('Feathers Sequelize Service', () => {
         )
       );
     });
+  });
+
+  describe('PostgreSQL', () => {
+    const app = feathers()
+      .use('/people', service({
+        Model: PostgresModel,
+        events: [ 'testing' ]
+      }));
+
+    base(app, errors);
   });
 });
 
