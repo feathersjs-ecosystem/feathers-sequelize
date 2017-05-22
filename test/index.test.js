@@ -161,7 +161,7 @@ describe('Feathers Sequelize Service', () => {
 
       it('patch() with $returning=false returns empty array', () =>
         people.patch(_ids.David, {name: 'Sarah'}, {$returning: false}).then(response =>
-          expect(response).to.equal([])
+          expect(response).to.deep.equal([])
         )
       );
 
@@ -179,7 +179,7 @@ describe('Feathers Sequelize Service', () => {
 
       it('remove() with $returning=false returns empty array', () =>
         people.remove(_ids.David, {$returning: false}).then(response =>
-          expect(response).to.equal([])
+          expect(response).to.deep.equal([])
         )
       );
     });
