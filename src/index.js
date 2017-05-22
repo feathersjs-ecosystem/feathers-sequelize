@@ -179,8 +179,8 @@ class Service {
 
         return this.Model.update(omit(data, this.id), options)
             .then(() => {
-              if (!!params.$returning) {
-                this._getOrFind(id, findParams)
+              if (params.$returning) {
+                this._getOrFind(id, findParams);
               } else {
                 Promise.resolve([]);
               }
@@ -232,11 +232,11 @@ class Service {
     }
 
     const options = Object.assign({}, params.sequelize, { where });
-    
-    if (!!params.$returning) {
+
+    if (params.$returning) {
       return this._getOrFind(id, opts).then(data => {
-          return this.Model.destroy(options).then(() => data);
-        })
+        return this.Model.destroy(options).then(() => data);
+      })
         .then(select(params, this.id))
         .catch(utils.errorHandler);
     } else {
