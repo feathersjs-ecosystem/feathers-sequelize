@@ -226,19 +226,24 @@ class Service {
 
   remove (id, params) {
     const opts = Object.assign({ raw: this.raw }, params);
-    return this._getOrFind(id, opts).then(data => {
-      const where = Object.assign({}, filter(params.query || {}).query);
+    const where = Object.assign({}, filter(params.query || {}).query);
+    if (id !== null) {
+      where[this.id] = id;
+    }
 
-      if (id !== null) {
-        where[this.id] = id;
-      }
-
-      const options = Object.assign({}, params.sequelize, { where });
-
-      return this.Model.destroy(options).then(() => data);
-    })
-    .then(select(params, this.id))
-    .catch(utils.errorHandler);
+    const options = Object.assign({}, params.sequelize, { where });
+    
+    if (!!params.$returning) {
+      return this._getOrFind(id, opts).then(data => {
+          return this.Model.destroy(options).then(() => data);
+        })
+        .then(select(params, this.id))
+        .catch(utils.errorHandler);
+    } else {
+      this.Model.destroy(options).then(() => [])
+        .then(select(params, this.id))
+        .catch(utils.errorHandler);
+    }
   }
 }
 
