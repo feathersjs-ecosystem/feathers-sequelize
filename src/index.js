@@ -1,12 +1,143 @@
-import omit from 'lodash.omit';
-import Proto from 'uberproto';
-import filter from 'feathers-query-filters';
-import errors from 'feathers-errors';
-import { select } from 'feathers-commons';
-import * as utils from './utils';
+'use strict';
 
-class Service {
-  constructor (options) {
+Object.defineProperty(exports, '__esModule', {
+  value: true,
+});
+
+var _extends = Object.assign || function (target) {
+  for (var i = 1; i < arguments.length; i++) {
+    var source = arguments[i];
+    for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } }
+  }
+  return target;
+};
+
+var _createClass = function () {
+  function defineProperties (target, props) {
+    for (var i = 0; i < props.length; i++) {
+      var descriptor = props[i];
+      descriptor.enumerable = descriptor.enumerable || false;
+      descriptor.configurable = true;
+      if ('value' in descriptor) descriptor.writable = true;
+      Object.defineProperty(target, descriptor.key, descriptor);
+    }
+  }
+
+  return function (Constructor, protoProps, staticProps) {
+    if (protoProps) defineProperties(Constructor.prototype, protoProps);
+    if (staticProps) defineProperties(Constructor, staticProps);
+    return Constructor;
+  };
+}();
+
+exports.default = init;
+
+var _lodash = require('lodash.omit');
+
+var _lodash2 = _interopRequireDefault(_lodash);
+
+var _uberproto = require('uberproto');
+
+var _uberproto2 = _interopRequireDefault(_uberproto);
+
+var _feathersQueryFilters = require('feathers-query-filters');
+
+var _feathersQueryFilters2 = _interopRequireDefault(_feathersQueryFilters);
+
+var _feathersErrors = require('feathers-errors');
+
+var _feathersErrors2 = _interopRequireDefault(_feathersErrors);
+
+var _feathersCommons = require('feathers-commons');
+
+var _utils = require('./utils');
+
+var utils = _interopRequireWildcard(_utils);
+
+function _interopRequireWildcard (obj) {
+  if (obj && obj.__esModule) { return obj; } else {
+    var newObj = {};
+    if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } }
+    newObj.default = obj;
+    return newObj;
+  }
+}
+
+function _interopRequireDefault (obj) { return obj && obj.__esModule ? obj : {default: obj}; }
+
+function _defineProperty (obj, key, value) {
+  if (key in obj) {
+    Object.defineProperty(obj, key, {
+      value: value,
+      enumerable: true,
+      configurable: true,
+      writable: true,
+    });
+  } else { obj[key] = value; }
+  return obj;
+}
+
+function _classCallCheck (instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+
+/**
+ * Converts dot-notation queries on associations into Sequelize's 'include' query structure
+ * @param Model
+ * @param originalWhere
+ * @param originalInclude
+ * @return {Object<Object where, Array<Object> include>}
+ */
+function expandIncludeWhere (Model, originalWhere, originalInclude = []) {
+  const _ = require('lodash');
+  let where = _.cloneDeep(originalWhere);
+  const include = _.cloneDeep(originalInclude);
+  const includeItemsWithInclude = {}; // nested includes by association key
+  Object.keys(Model.associations).forEach((assocKey) => {
+    const association = Model.associations[assocKey];
+    Object.keys(where).forEach((whereKey) => {
+      const whereValue = where[whereKey];
+      const whereKeyComponents = new RegExp(`${assocKey}\.(.*)`).exec(whereKey);
+      if (whereKeyComponents) {
+        const fieldKey = whereKeyComponents[1]; // e.g. 'team.id' becomes 'id', or 'team.owner.id' becomes 'owner.id'
+        let includeItem = {association, where: {}, include: []};
+        let includeItemExists = false;
+        // lookup existing include item e.g. include item: `{ association: Model.associations.team, where: {}, include: [] }`
+        include.forEach((searchItem, searchItemIndex) => {
+          if (searchItem instanceof Model.sequelize.Association && searchItem.as === association.as) {
+            // for cases where include array item is set directly as an Association object
+            include[searchItemIndex] = includeItem;
+            includeItemExists = true;
+          } else if (searchItem.association.as === association.as) {
+            includeItem = searchItem;
+            includeItemExists = true;
+          }
+        });
+        // push new include item into the include array
+        if (!includeItemExists) include.push(includeItem);
+        // set where query value e.g. { id: 123 }
+        includeItem.where = includeItem.where || {};
+        includeItem.where[fieldKey] = whereValue;
+        // remove the original dot-notation key
+        delete where[whereKey];
+        // if fieldKey has nested includes, we need to recurse into it later
+        if (/\./.test(fieldKey) === true) includeItemsWithInclude[assocKey] = includeItem;
+      }
+    });
+  });
+
+  // recursively expand on sub-includes e.g. 'team.owner.id' => 'owner.id' => 'id'
+  _.values(includeItemsWithInclude).forEach((includeItem) => {
+    const {where: includeItemWhere, include: includeItemInclude} = expandIncludeWhere(includeItem.association.target, includeItem.where, includeItem.include);
+    includeItem.where = includeItemWhere;
+    includeItem.include = includeItemInclude;
+  });
+
+  return {where, include};
+}
+
+var Service = function () {
+  function Service (options) {
+    _classCallCheck(this, Service);
+
     if (!options) {
       throw new Error('Sequelize options have to be provided');
     }
@@ -22,222 +153,261 @@ class Service {
     this.raw = options.raw !== false;
   }
 
-  extend (obj) {
-    return Proto.extend(obj, this);
-  }
+  _createClass(Service, [{
+    key: 'extend',
+    value: function extend (obj) {
+      return _uberproto2.default.extend(obj, this);
+    },
+  }, {
+    key: '_find',
+    value: function _find (params) {
+      var getFilter = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : _feathersQueryFilters2.default;
 
-  _find (params, getFilter = filter) {
-    const { filters, query } = getFilter(params.query || {});
-    const where = utils.getWhere(query);
-    const order = utils.getOrder(filters.$sort);
+      var _getFilter = getFilter(params.query || {}),
+        filters = _getFilter.filters,
+        query = _getFilter.query;
 
-    const q = Object.assign({
-      where,
-      order,
-      limit: filters.$limit,
-      offset: filters.$skip,
-      raw: this.raw
-    }, params.sequelize);
+      var where = utils.getWhere(query);
+      var order = utils.getOrder(filters.$sort);
 
-    if (filters.$select) {
-      q.attributes = filters.$select;
-    }
-
-    return this.Model.findAndCount(q).then(result => {
-      return {
-        total: result.count,
+      var q = _extends({
+        where: where,
+        order: order,
         limit: filters.$limit,
-        skip: filters.$skip || 0,
-        data: result.rows
-      };
-    }).catch(utils.errorHandler);
-  }
-
-  find (params) {
-    const paginate = (params && typeof params.paginate !== 'undefined') ? params.paginate : this.paginate;
-    const result = this._find(params, where => filter(where, paginate));
-
-    if (!paginate.default) {
-      return result.then(page => page.data);
-    }
-
-    return result;
-  }
-
-  _get (id, params) {
-    let promise;
-
-    if (params.sequelize && params.sequelize.include) { // If eager-loading is used, we need to use the find method
-      const where = utils.getWhere(params.query);
-
-      // Attach 'where' constraints, if any were used.
-      const q = Object.assign({
-        where: Object.assign({id: id}, where)
+        offset: filters.$skip,
+        raw: this.raw,
       }, params.sequelize);
 
-      promise = this.Model.findAll(q).then(result => {
-        if (result.length === 0) {
-          throw new errors.NotFound(`No record found for id '${id}'`);
-        }
+      // Extract dot-notation association queries
+      const { where: where2, include: include2 } = expandIncludeWhere(this.Model, q.where, q.include);
 
-        return result[0];
-      });
-    } else {
-      const options = Object.assign({ raw: this.raw }, params.sequelize);
-      promise = this.Model.findById(id, options).then(instance => {
-        if (!instance) {
-          throw new errors.NotFound(`No record found for id '${id}'`);
-        }
+      q.where = where2;
+      q.include = include2;
 
-        return instance;
-      });
-    }
-
-    return promise.then(select(params, this.id))
-      .catch(utils.errorHandler);
-  }
-
-  // returns either the model intance for an id or all unpaginated
-  // items for `params` if id is null
-  _getOrFind (id, params) {
-    if (id === null) {
-      return this._find(params).then(page => page.data);
-    }
-
-    return this._get(id, params);
-  }
-
-  get (id, params) {
-    return this._get(id, params).then(select(params, this.id));
-  }
-
-  create (data, params) {
-    const options = Object.assign({raw: this.raw}, params.sequelize);
-    const isArray = Array.isArray(data);
-    let promise;
-
-    if (isArray) {
-      promise = this.Model.bulkCreate(data, options);
-    } else {
-      promise = this.Model.create(data, options);
-    }
-
-    return promise.then(result => {
-      const sel = select(params, this.id);
-      if (options.raw === false) {
-        return result;
+      if (filters.$select) {
+        q.attributes = filters.$select;
       }
-      if (isArray) {
-        return result.map(item => sel(item.toJSON()));
-      }
-      return sel(result.toJSON());
-    }).catch(utils.errorHandler);
-  }
 
-  patch (id, data, params) {
-    const where = Object.assign({}, filter(params.query || {}).query);
-    const mapIds = page => page.data.map(current => current[this.id]);
+      return this.Model.findAndCount(q).then(function (result) {
+        return {
+          total: result.count,
+          limit: filters.$limit,
+          skip: filters.$skip || 0,
+          data: result.rows,
+        };
+      }).catch(utils.errorHandler);
+    },
+  }, {
+    key: 'find',
+    value: function find (params) {
+      var paginate = params && typeof params.paginate !== 'undefined' ? params.paginate : this.paginate;
+      var result = this._find(params, function (where) {
+        return (0, _feathersQueryFilters2.default)(where, paginate);
+      });
 
-    if (id !== null) {
-      where[this.id] = id;
-    }
-
-    const options = Object.assign({}, params.sequelize, { where });
-
-    // This is the best way to implement patch in sql, the other dialects 'should' use a transaction.
-    if (this.Model.sequelize.options.dialect === 'postgres') {
-      options.returning = true;
-      return this.Model.update(omit(data, this.id), options)
-            .then(results => {
-              if (id === null) {
-                return results[1];
-              }
-
-              if (!results[1].length) {
-                throw new errors.NotFound(`No record found for id '${id}'`);
-              }
-
-              return results[1][0];
-            })
-            .then(select(params, this.id))
-            .catch(utils.errorHandler);
-    }
-
-    // By default we will just query for the one id. For multi patch
-    // we create a list of the ids of all items that will be changed
-    // to re-query them after the update
-    const ids = id === null ? this._find(params)
-        .then(mapIds) : Promise.resolve([ id ]);
-
-    return ids
-      .then(idList => {
-        // Create a new query that re-queries all ids that
-        // were originally changed
-        const findParams = Object.assign({}, params, {
-          query: { [this.id]: { $in: idList } }
+      if (!paginate.default) {
+        return result.then(function (page) {
+          return page.data;
         });
-
-        return this.Model.update(omit(data, this.id), options)
-            .then(() => this._getOrFind(id, findParams));
-      })
-      .then(select(params, this.id))
-      .catch(utils.errorHandler);
-  }
-
-  update (id, data, params) {
-    const options = Object.assign({ raw: this.raw }, params.sequelize);
-
-    if (Array.isArray(data)) {
-      return Promise.reject(new errors.BadRequest('Not replacing multiple records. Did you mean `patch`?'));
-    }
-
-    // Force the {raw: false} option as the instance is needed to properly
-    // update
-    return this.Model.findById(id, { raw: false }).then(instance => {
-      if (!instance) {
-        throw new errors.NotFound(`No record found for id '${id}'`);
       }
 
-      let copy = {};
-      Object.keys(instance.toJSON()).forEach(key => {
-        if (typeof data[key] === 'undefined') {
-          copy[key] = null;
-        } else {
-          copy[key] = data[key];
-        }
-      });
+      result.then((res) => console.log);
+      return result;
+    },
+  }, {
+    key: '_get',
+    value: function _get (id, params) {
+      var promise = undefined;
 
-      return instance.update(copy, options).then(instance => {
-        if (options.raw === false) {
+      if (params.sequelize && params.sequelize.include) {
+        // If eager-loading is used, we need to use the find method
+        var where = utils.getWhere(params.query);
+
+        // Attach 'where' constraints, if any were used.
+        var q = _extends({
+          where: _extends({id: id}, where),
+        }, params.sequelize);
+
+        promise = this.Model.findAll(q).then(function (result) {
+          if (result.length === 0) {
+            throw new _feathersErrors2.default.NotFound('No record found for id \'' + id + '\'');
+          }
+
+          return result[0];
+        });
+      } else {
+        var options = _extends({raw: this.raw}, params.sequelize);
+        promise = this.Model.findById(id, options).then(function (instance) {
+          if (!instance) {
+            throw new _feathersErrors2.default.NotFound('No record found for id \'' + id + '\'');
+          }
+
           return instance;
-        }
-        return instance.toJSON();
-      });
-    })
-    .then(select(params, this.id))
-    .catch(utils.errorHandler);
-  }
+        });
+      }
 
-  remove (id, params) {
-    const opts = Object.assign({ raw: this.raw }, params);
-    return this._getOrFind(id, opts).then(data => {
-      const where = Object.assign({}, filter(params.query || {}).query);
+      return promise.then((0, _feathersCommons.select)(params, this.id)).catch(utils.errorHandler);
+    },
+
+    // returns either the model intance for an id or all unpaginated
+    // items for `params` if id is null
+
+  }, {
+    key: '_getOrFind',
+    value: function _getOrFind (id, params) {
+      if (id === null) {
+        return this._find(params).then(function (page) {
+          return page.data;
+        });
+      }
+
+      return this._get(id, params);
+    },
+  }, {
+    key: 'get',
+    value: function get (id, params) {
+      return this._get(id, params).then((0, _feathersCommons.select)(params, this.id));
+    },
+  }, {
+    key: 'create',
+    value: function create (data, params) {
+      var _this = this;
+
+      var options = _extends({raw: this.raw}, params.sequelize);
+      var isArray = Array.isArray(data);
+      var promise = undefined;
+
+      if (isArray) {
+        promise = this.Model.bulkCreate(data, options);
+      } else {
+        promise = this.Model.create(data, options);
+      }
+
+      return promise.then(function (result) {
+        var sel = (0, _feathersCommons.select)(params, _this.id);
+        if (options.raw === false) {
+          return result;
+        }
+        if (isArray) {
+          return result.map(function (item) {
+            return sel(item.toJSON());
+          });
+        }
+        return sel(result.toJSON());
+      }).catch(utils.errorHandler);
+    },
+  }, {
+    key: 'patch',
+    value: function patch (id, data, params) {
+      var _this2 = this;
+
+      var where = _extends({}, (0, _feathersQueryFilters2.default)(params.query || {}).query);
+      var mapIds = function mapIds (page) {
+        return page.data.map(function (current) {
+          return current[_this2.id];
+        });
+      };
 
       if (id !== null) {
         where[this.id] = id;
       }
 
-      const options = Object.assign({}, params.sequelize, { where });
+      var options = _extends({}, params.sequelize, {where: where});
 
-      return this.Model.destroy(options).then(() => data);
-    })
-    .then(select(params, this.id))
-    .catch(utils.errorHandler);
-  }
-}
+      // This is the best way to implement patch in sql, the other dialects 'should' use a transaction.
+      if (this.Model.sequelize.options.dialect === 'postgres') {
+        options.returning = true;
+        return this.Model.update((0, _lodash2.default)(data, this.id), options).then(function (results) {
+          if (id === null) {
+            return results[1];
+          }
 
-export default function init (options) {
+          if (!results[1].length) {
+            throw new _feathersErrors2.default.NotFound('No record found for id \'' + id + '\'');
+          }
+
+          return results[1][0];
+        }).then((0, _feathersCommons.select)(params, this.id)).catch(utils.errorHandler);
+      }
+
+      // By default we will just query for the one id. For multi patch
+      // we create a list of the ids of all items that will be changed
+      // to re-query them after the update
+      var ids = id === null ? this._find(params).then(mapIds) : Promise.resolve([id]);
+
+      return ids.then(function (idList) {
+        // Create a new query that re-queries all ids that
+        // were originally changed
+        var findParams = _extends({}, params, {
+          query: _defineProperty({}, _this2.id, {$in: idList}),
+        });
+
+        return _this2.Model.update((0, _lodash2.default)(data, _this2.id), options).then(function () {
+          return _this2._getOrFind(id, findParams);
+        });
+      }).then((0, _feathersCommons.select)(params, this.id)).catch(utils.errorHandler);
+    },
+  }, {
+    key: 'update',
+    value: function update (id, data, params) {
+      var options = _extends({raw: this.raw}, params.sequelize);
+
+      if (Array.isArray(data)) {
+        return Promise.reject(new _feathersErrors2.default.BadRequest('Not replacing multiple records. Did you mean `patch`?'));
+      }
+
+      // Force the {raw: false} option as the instance is needed to properly
+      // update
+      return this.Model.findById(id, {raw: false}).then(function (instance) {
+        if (!instance) {
+          throw new _feathersErrors2.default.NotFound('No record found for id \'' + id + '\'');
+        }
+
+        var copy = {};
+        Object.keys(instance.toJSON()).forEach(function (key) {
+          if (typeof data[key] === 'undefined') {
+            copy[key] = null;
+          } else {
+            copy[key] = data[key];
+          }
+        });
+
+        return instance.update(copy, options).then(function (instance) {
+          if (options.raw === false) {
+            return instance;
+          }
+          return instance.toJSON();
+        });
+      }).then((0, _feathersCommons.select)(params, this.id)).catch(utils.errorHandler);
+    },
+  }, {
+    key: 'remove',
+    value: function remove (id, params) {
+      var _this3 = this;
+
+      var opts = _extends({raw: this.raw}, params);
+      return this._getOrFind(id, opts).then(function (data) {
+        var where = _extends({}, (0, _feathersQueryFilters2.default)(params.query || {}).query);
+
+        if (id !== null) {
+          where[_this3.id] = id;
+        }
+
+        var options = _extends({}, params.sequelize, {where: where});
+
+        return _this3.Model.destroy(options).then(function () {
+          return data;
+        });
+      }).then((0, _feathersCommons.select)(params, this.id)).catch(utils.errorHandler);
+    },
+  }]);
+
+  return Service;
+}();
+
+function init (options) {
   return new Service(options);
 }
 
 init.Service = Service;
+module.exports = exports['default'];
