@@ -1,7 +1,7 @@
 'use strict';
 
 Object.defineProperty(exports, '__esModule', {
-  value: true,
+  value: true
 });
 
 var _extends = Object.assign || function (target) {
@@ -12,7 +12,7 @@ var _extends = Object.assign || function (target) {
   return target;
 };
 
-var _createClass = function () {
+var _createClass = (function () {
   function defineProperties (target, props) {
     for (var i = 0; i < props.length; i++) {
       var descriptor = props[i];
@@ -28,7 +28,7 @@ var _createClass = function () {
     if (staticProps) defineProperties(Constructor, staticProps);
     return Constructor;
   };
-}();
+}());
 
 exports.default = init;
 
@@ -71,7 +71,7 @@ function _defineProperty (obj, key, value) {
       value: value,
       enumerable: true,
       configurable: true,
-      writable: true,
+      writable: true
     });
   } else { obj[key] = value; }
   return obj;
@@ -134,7 +134,7 @@ function expandIncludeWhere (Model, originalWhere, originalInclude = []) {
   return {where, include};
 }
 
-var Service = function () {
+var Service = (function () {
   function Service (options) {
     _classCallCheck(this, Service);
 
@@ -157,7 +157,7 @@ var Service = function () {
     key: 'extend',
     value: function extend (obj) {
       return _uberproto2.default.extend(obj, this);
-    },
+    }
   }, {
     key: '_find',
     value: function _find (params) {
@@ -175,7 +175,7 @@ var Service = function () {
         order: order,
         limit: filters.$limit,
         offset: filters.$skip,
-        raw: this.raw,
+        raw: this.raw
       }, params.sequelize);
 
       // Extract dot-notation association queries
@@ -193,10 +193,10 @@ var Service = function () {
           total: result.count,
           limit: filters.$limit,
           skip: filters.$skip || 0,
-          data: result.rows,
+          data: result.rows
         };
       }).catch(utils.errorHandler);
-    },
+    }
   }, {
     key: 'find',
     value: function find (params) {
@@ -213,11 +213,11 @@ var Service = function () {
 
       result.then((res) => console.log);
       return result;
-    },
+    }
   }, {
     key: '_get',
     value: function _get (id, params) {
-      var promise = undefined;
+      var promise;
 
       if (params.sequelize && params.sequelize.include) {
         // If eager-loading is used, we need to use the find method
@@ -225,7 +225,7 @@ var Service = function () {
 
         // Attach 'where' constraints, if any were used.
         var q = _extends({
-          where: _extends({id: id}, where),
+          where: _extends({id: id}, where)
         }, params.sequelize);
 
         promise = this.Model.findAll(q).then(function (result) {
@@ -247,7 +247,7 @@ var Service = function () {
       }
 
       return promise.then((0, _feathersCommons.select)(params, this.id)).catch(utils.errorHandler);
-    },
+    }
 
     // returns either the model intance for an id or all unpaginated
     // items for `params` if id is null
@@ -262,12 +262,12 @@ var Service = function () {
       }
 
       return this._get(id, params);
-    },
+    }
   }, {
     key: 'get',
     value: function get (id, params) {
       return this._get(id, params).then((0, _feathersCommons.select)(params, this.id));
-    },
+    }
   }, {
     key: 'create',
     value: function create (data, params) {
@@ -275,7 +275,7 @@ var Service = function () {
 
       var options = _extends({raw: this.raw}, params.sequelize);
       var isArray = Array.isArray(data);
-      var promise = undefined;
+      var promise;
 
       if (isArray) {
         promise = this.Model.bulkCreate(data, options);
@@ -295,7 +295,7 @@ var Service = function () {
         }
         return sel(result.toJSON());
       }).catch(utils.errorHandler);
-    },
+    }
   }, {
     key: 'patch',
     value: function patch (id, data, params) {
@@ -339,14 +339,14 @@ var Service = function () {
         // Create a new query that re-queries all ids that
         // were originally changed
         var findParams = _extends({}, params, {
-          query: _defineProperty({}, _this2.id, {$in: idList}),
+          query: _defineProperty({}, _this2.id, {$in: idList})
         });
 
         return _this2.Model.update((0, _lodash2.default)(data, _this2.id), options).then(function () {
           return _this2._getOrFind(id, findParams);
         });
       }).then((0, _feathersCommons.select)(params, this.id)).catch(utils.errorHandler);
-    },
+    }
   }, {
     key: 'update',
     value: function update (id, data, params) {
@@ -379,7 +379,7 @@ var Service = function () {
           return instance.toJSON();
         });
       }).then((0, _feathersCommons.select)(params, this.id)).catch(utils.errorHandler);
-    },
+    }
   }, {
     key: 'remove',
     value: function remove (id, params) {
@@ -399,11 +399,11 @@ var Service = function () {
           return data;
         });
       }).then((0, _feathersCommons.select)(params, this.id)).catch(utils.errorHandler);
-    },
+    }
   }]);
 
   return Service;
-}();
+}());
 
 function init (options) {
   return new Service(options);

@@ -51,11 +51,25 @@ const CustomId = sequelize.define('people-customid', {
 }, {
   freezeTableName: true
 });
+const TaskModel = sequelize.define('tasks', {
+    description: {
+        type: Sequelize.STRING,
+        allowNull: false,
+    },
+    completed: {
+        type: Sequelize.BOOLEAN,
+        allowNull: false,
+    },
+});
+TaskModel.belongsTo(Model, {
+    as: 'owner',
+});
 
 describe('Feathers Sequelize Service', () => {
   before(() =>
     Model.sync({ force: true })
       .then(() => CustomId.sync({ force: true }))
+      .then(() => TaskModel.sync({ force: true }))
   );
 
   describe('Initialization', () => {
@@ -78,6 +92,9 @@ describe('Feathers Sequelize Service', () => {
         Model: CustomId,
         events: [ 'testing' ],
         id: 'customid'
+      }))
+      .use('/tasks', service({
+          Model: TaskModel
       }));
 
     it('allows querying for null values (#45)', () => {
@@ -228,6 +245,31 @@ describe('Feathers Sequelize Service', () => {
         rawPeople.remove(_ids.David, NOT_RAW).then(instance =>
           expect(instance instanceof Model.Instance).to.be.ok
         )
+      );
+    });
+    
+    describe('Dot-notation expansion (implicit eager-loading)', () => {
+      const store = {};
+      const people = app.service('people');
+      app.use('/tasks', service({
+          Model: TaskModel,
+          raw: false,
+      }));
+      const tasks = app.service('tasks');
+      beforeEach(() => 
+        people.create({name: 'Ronald'})
+          .then((taskOwner) => store.taskOwner = taskOwner)
+          .then(() => TaskModel.create({ description: 'Do it', completed: false}))
+          .then((task) => task.setOwner(store.taskOwner))
+      );
+
+      it('should "expand" owner.name query to `include` the `owner` eager loaded model', () =>
+        tasks.find({ query: { 'owner.name': 'Ronald' } })
+          .then((res) => Promise.all([
+            //console.log(res),
+            expect(res).instanceof(Object).and.lengthOf(1),
+            expect(res[0].owner).to.exist,
+          ]))
       );
     });
   });
