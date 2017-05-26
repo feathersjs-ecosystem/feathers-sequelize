@@ -7,7 +7,11 @@ Object.defineProperty(exports, '__esModule', {
 var _extends = Object.assign || function (target) {
   for (var i = 1; i < arguments.length; i++) {
     var source = arguments[i];
-    for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } }
+    for (var key in source) {
+      if (Object.prototype.hasOwnProperty.call(source, key)) {
+        target[key] = source[key];
+      }
+    }
   }
   return target;
 };
@@ -55,15 +59,23 @@ var _utils = require('./utils');
 var utils = _interopRequireWildcard(_utils);
 
 function _interopRequireWildcard (obj) {
-  if (obj && obj.__esModule) { return obj; } else {
+  if (obj && obj.__esModule) {
+    return obj;
+  } else {
     var newObj = {};
-    if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } }
+    if (obj != null) {
+      for (var key in obj) {
+        if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key];
+      }
+    }
     newObj.default = obj;
     return newObj;
   }
 }
 
-function _interopRequireDefault (obj) { return obj && obj.__esModule ? obj : {default: obj}; }
+function _interopRequireDefault (obj) {
+  return obj && obj.__esModule ? obj : { default: obj };
+}
 
 function _defineProperty (obj, key, value) {
   if (key in obj) {
@@ -73,11 +85,17 @@ function _defineProperty (obj, key, value) {
       configurable: true,
       writable: true
     });
-  } else { obj[key] = value; }
+  } else {
+    obj[key] = value;
+  }
   return obj;
 }
 
-function _classCallCheck (instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+function _classCallCheck (instance, Constructor) {
+  if (!(instance instanceof Constructor)) {
+    throw new TypeError('Cannot call a class as a function');
+  }
+}
 
 /**
  * Converts dot-notation queries on associations into Sequelize's 'include' query structure
@@ -86,22 +104,22 @@ function _classCallCheck (instance, Constructor) { if (!(instance instanceof Con
  * @param originalInclude
  * @return {Object<Object where, Array<Object> include>}
  */
-function expandIncludeWhere (Model, originalWhere, originalInclude = []) {
-  const _ = require('lodash');
-  let where = _.cloneDeep(originalWhere);
-  const include = _.cloneDeep(originalInclude);
-  const includeItemsWithInclude = {}; // nested includes by association key
-  Object.keys(Model.associations).forEach((assocKey) => {
-    const association = Model.associations[assocKey];
-    Object.keys(where).forEach((whereKey) => {
-      const whereValue = where[whereKey];
-      const whereKeyComponents = new RegExp(`${assocKey}\.(.*)`).exec(whereKey);
+function expandIncludeWhere (Model, originalWhere, originalInclude) {
+  var _ = require('lodash');
+  var where = _.cloneDeep(originalWhere);
+  var include = _.cloneDeep(originalInclude);
+  var includeItemsWithInclude = {}; // nested includes by association key
+  Object.keys(Model.associations).forEach(function (assocKey) {
+    var association = Model.associations[assocKey];
+    Object.keys(where).forEach(function (whereKey) {
+      var whereValue = where[whereKey];
+      var whereKeyComponents = new RegExp(assocKey + '.(.*)').exec(whereKey);
       if (whereKeyComponents) {
-        const fieldKey = whereKeyComponents[1]; // e.g. 'team.id' becomes 'id', or 'team.owner.id' becomes 'owner.id'
-        let includeItem = {association, where: {}, include: []};
-        let includeItemExists = false;
+        var fieldKey = whereKeyComponents[1]; // e.g. 'team.id' becomes 'id', or 'team.owner.id' becomes 'owner.id'
+        var includeItem = { association: association, where: {}, include: [] };
+        var includeItemExists = false;
         // lookup existing include item e.g. include item: `{ association: Model.associations.team, where: {}, include: [] }`
-        include.forEach((searchItem, searchItemIndex) => {
+        include.forEach(function (searchItem, searchItemIndex) {
           if (searchItem instanceof Model.sequelize.Association && searchItem.as === association.as) {
             // for cases where include array item is set directly as an Association object
             include[searchItemIndex] = includeItem;
@@ -125,13 +143,16 @@ function expandIncludeWhere (Model, originalWhere, originalInclude = []) {
   });
 
   // recursively expand on sub-includes e.g. 'team.owner.id' => 'owner.id' => 'id'
-  _.values(includeItemsWithInclude).forEach((includeItem) => {
-    const {where: includeItemWhere, include: includeItemInclude} = expandIncludeWhere(includeItem.association.target, includeItem.where, includeItem.include);
+  _.values(includeItemsWithInclude).forEach(function (includeItem) {
+    var _expandIncludeWhere = expandIncludeWhere(includeItem.association.target, includeItem.where, includeItem.include);
+    var includeItemWhere = _expandIncludeWhere.where;
+    var includeItemInclude = _expandIncludeWhere.include;
+
     includeItem.where = includeItemWhere;
     includeItem.include = includeItemInclude;
   });
 
-  return {where, include};
+  return { where: where, include: include };
 }
 
 var Service = (function () {
@@ -163,9 +184,9 @@ var Service = (function () {
     value: function _find (params) {
       var getFilter = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : _feathersQueryFilters2.default;
 
-      var _getFilter = getFilter(params.query || {}),
-        filters = _getFilter.filters,
-        query = _getFilter.query;
+      var _getFilter = getFilter(params.query || {});
+      var filters = _getFilter.filters;
+      var query = _getFilter.query;
 
       var where = utils.getWhere(query);
       var order = utils.getOrder(filters.$sort);
@@ -179,7 +200,10 @@ var Service = (function () {
       }, params.sequelize);
 
       // Extract dot-notation association queries
-      const { where: where2, include: include2 } = expandIncludeWhere(this.Model, q.where, q.include);
+
+      var _expandIncludeWhere2 = expandIncludeWhere(this.Model, q.where, q.include || []);
+      var where2 = _expandIncludeWhere2.where;
+      var include2 = _expandIncludeWhere2.include;
 
       q.where = where2;
       q.include = include2;
@@ -211,7 +235,9 @@ var Service = (function () {
         });
       }
 
-      result.then((res) => console.log);
+      result.then(function (res) {
+        return console.log;
+      });
       return result;
     }
   }, {
@@ -225,7 +251,7 @@ var Service = (function () {
 
         // Attach 'where' constraints, if any were used.
         var q = _extends({
-          where: _extends({id: id}, where)
+          where: _extends({ id: id }, where)
         }, params.sequelize);
 
         promise = this.Model.findAll(q).then(function (result) {
@@ -236,7 +262,7 @@ var Service = (function () {
           return result[0];
         });
       } else {
-        var options = _extends({raw: this.raw}, params.sequelize);
+        var options = _extends({ raw: this.raw }, params.sequelize);
         promise = this.Model.findById(id, options).then(function (instance) {
           if (!instance) {
             throw new _feathersErrors2.default.NotFound('No record found for id \'' + id + '\'');
@@ -273,7 +299,7 @@ var Service = (function () {
     value: function create (data, params) {
       var _this = this;
 
-      var options = _extends({raw: this.raw}, params.sequelize);
+      var options = _extends({ raw: this.raw }, params.sequelize);
       var isArray = Array.isArray(data);
       var promise;
 
@@ -312,7 +338,7 @@ var Service = (function () {
         where[this.id] = id;
       }
 
-      var options = _extends({}, params.sequelize, {where: where});
+      var options = _extends({}, params.sequelize, { where: where });
 
       // This is the best way to implement patch in sql, the other dialects 'should' use a transaction.
       if (this.Model.sequelize.options.dialect === 'postgres') {
@@ -339,7 +365,7 @@ var Service = (function () {
         // Create a new query that re-queries all ids that
         // were originally changed
         var findParams = _extends({}, params, {
-          query: _defineProperty({}, _this2.id, {$in: idList})
+          query: _defineProperty({}, _this2.id, { $in: idList })
         });
 
         return _this2.Model.update((0, _lodash2.default)(data, _this2.id), options).then(function () {
@@ -350,7 +376,7 @@ var Service = (function () {
   }, {
     key: 'update',
     value: function update (id, data, params) {
-      var options = _extends({raw: this.raw}, params.sequelize);
+      var options = _extends({ raw: this.raw }, params.sequelize);
 
       if (Array.isArray(data)) {
         return Promise.reject(new _feathersErrors2.default.BadRequest('Not replacing multiple records. Did you mean `patch`?'));
@@ -358,7 +384,7 @@ var Service = (function () {
 
       // Force the {raw: false} option as the instance is needed to properly
       // update
-      return this.Model.findById(id, {raw: false}).then(function (instance) {
+      return this.Model.findById(id, { raw: false }).then(function (instance) {
         if (!instance) {
           throw new _feathersErrors2.default.NotFound('No record found for id \'' + id + '\'');
         }
@@ -385,7 +411,7 @@ var Service = (function () {
     value: function remove (id, params) {
       var _this3 = this;
 
-      var opts = _extends({raw: this.raw}, params);
+      var opts = _extends({ raw: this.raw }, params);
       return this._getOrFind(id, opts).then(function (data) {
         var where = _extends({}, (0, _feathersQueryFilters2.default)(params.query || {}).query);
 
@@ -393,7 +419,7 @@ var Service = (function () {
           where[_this3.id] = id;
         }
 
-        var options = _extends({}, params.sequelize, {where: where});
+        var options = _extends({}, params.sequelize, { where: where });
 
         return _this3.Model.destroy(options).then(function () {
           return data;
