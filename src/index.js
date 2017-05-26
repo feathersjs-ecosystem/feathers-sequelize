@@ -105,7 +105,7 @@ function _classCallCheck (instance, Constructor) {
  * @return {Object<Object where, Array<Object> include>}
  */
 function expandIncludeWhere (Model, originalWhere, originalInclude) {
-  var _ = require('lodash');
+  var _ = require('../node_modules/lodash');
   var where = _.cloneDeep(originalWhere);
   var include = _.cloneDeep(originalInclude);
   var includeItemsWithInclude = {}; // nested includes by association key
