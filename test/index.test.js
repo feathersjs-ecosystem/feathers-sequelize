@@ -10,7 +10,7 @@ import server from '../example/app';
 const sequelize = new Sequelize('sequelize', '', '', {
   dialect: 'sqlite',
   storage: './db.sqlite',
-  logging: false
+  logging: false, 
 });
 const Model = sequelize.define('people', {
   name: {
@@ -61,8 +61,21 @@ const TaskModel = sequelize.define('tasks', {
         allowNull: false,
     },
 });
+const ProjectModel = sequelize.define('projects', {
+  name: {
+    type: Sequelize.STRING,
+    allowNull: false,
+  },
+});
 TaskModel.belongsTo(Model, {
     as: 'owner',
+});
+TaskModel.belongsTo(ProjectModel, {
+    as: 'project',
+});
+Model.hasMany(TaskModel, {
+  as: 'tasks',
+  foreignKey: 'ownerId',
 });
 
 describe('Feathers Sequelize Service', () => {
@@ -70,6 +83,7 @@ describe('Feathers Sequelize Service', () => {
     Model.sync({ force: true })
       .then(() => CustomId.sync({ force: true }))
       .then(() => TaskModel.sync({ force: true }))
+      .then(() => ProjectModel.sync({ force: true }))
   );
 
   describe('Initialization', () => {
@@ -250,26 +264,59 @@ describe('Feathers Sequelize Service', () => {
     
     describe('Dot-notation expansion (implicit eager-loading)', () => {
       const store = {};
-      const people = app.service('people');
+      app.use('/people', service({
+          Model: Model,
+          raw: false,
+      }));
       app.use('/tasks', service({
           Model: TaskModel,
           raw: false,
       }));
+      const people = app.service('people');
       const tasks = app.service('tasks');
-      beforeEach(() => 
+      const projects = app.service('projects');
+      before(() => 
         people.create({name: 'Ronald'})
           .then((taskOwner) => store.taskOwner = taskOwner)
+          .then(() => ProjectModel.create({ name: 'Project A'}))
+          .then((projectA) => store.projectA = projectA)
           .then(() => TaskModel.create({ description: 'Do it', completed: false}))
+          .then((task) => store.task1 = task)
+          .then(() => store.task1.setOwner(store.taskOwner))
+          .then(() => store.task1.setProject(store.projectA))
+          .then(() => TaskModel.create({ description: 'Do it again', completed: false}))
           .then((task) => task.setOwner(store.taskOwner))
       );
 
-      it('should "expand" owner.name query to `include` the `owner` eager loaded model', () =>
+      it('(belongsTo association eager loading and query) should "expand" owner.name query to `include` the `owner` eager loaded model', () =>
         tasks.find({ query: { 'owner.name': 'Ronald' } })
           .then((res) => Promise.all([
             //console.log(res),
-            expect(res).instanceof(Object).and.lengthOf(1),
+            expect(res).instanceof(Object).and.lengthOf(2),
             expect(res[0].owner).to.exist,
           ]))
+      );
+
+      it('(hasMany association eager loading and query) should return one owner with only the one task we queried for', () => 
+        people.find({ query: { 'tasks.description': 'Do it again'}})
+          .then((res) => Promise.all([
+              //console.log(res[0].tasks.length),
+              //res.map((item) => console.log(item.name)),
+              expect(res).to.exist.and.instanceOf(Array).and.lengthOf(1),
+              expect(res[0].tasks).to.exist.and.instanceOf(Array).and.lengthOf(1),
+              expect(res[0].tasks[0].description).to.equal('Do it again'),
+          ]))
+      );
+
+      it('(People `tasks.project.name` nested eager loading query) should return one owner with one task matching to the project name "Project A"', () =>
+          people.find({ query: { 'tasks.project.name': 'Project A'}})
+            .then((res) => Promise.all([
+              //console.log(res[0].tasks.length),
+              //res.map((item) => console.log(item.name)),
+              expect(res).to.exist.and.instanceOf(Array).and.lengthOf(1),
+              expect(res[0].tasks).to.exist.and.instanceOf(Array).and.lengthOf(1),
+              expect(res[0].tasks[0].description).to.equal('Do it'),
+            ]))
       );
     });
   });
