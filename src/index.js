@@ -1,3 +1,4 @@
+import _isString from 'lodash.isstring';
 import omit from 'lodash.omit';
 import Proto from 'uberproto';
 import filter from 'feathers-query-filters';
@@ -30,10 +31,30 @@ class Service {
     const { filters, query } = getFilter(params.query || {});
     const where = utils.getWhere(query);
     const order = utils.getOrder(filters.$sort);
-
+    var include = where.include;
+    if (include) {
+      delete (where.include);
+      if (_isString(include.model)) {
+        include.model = this.Model.modelManager.getModel(include.model);
+      }
+      if (_isString(include.through)) {
+        include.through = this.Model.modelManager.getModel(include.through);
+      }
+      if (include.association) {
+        if (_isString(include.association.source)) {
+          include.association.source = this.Model.modelManager.getModel(
+            include.association.source);
+        }
+        if (_isString(include.association.target)) {
+          include.association.target = this.Model.modelManager.getModel(
+            include.association.target);
+        }
+      }
+    }
     const q = Object.assign({
       where,
       order,
+      include: include,
       limit: filters.$limit,
       offset: filters.$skip,
       raw: this.raw
