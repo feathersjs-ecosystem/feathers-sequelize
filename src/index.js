@@ -1,9 +1,11 @@
+/* eslint-disable no-useless-escape */
 import omit from 'lodash.omit';
 import Proto from 'uberproto';
 import filter from 'feathers-query-filters';
 import errors from 'feathers-errors';
 import { select } from 'feathers-commons';
 import * as utils from './utils';
+import * as _ from 'lodash';
 
 class Service {
   constructor (options) {
@@ -39,18 +41,33 @@ class Service {
       raw: this.raw
     }, params.sequelize);
 
+    // Implicit eager-loading (dot-notation queries)
+    const { where: where2, include: include2 } = Service.expandIncludeWhere(this.Model, q.where, q.include);
+    q.where = where2;
+    q.include = include2;
+
     if (filters.$select) {
       q.attributes = filters.$select;
     }
 
-    return this.Model.findAndCount(q).then(result => {
-      return {
-        total: result.count,
-        limit: filters.$limit,
-        skip: filters.$skip || 0,
-        data: result.rows
-      };
-    }).catch(utils.errorHandler);
+    return Promise.resolve()
+    // When raw mode is off and eager-loading, we need to separately do a count
+      .then(() => (q.include && Object.keys(q.include).length > 0) ? this.Model.count({
+        where: q.where,
+        include: q.include,
+        distinct: true
+      }) : undefined)
+      .then((countRes) =>
+        this.Model.findAndCount(q).then(function (result) {
+          return {
+            total: (typeof countRes !== 'undefined') ? countRes : result.count,
+            limit: filters.$limit,
+            skip: filters.$skip || 0,
+            data: result.rows
+          };
+        })
+      )
+      .catch(utils.errorHandler);
   }
 
   find (params) {
@@ -233,6 +250,60 @@ class Service {
     })
     .then(select(params, this.id))
     .catch(utils.errorHandler);
+  }
+
+  /**
+   * Converts dot-notation queries on associations into Sequelize's 'include' query structure
+   * @param Model
+   * @param originalWhere
+   * @param originalInclude
+   * @return {Object<Object where, Array<Object> include>}
+   */
+  static expandIncludeWhere (Model, originalWhere, originalInclude = []) {
+    let where = _.cloneDeep(originalWhere);
+    const include = _.cloneDeep(originalInclude);
+    const includeItemsWithInclude = {}; // nested includes by association key
+    Object.keys(Model.associations).forEach((assocKey) => {
+      const association = Model.associations[assocKey];
+      Object.keys(where).forEach((whereKey) => {
+        const whereValue = where[whereKey];
+        const whereKeyComponents = new RegExp(`${assocKey}\.(.*)`).exec(whereKey);
+        if (whereKeyComponents) {
+          const fieldKey = whereKeyComponents[1]; // e.g. 'team.id' becomes 'id', or 'team.owner.id' becomes 'owner.id'
+          let includeItem = {association, where: {}, include: []};
+          let includeItemExists = false;
+          // lookup existing include item e.g. include item: `{ association: Model.associations.team, where: {}, include: [] }`
+          include.forEach((searchItem, searchItemIndex) => {
+            if (searchItem instanceof Model.sequelize.Association && searchItem.as === association.as) {
+              // for cases where include array item is set directly as an Association object
+              include[searchItemIndex] = includeItem;
+              includeItemExists = true;
+            } else if (searchItem.association.as === association.as) {
+              includeItem = searchItem;
+              includeItemExists = true;
+            }
+          });
+          // push new include item into the include array
+          if (!includeItemExists) include.push(includeItem);
+          // set where query value e.g. { id: 123 }
+          includeItem.where = includeItem.where || {};
+          includeItem.where[fieldKey] = whereValue;
+          // remove the original dot-notation key
+          delete where[whereKey];
+          // if fieldKey has nested includes, we need to recurse into it later
+          if (/\./.test(fieldKey) === true) includeItemsWithInclude[assocKey] = includeItem;
+        }
+      });
+    });
+
+    // recursively expand on sub-includes e.g. 'team.owner.id' => 'owner.id' => 'id'
+    _.values(includeItemsWithInclude).forEach((includeItem) => {
+      const {where: includeItemWhere, include: includeItemInclude} = Service.expandIncludeWhere(includeItem.association.target, includeItem.where, includeItem.include);
+      includeItem.where = includeItemWhere;
+      includeItem.include = includeItemInclude;
+    });
+
+    return {where, include};
   }
 }
 
