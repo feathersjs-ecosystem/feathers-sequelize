@@ -102,13 +102,19 @@ class Service {
 
   create (data, params) {
     const options = Object.assign({raw: this.raw}, params.sequelize);
+    // Model.create's `raw` option is different from other methods.
+    // In order to use `raw` consistently to serialize the result,
+    // we need to shadow the Model.create use of raw, which we provide
+    // access to by specifying `ignoreSetters`.
+    const ignoreSetters = Boolean(options.ignoreSetters);
+    const createOptions = Object.assign({}, options, {raw: ignoreSetters});
     const isArray = Array.isArray(data);
     let promise;
 
     if (isArray) {
-      promise = this.Model.bulkCreate(data, options);
+      promise = this.Model.bulkCreate(data, createOptions);
     } else {
-      promise = this.Model.create(data, options);
+      promise = this.Model.create(data, createOptions);
     }
 
     return promise.then(result => {

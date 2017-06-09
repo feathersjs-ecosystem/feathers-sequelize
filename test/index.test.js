@@ -51,11 +51,28 @@ const CustomId = sequelize.define('people-customid', {
 }, {
   freezeTableName: true
 });
+const CustomGetterSetter = sequelize.define('custom-getter-setter', {
+  addsOneOnSet: {
+    type: Sequelize.INTEGER,
+    set: function (val) {
+      this.setDataValue('addsOneOnSet', val + 1);
+    }
+  },
+  addsOneOnGet: {
+    type: Sequelize.INTEGER,
+    get: function () {
+      return this.getDataValue('addsOneOnGet') + 1;
+    }
+  }
+}, {
+  freezeTableName: true
+});
 
 describe('Feathers Sequelize Service', () => {
   before(() =>
     Model.sync({ force: true })
       .then(() => CustomId.sync({ force: true }))
+      .then(() => CustomGetterSetter.sync({ force: true }))
   );
 
   describe('Initialization', () => {
@@ -78,6 +95,10 @@ describe('Feathers Sequelize Service', () => {
         Model: CustomId,
         events: [ 'testing' ],
         id: 'customid'
+      }))
+      .use('/custom-getter-setter', service({
+        Model: CustomGetterSetter,
+        events: [ 'testing' ]
       }));
 
     it('allows querying for null values (#45)', () => {
@@ -91,6 +112,28 @@ describe('Feathers Sequelize Service', () => {
           assert.equal(people[0].age, null);
         }).then(() => people.remove(person.id))
       );
+    });
+
+    it('calls custom getters and setters (#113)', () => {
+      const value = 0;
+      const service = app.service('custom-getter-setter');
+      const data = {addsOneOnGet: value, addsOneOnSet: value};
+
+      return service.create(data).then(result => {
+        assert.equal(result.addsOneOnGet, value + 1);
+        assert.equal(result.addsOneOnSet, value + 1);
+      });
+    });
+
+    it('can ignore custom getters and setters (#113)', () => {
+      const value = 0;
+      const service = app.service('custom-getter-setter');
+      const data = {addsOneOnGet: value, addsOneOnSet: value};
+      const IGNORE_SETTERS = {sequelize: {ignoreSetters: true}};
+      return service.create(data, IGNORE_SETTERS).then(result => {
+        assert.equal(result.addsOneOnGet, value + 1);
+        assert.equal(result.addsOneOnSet, value);
+      });
     });
 
     base(app, errors);
