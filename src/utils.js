@@ -44,6 +44,10 @@ export function getOrder (sort = {}) {
 export function getWhere (query) {
   let where = Object.assign({}, query);
 
+  if (where.$select) {
+    delete where.$select;
+  }
+
   Object.keys(where).forEach(prop => {
     let value = where[prop];
     if (value && value.$nin) {

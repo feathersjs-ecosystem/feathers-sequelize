@@ -65,36 +65,25 @@ class Service {
   }
 
   _get (id, params) {
-    let promise;
+    const where = utils.getWhere(params.query);
 
-    if (params.sequelize && params.sequelize.include) { // If eager-loading is used, we need to use the find method
-      const where = utils.getWhere(params.query);
+    // Attach 'where' constraints, if any were used.
+    const q = Object.assign({
+      raw: this.raw,
+      where: Object.assign({[this.id]: id}, where)
+    }, params.sequelize);
 
-      // Attach 'where' constraints, if any were used.
-      const q = Object.assign({
-        where: Object.assign({id: id}, where)
-      }, params.sequelize);
+    // findById calls findAll under the hood. We use findAll so that
+    // eager loading can be used without a separate code path.
+    return this.Model.findAll(q).then(result => {
+      if (result.length === 0) {
+        throw new errors.NotFound(`No record found for id '${id}'`);
+      }
 
-      promise = this.Model.findAll(q).then(result => {
-        if (result.length === 0) {
-          throw new errors.NotFound(`No record found for id '${id}'`);
-        }
-
-        return result[0];
-      });
-    } else {
-      const options = Object.assign({ raw: this.raw }, params.sequelize);
-      promise = this.Model.findById(id, options).then(instance => {
-        if (!instance) {
-          throw new errors.NotFound(`No record found for id '${id}'`);
-        }
-
-        return instance;
-      });
-    }
-
-    return promise.then(select(params, this.id))
-      .catch(utils.errorHandler);
+      return result[0];
+    })
+    .then(select(params, this.id))
+    .catch(utils.errorHandler);
   }
 
   // returns either the model intance for an id or all unpaginated
