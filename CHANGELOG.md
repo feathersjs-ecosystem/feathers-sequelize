@@ -1,5 +1,25 @@
 # Change Log
 
+## [v2.0.1](https://github.com/feathersjs/feathers-sequelize/tree/v2.0.1) (2017-06-09)
+[Full Changelog](https://github.com/feathersjs/feathers-sequelize/compare/v2.0.0...v2.0.1)
+
+**Closed issues:**
+
+- Allow custom primary keys [\#122](https://github.com/feathersjs/feathers-sequelize/issues/122)
+- Investigate issue where getters, setters not being called [\#116](https://github.com/feathersjs/feathers-sequelize/issues/116)
+- Model.create ignoring field and virtual setters [\#113](https://github.com/feathersjs/feathers-sequelize/issues/113)
+- An in-range update of feathers is breaking the build 🚨 [\#112](https://github.com/feathersjs/feathers-sequelize/issues/112)
+- Using `include` breaks the find method query [\#111](https://github.com/feathersjs/feathers-sequelize/issues/111)
+- An in-range update of feathers-errors is breaking the build 🚨 [\#110](https://github.com/feathersjs/feathers-sequelize/issues/110)
+- Add `lean` attribute to automatically call toJSON? [\#19](https://github.com/feathersjs/feathers-sequelize/issues/19)
+- Add a toJSON bundled hook like mongoose [\#18](https://github.com/feathersjs/feathers-sequelize/issues/18)
+
+**Merged pull requests:**
+
+- Fix issue with custom ID when using eager loading [\#124](https://github.com/feathersjs/feathers-sequelize/pull/124) ([DesignByOnyx](https://github.com/DesignByOnyx))
+- Update chai to the latest version 🚀 [\#120](https://github.com/feathersjs/feathers-sequelize/pull/120) ([greenkeeper[bot]](https://github.com/apps/greenkeeper))
+- Issue \#113: Model.create ignoring field and virtual setters [\#114](https://github.com/feathersjs/feathers-sequelize/pull/114) ([buske](https://github.com/buske))
+
 ## [v2.0.0](https://github.com/feathersjs/feathers-sequelize/tree/v2.0.0) (2017-05-03)
 [Full Changelog](https://github.com/feathersjs/feathers-sequelize/compare/v1.4.5...v2.0.0)
 
@@ -12,8 +32,8 @@
 
 - Update all methods to return plain JS objects [\#106](https://github.com/feathersjs/feathers-sequelize/pull/106) ([DesignByOnyx](https://github.com/DesignByOnyx))
 - Fixed return value of patch method for postgresql dialect [\#104](https://github.com/feathersjs/feathers-sequelize/pull/104) ([msimulcik](https://github.com/msimulcik))
-- Update semistandard to the latest version 🚀 [\#103](https://github.com/feathersjs/feathers-sequelize/pull/103) ([greenkeeper[bot]](https://github.com/integration/greenkeeper))
-- Update dependencies to enable Greenkeeper 🌴 [\#102](https://github.com/feathersjs/feathers-sequelize/pull/102) ([greenkeeper[bot]](https://github.com/integration/greenkeeper))
+- Update semistandard to the latest version 🚀 [\#103](https://github.com/feathersjs/feathers-sequelize/pull/103) ([greenkeeper[bot]](https://github.com/apps/greenkeeper))
+- Update dependencies to enable Greenkeeper 🌴 [\#102](https://github.com/feathersjs/feathers-sequelize/pull/102) ([greenkeeper[bot]](https://github.com/apps/greenkeeper))
 
 ## [v1.4.5](https://github.com/feathersjs/feathers-sequelize/tree/v1.4.5) (2017-03-26)
 [Full Changelog](https://github.com/feathersjs/feathers-sequelize/compare/v1.4.4...v1.4.5)
