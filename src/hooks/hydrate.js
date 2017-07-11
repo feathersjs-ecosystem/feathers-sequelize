@@ -3,7 +3,7 @@ const factory = (Model, include = null) => {
     // (Darren): We have to check that the Model.Instance static property exists
     // first since it's been deprecated in Sequelize 4.x.
     // See: http://docs.sequelizejs.com/manual/tutorial/upgrade-to-v4.html
-    var shouldBuild = Model.Instance
+    const shouldBuild = Model.Instance
       ? !(item instanceof Model.Instance)
       : !(item instanceof Model);
 
