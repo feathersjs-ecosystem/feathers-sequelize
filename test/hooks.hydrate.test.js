@@ -46,7 +46,7 @@ describe('Feathers Sequelize Hydrate Hook', () => {
 
   it('hydrates results for find()', () => {
     return callHook(BlogPost, 'find', [{title: 'David'}]).then(hook =>
-      expect(hook.result[0] instanceof BlogPost.Instance).to.be.ok
+      expect(hook.result[0] instanceof BlogPost).to.be.ok
     );
   });
 
@@ -54,20 +54,20 @@ describe('Feathers Sequelize Hydrate Hook', () => {
     return callHook(BlogPost, 'find', {
       data: [{title: 'David'}]
     }).then(hook =>
-      expect(hook.result.data[0] instanceof BlogPost.Instance).to.be.ok
+      expect(hook.result.data[0] instanceof BlogPost).to.be.ok
     );
   });
 
   it('hydrates results for get()', () => {
     return callHook(BlogPost, 'get', {title: 'David'}).then(hook =>
-      expect(hook.result instanceof BlogPost.Instance).to.be.ok
+      expect(hook.result instanceof BlogPost).to.be.ok
     );
   });
 
   ['create', 'update', 'patch'].forEach(method => {
     it(`hydrates results for single ${method}()`, () => {
       return callHook(BlogPost, method, {title: 'David'}).then(hook =>
-        expect(hook.result instanceof BlogPost.Instance).to.be.ok
+        expect(hook.result instanceof BlogPost).to.be.ok
       );
     });
   });
@@ -75,7 +75,7 @@ describe('Feathers Sequelize Hydrate Hook', () => {
   ['create', 'patch'].forEach(method => {
     it(`hydrates results for bulk ${method}()`, () => {
       return callHook(BlogPost, method, [{title: 'David'}]).then(hook =>
-        expect(hook.result[0] instanceof BlogPost.Instance).to.be.ok
+        expect(hook.result[0] instanceof BlogPost).to.be.ok
       );
     });
   });
@@ -87,7 +87,7 @@ describe('Feathers Sequelize Hydrate Hook', () => {
     }, {
       include: [Comment]
     }).then(hook =>
-      expect(hook.result.comments[0] instanceof Comment.Instance).to.be.ok
+      expect(hook.result.comments[0] instanceof Comment).to.be.ok
     );
   });
 

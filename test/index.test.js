@@ -174,43 +174,43 @@ describe('Feathers Sequelize Service', () => {
 
       it('find() returns model instances', () =>
         people.find().then(results =>
-          expect(results[0] instanceof Model.Instance).to.be.ok
+          expect(results[0] instanceof Model).to.be.ok
         )
       );
 
       it('get() returns a model instance', () =>
         people.get(_ids.David).then(instance =>
-          expect(instance instanceof Model.Instance).to.be.ok
+          expect(instance instanceof Model).to.be.ok
         )
       );
 
       it('create() returns a model instance', () =>
         people.create({name: 'Sarah'}).then(instance =>
-          expect(instance instanceof Model.Instance).to.be.ok
+          expect(instance instanceof Model).to.be.ok
         )
       );
 
       it('bulk create() returns model instances', () =>
         people.create([{name: 'Sarah'}]).then(results =>
-          expect(results[0] instanceof Model.Instance).to.be.ok
+          expect(results[0] instanceof Model).to.be.ok
         )
       );
 
       it('patch() returns a model instance', () =>
         people.patch(_ids.David, {name: 'Sarah'}).then(instance =>
-          expect(instance instanceof Model.Instance).to.be.ok
+          expect(instance instanceof Model).to.be.ok
         )
       );
 
       it('update() returns a model instance', () =>
         people.update(_ids.David, _data.David).then(instance =>
-          expect(instance instanceof Model.Instance).to.be.ok
+          expect(instance instanceof Model).to.be.ok
         )
       );
 
       it('remove() returns a model instance', () =>
         people.remove(_ids.David).then(instance =>
-          expect(instance instanceof Model.Instance).to.be.ok
+          expect(instance instanceof Model).to.be.ok
         )
       );
     });
@@ -233,43 +233,43 @@ describe('Feathers Sequelize Service', () => {
 
       it('`raw: false` works for find()', () =>
         rawPeople.find(NOT_RAW).then(results =>
-          expect(results[0] instanceof Model.Instance).to.be.ok
+          expect(results[0] instanceof Model).to.be.ok
         )
       );
 
       it('`raw: false` works for get()', () =>
         rawPeople.get(_ids.David, NOT_RAW).then(instance =>
-          expect(instance instanceof Model.Instance).to.be.ok
+          expect(instance instanceof Model).to.be.ok
         )
       );
 
       it('`raw: false` works for create()', () =>
         rawPeople.create({name: 'Sarah'}, NOT_RAW).then(instance =>
-          expect(instance instanceof Model.Instance).to.be.ok
+          expect(instance instanceof Model).to.be.ok
         )
       );
 
       it('`raw: false` works for bulk create()', () =>
         rawPeople.create([{name: 'Sarah'}], NOT_RAW).then(results =>
-          expect(results[0] instanceof Model.Instance).to.be.ok
+          expect(results[0] instanceof Model).to.be.ok
         )
       );
 
       it('`raw: false` works for patch()', () =>
         rawPeople.patch(_ids.David, {name: 'Sarah'}, NOT_RAW).then(instance =>
-          expect(instance instanceof Model.Instance).to.be.ok
+          expect(instance instanceof Model).to.be.ok
         )
       );
 
       it('`raw: false` works for update()', () =>
         rawPeople.update(_ids.David, _data.David, NOT_RAW).then(instance =>
-          expect(instance instanceof Model.Instance).to.be.ok
+          expect(instance instanceof Model).to.be.ok
         )
       );
 
       it('`raw: false` works for remove()', () =>
         rawPeople.remove(_ids.David, NOT_RAW).then(instance =>
-          expect(instance instanceof Model.Instance).to.be.ok
+          expect(instance instanceof Model).to.be.ok
         )
       );
     });
