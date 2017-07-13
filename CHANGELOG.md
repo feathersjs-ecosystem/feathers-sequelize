@@ -1,5 +1,26 @@
 # Change Log
 
+## [v2.1.0](https://github.com/feathersjs/feathers-sequelize/tree/v2.1.0) (2017-07-13)
+[Full Changelog](https://github.com/feathersjs/feathers-sequelize/compare/v2.0.1...v2.1.0)
+
+**Closed issues:**
+
+- Hydrate is not compatible with Sequelize 4.x [\#138](https://github.com/feathersjs/feathers-sequelize/issues/138)
+- Update only one parameter in row [\#136](https://github.com/feathersjs/feathers-sequelize/issues/136)
+- Hook Includes not working [\#134](https://github.com/feathersjs/feathers-sequelize/issues/134)
+- Hydrate not being exported correctly [\#133](https://github.com/feathersjs/feathers-sequelize/issues/133)
+- An in-range update of feathers-rest is breaking the build 🚨 [\#132](https://github.com/feathersjs/feathers-sequelize/issues/132)
+- No record found [\#128](https://github.com/feathersjs/feathers-sequelize/issues/128)
+- many to many \(through model, with extra field in junction table\) error "\<Model1\> is not associated to \<Model2\>" [\#126](https://github.com/feathersjs/feathers-sequelize/issues/126)
+- find total is always zero when raw is false [\#118](https://github.com/feathersjs/feathers-sequelize/issues/118)
+- N:N relation using React Native [\#109](https://github.com/feathersjs/feathers-sequelize/issues/109)
+
+**Merged pull requests:**
+
+- Add compatibility for documented hydration hook imports [\#140](https://github.com/feathersjs/feathers-sequelize/pull/140) ([daffl](https://github.com/daffl))
+- fix\(hydrate\): Fix the factory function so that Sequelize 4.x is supported [\#139](https://github.com/feathersjs/feathers-sequelize/pull/139) ([dschnare](https://github.com/dschnare))
+- Update sequelize to the latest version 🚀 [\#123](https://github.com/feathersjs/feathers-sequelize/pull/123) ([greenkeeper[bot]](https://github.com/apps/greenkeeper))
+
 ## [v2.0.1](https://github.com/feathersjs/feathers-sequelize/tree/v2.0.1) (2017-06-09)
 [Full Changelog](https://github.com/feathersjs/feathers-sequelize/compare/v2.0.0...v2.0.1)
 
