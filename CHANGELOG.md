@@ -1,5 +1,18 @@
 # Change Log
 
+## [v2.2.0](https://github.com/feathersjs/feathers-sequelize/tree/v2.2.0) (2017-07-24)
+[Full Changelog](https://github.com/feathersjs/feathers-sequelize/compare/v2.1.0...v2.2.0)
+
+**Closed issues:**
+
+- Is there any full example about database relationship? [\#141](https://github.com/feathersjs/feathers-sequelize/issues/141)
+- Query fails when using the $contains operator with a single value [\#135](https://github.com/feathersjs/feathers-sequelize/issues/135)
+- Allow scope\(\) to be used for operations [\#130](https://github.com/feathersjs/feathers-sequelize/issues/130)
+
+**Merged pull requests:**
+
+- Adding ability to scope operations [\#142](https://github.com/feathersjs/feathers-sequelize/pull/142) ([bparise](https://github.com/bparise))
+
 ## [v2.1.0](https://github.com/feathersjs/feathers-sequelize/tree/v2.1.0) (2017-07-13)
 [Full Changelog](https://github.com/feathersjs/feathers-sequelize/compare/v2.0.1...v2.1.0)
 
