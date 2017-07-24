@@ -22,6 +22,13 @@ class Service {
     this.raw = options.raw !== false;
   }
 
+  applyScope (params) {
+    if ((params.sequelize || {}).scope) {
+      return this.Model.scope(params.sequelize.scope);
+    }
+    return this.Model;
+  }
+
   extend (obj) {
     return Proto.extend(obj, this);
   }
@@ -43,7 +50,9 @@ class Service {
       q.attributes = filters.$select;
     }
 
-    return this.Model.findAndCount(q).then(result => {
+    let Model = this.applyScope(params);
+
+    return Model.findAndCount(q).then(result => {
       return {
         total: result.count,
         limit: filters.$limit,
@@ -73,9 +82,11 @@ class Service {
       where: Object.assign({[this.id]: id}, where)
     }, params.sequelize);
 
+    let Model = this.applyScope(params);
+
     // findById calls findAll under the hood. We use findAll so that
     // eager loading can be used without a separate code path.
-    return this.Model.findAll(q).then(result => {
+    return Model.findAll(q).then(result => {
       if (result.length === 0) {
         throw new errors.NotFound(`No record found for id '${id}'`);
       }
@@ -111,10 +122,12 @@ class Service {
     const isArray = Array.isArray(data);
     let promise;
 
+    let Model = this.applyScope(params);
+
     if (isArray) {
-      promise = this.Model.bulkCreate(data, createOptions);
+      promise = Model.bulkCreate(data, createOptions);
     } else {
-      promise = this.Model.create(data, createOptions);
+      promise = Model.create(data, createOptions);
     }
 
     return promise.then(result => {
@@ -139,10 +152,12 @@ class Service {
 
     const options = Object.assign({}, params.sequelize, { where });
 
+    let Model = this.applyScope(params);
+
     // This is the best way to implement patch in sql, the other dialects 'should' use a transaction.
-    if (this.Model.sequelize.options.dialect === 'postgres') {
+    if (Model.sequelize.options.dialect === 'postgres') {
       options.returning = true;
-      return this.Model.update(omit(data, this.id), options)
+      return Model.update(omit(data, this.id), options)
             .then(results => {
               if (id === null) {
                 return results[1];
@@ -172,7 +187,7 @@ class Service {
           query: { [this.id]: { $in: idList } }
         });
 
-        return this.Model.update(omit(data, this.id), options)
+        return Model.update(omit(data, this.id), options)
             .then(() => this._getOrFind(id, findParams));
       })
       .then(select(params, this.id))
@@ -186,9 +201,11 @@ class Service {
       return Promise.reject(new errors.BadRequest('Not replacing multiple records. Did you mean `patch`?'));
     }
 
+    let Model = this.applyScope(params);
+
     // Force the {raw: false} option as the instance is needed to properly
     // update
-    return this.Model.findById(id, { raw: false }).then(instance => {
+    return Model.findById(id, { raw: false }).then(instance => {
       if (!instance) {
         throw new errors.NotFound(`No record found for id '${id}'`);
       }
@@ -224,7 +241,9 @@ class Service {
 
       const options = Object.assign({}, params.sequelize, { where });
 
-      return this.Model.destroy(options).then(() => data);
+      let Model = this.applyScope(params);
+
+      return Model.destroy(options).then(() => data);
     })
     .then(select(params, this.id))
     .catch(utils.errorHandler);

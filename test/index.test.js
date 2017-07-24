@@ -25,9 +25,25 @@ const Model = sequelize.define('people', {
   },
   time: {
     type: Sequelize.INTEGER
+  },
+  status: {
+    type: Sequelize.STRING,
+    defaultValue: 'pending'
   }
 }, {
-  freezeTableName: true
+  freezeTableName: true,
+  scopes: {
+    active: {
+      where: {
+        status: 'active'
+      }
+    },
+    pending: {
+      where: {
+        status: 'pending'
+      }
+    }
+  }
 });
 const CustomId = sequelize.define('people-customid', {
   customid: {
@@ -133,6 +149,21 @@ describe('Feathers Sequelize Service', () => {
       return service.create(data, IGNORE_SETTERS).then(result => {
         assert.equal(result.addsOneOnGet, value + 1);
         assert.equal(result.addsOneOnSet, value);
+      });
+    });
+
+    it('can set the scope of an operation#130', () => {
+      const service = app.service('people');
+      const data = {name: 'Active', status: 'active'};
+      const SCOPE_TO_ACTIVE = {sequelize: {scope: 'active'}};
+      const SCOPE_TO_PENDING = {sequelize: {scope: 'pending'}};
+      return service.create(data).then(person => {
+        return service.find(SCOPE_TO_ACTIVE).then(people => {
+          assert.equal(people.length, 1);
+          return service.find(SCOPE_TO_PENDING).then(people => {
+            assert.equal(people.length, 0);
+          });
+        }).then(() => service.remove(person.id));
       });
     });
 
