@@ -19,12 +19,12 @@ npm install feathers-sequelize --save
 
 ## Documentation
 
-Please refer to the [Feathers database adapter documentation](http://docs.feathersjs.com/databases/readme.html) for more details or directly at:
+Please refer to the [Feathers database adapter documentation](https://docs.feathersjs.com/api/databases/common.html) for more details or directly at:
 
-- [Sequelize](http://docs.feathersjs.com/databases/sequelize.html) - The detailed documentation for this adapter
-- [Extending](http://docs.feathersjs.com/databases/extending.html) - How to extend a database adapter
-- [Pagination and Sorting](http://docs.feathersjs.com/databases/pagination.html) - How to use pagination and sorting for the database adapter
-- [Querying](http://docs.feathersjs.com/databases/querying.html) - The common adapter querying mechanism
+- [Sequelize](https://docs.feathersjs.com/api/databases/sequelize.html) - The detailed documentation for this adapter
+- [Extending](https://docs.feathersjs.com/api/databases/common.html#extending-adapters) - How to extend a database adapter
+- [Pagination](https://docs.feathersjs.com/api/databases/common.html#pagination) - How to use pagination
+- [Querying and Sorting](https://docs.feathersjs.com/api/databases/querying.html) - The common adapter querying mechanism and sorting for the database adapter
 
 ### Complete Example
 
