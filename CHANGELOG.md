@@ -1,5 +1,17 @@
 # Change Log
 
+## [v2.2.1](https://github.com/feathersjs/feathers-sequelize/tree/v2.2.1) (2017-08-08)
+[Full Changelog](https://github.com/feathersjs/feathers-sequelize/compare/v2.2.0...v2.2.1)
+
+**Closed issues:**
+
+- All service methods should take into account the query parameter [\#143](https://github.com/feathersjs/feathers-sequelize/issues/143)
+
+**Merged pull requests:**
+
+- Patch should default to raw queries [\#147](https://github.com/feathersjs/feathers-sequelize/pull/147) ([Ryanthegiantlion](https://github.com/Ryanthegiantlion))
+- Fixing broken docs links [\#144](https://github.com/feathersjs/feathers-sequelize/pull/144) ([corymsmith](https://github.com/corymsmith))
+
 ## [v2.2.0](https://github.com/feathersjs/feathers-sequelize/tree/v2.2.0) (2017-07-24)
 [Full Changelog](https://github.com/feathersjs/feathers-sequelize/compare/v2.1.0...v2.2.0)
 
