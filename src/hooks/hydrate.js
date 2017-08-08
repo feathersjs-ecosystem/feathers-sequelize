@@ -23,7 +23,7 @@ export default options => {
       throw new Error('feathers-sequelize hydrate() - should only be used as an "after" hook');
     }
 
-    const makeInstance = factory(this.Model, options.include);
+    const makeInstance = factory(hook.service.Model, options.include);
     switch (hook.method) {
       case 'find':
         if (hook.result.data) {
