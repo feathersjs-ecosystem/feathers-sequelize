@@ -150,7 +150,7 @@ class Service {
       where[this.id] = id;
     }
 
-    const options = Object.assign({}, params.sequelize, { where });
+    const options = Object.assign({raw: this.raw}, params.sequelize, { where });
 
     let Model = this.applyScope(params);
 
