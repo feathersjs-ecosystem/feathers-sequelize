@@ -83,7 +83,7 @@ class Service {
       return result[0];
     })
     .then(select(params, this.id))
-    .catch(utils.errorHandler);
+    .catch(() => { throw new errors.NotFound(`No record found for id '${id}'`); });
   }
 
   // returns either the model intance for an id or all unpaginated
@@ -142,20 +142,21 @@ class Service {
     // This is the best way to implement patch in sql, the other dialects 'should' use a transaction.
     if (this.Model.sequelize.options.dialect === 'postgres') {
       options.returning = true;
-      return this.Model.update(omit(data, this.id), options)
-            .then(results => {
-              if (id === null) {
-                return results[1];
-              }
+      return this._getOrFind(id, options)
+        .then(results => this.Model.update(omit(data, this.id), options))
+          .then(results => {
+            if (id === null) {
+              return results[1];
+            }
 
-              if (!results[1].length) {
-                throw new errors.NotFound(`No record found for id '${id}'`);
-              }
+            if (!results[1].length) {
+              throw new errors.NotFound(`No record found for id '${id}'`);
+            }
 
-              return results[1][0];
-            })
-            .then(select(params, this.id))
-            .catch(utils.errorHandler);
+            return results[1][0];
+          })
+          .then(select(params, this.id))
+          .catch(utils.errorHandler);
     }
 
     // By default we will just query for the one id. For multi patch
@@ -188,7 +189,7 @@ class Service {
 
     // Force the {raw: false} option as the instance is needed to properly
     // update
-    return this.Model.findById(id, { raw: false }).then(instance => {
+    return this._get(id, { sequelize: { raw: false } }).then(instance => {
       if (!instance) {
         throw new errors.NotFound(`No record found for id '${id}'`);
       }
