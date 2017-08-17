@@ -1,11 +1,18 @@
+import pg from 'pg';
 import assert from 'assert';
 import { expect } from 'chai';
 import { base, example, orm } from 'feathers-service-tests';
+
 import Sequelize from 'sequelize';
 import errors from 'feathers-errors';
 import feathers from 'feathers';
 import service from '../src';
 import server from '../example/app';
+
+// The base tests require the use of Sequelize.BIGINT to avoid 'out of range errors'
+// Unfortunetly BIGINT's are serialized as Strings:
+// https://github.com/sequelize/sequelize/issues/1774
+pg.defaults.parseInt8 = true;
 
 const sequelize = new Sequelize('sequelize', '', '', {
   dialect: 'sqlite',
@@ -62,7 +69,7 @@ const PostgresModel = postgres.define('people', {
     type: Sequelize.BOOLEAN
   },
   time: {
-    type: Sequelize.INTEGER
+    type: Sequelize.BIGINT
   }
 }, {
   freezeTableName: true
