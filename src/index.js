@@ -95,11 +95,7 @@ class Service {
     })
     .then(select(params, this.id))
     .catch(error => {
-      if(/integer out of range/.test(error.message)) {
-        throw new errors.NotFound(`No record found for id '${id}'`);
-      }
-
-      throw error;
+      throw new errors.NotFound(`No record found for id '${id}'`, error);
     });
   }
 
