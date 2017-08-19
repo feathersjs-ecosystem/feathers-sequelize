@@ -1,7 +1,7 @@
 {
   "name": "feathers-sequelize",
   "description": "A service adapter for Sequelize an SQL ORM",
-  "version": "2.2.0",
+  "version": "2.3.0",
   "homepage": "https://github.com/feathersjs/feathers-sequelize",
   "main": "lib/",
   "keywords": [
@@ -80,6 +80,8 @@
     "feathers-service-tests": "^0.10.0",
     "istanbul": "^1.1.0-alpha.1",
     "mocha": "^3.0.0",
+    "pg": "^6.1.5",
+    "pg-hstore": "^2.3.2",
     "rimraf": "^2.5.4",
     "semistandard": "^11.0.0",
     "sqlite3": "^3.1.7"

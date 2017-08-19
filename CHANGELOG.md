@@ -1,5 +1,32 @@
 # Change Log
 
+## [v2.3.0](https://github.com/feathersjs/feathers-sequelize/tree/v2.3.0) (2017-08-19)
+[Full Changelog](https://github.com/feathersjs/feathers-sequelize/compare/v2.2.1...v2.3.0)
+
+**Closed issues:**
+
+- use inside php server [\#151](https://github.com/feathersjs/feathers-sequelize/issues/151)
+- Patch returns Model instance by default [\#146](https://github.com/feathersjs/feathers-sequelize/issues/146)
+- Run tests against PostgreSQL [\#105](https://github.com/feathersjs/feathers-sequelize/issues/105)
+- Avoid findAndCount if paginate is false [\#95](https://github.com/feathersjs/feathers-sequelize/issues/95)
+
+**Merged pull requests:**
+
+- Finalize running tests against Postgresql [\#152](https://github.com/feathersjs/feathers-sequelize/pull/152) ([daffl](https://github.com/daffl))
+- Fix postgres tests [\#150](https://github.com/feathersjs/feathers-sequelize/pull/150) ([Ryanthegiantlion](https://github.com/Ryanthegiantlion))
+
+## [v2.2.1](https://github.com/feathersjs/feathers-sequelize/tree/v2.2.1) (2017-08-08)
+[Full Changelog](https://github.com/feathersjs/feathers-sequelize/compare/v2.2.0...v2.2.1)
+
+**Closed issues:**
+
+- All service methods should take into account the query parameter [\#143](https://github.com/feathersjs/feathers-sequelize/issues/143)
+
+**Merged pull requests:**
+
+- Patch should default to raw queries [\#147](https://github.com/feathersjs/feathers-sequelize/pull/147) ([Ryanthegiantlion](https://github.com/Ryanthegiantlion))
+- Fixing broken docs links [\#144](https://github.com/feathersjs/feathers-sequelize/pull/144) ([corymsmith](https://github.com/corymsmith))
+
 ## [v2.2.0](https://github.com/feathersjs/feathers-sequelize/tree/v2.2.0) (2017-07-24)
 [Full Changelog](https://github.com/feathersjs/feathers-sequelize/compare/v2.1.0...v2.2.0)
 
