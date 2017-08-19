@@ -94,7 +94,13 @@ class Service {
       return result[0];
     })
     .then(select(params, this.id))
-    .catch(() => { throw new errors.NotFound(`No record found for id '${id}'`); });
+    .catch(error => {
+      if(error.message === 'integer out of range') {
+        throw new errors.NotFound(`No record found for id '${id}'`);
+      }
+
+      throw error;
+    });
   }
 
   // returns either the model intance for an id or all unpaginated
