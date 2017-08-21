@@ -160,18 +160,38 @@ class Service {
     if (Model.sequelize.options.dialect === 'postgres') {
       options.returning = true;
 
+      // Force the {raw: false} option as the instance is needed to properly
+      // update
+      options.sequelize = Object.assign({}, params.sequelize, { raw: false });
+
       return this._getOrFind(id, options)
-        .then(results => this.Model.update(omit(data, this.id), options))
+        .then(results => {
+          // If it's an array, then we're performing a bulk update
+          if (Array.isArray(results)) {
+            return this.Model.update(omit(data, this.id), options);
+          }
+
+          if (typeof results === 'object' && typeof results.update === 'function') {
+            return results.update(omit(data, this.id), options);
+          }
+
+          return results;
+        })
           .then(results => {
-            if (id === null) {
-              return results[1];
+            // Bulk updates
+            if (Array.isArray(results)) {
+              if (id === null) {
+                return results[1];
+              }
+
+              if (!results[1].length) {
+                throw new errors.NotFound(`No record found for id '${id}'`);
+              }
+
+              return results[1][0];
             }
 
-            if (!results[1].length) {
-              throw new errors.NotFound(`No record found for id '${id}'`);
-            }
-
-            return results[1][0];
+            return results;
           })
           .then(select(params, this.id))
           .catch(utils.errorHandler);
