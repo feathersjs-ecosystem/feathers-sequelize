@@ -45,7 +45,9 @@
     "lint": "eslint-if-supported semistandard --fix",
     "mocha": "mocha --opts mocha.opts --timeout 5000",
     "test": "npm run lint && npm run coverage",
-    "coverage": "istanbul cover node_modules/mocha/bin/_mocha -- --opts mocha.opts"
+    "test:postgres": "env DB=postgres npm run lint && npm run coverage:postgres",
+    "coverage": "istanbul cover node_modules/mocha/bin/_mocha -- --opts mocha.opts",
+    "coverage:postgres": "env DB=postgres istanbul cover node_modules/mocha/bin/_mocha -- --opts mocha.opts"
   },
   "semistandard": {
     "env": [
