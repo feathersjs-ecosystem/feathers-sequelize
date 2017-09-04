@@ -21,6 +21,11 @@ if (process.env.DB === 'postgres') {
     host: 'localhost',
     dialect: 'postgres'
   });
+} else if (process.env.DB === 'mysql') {
+  sequelize = new Sequelize('sequelize', 'root', '', {
+    host: '127.0.0.1',
+    dialect: 'mysql'
+  });
 } else {
   sequelize = new Sequelize('sequelize', '', '', {
     dialect: 'sqlite',

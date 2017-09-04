@@ -5,6 +5,8 @@ node_js:
   - '4'
 env:
   - DB=postgres
+  - DB=mysql
+  - DB=sqlite
 sudo: false
 before_script:
   - npm install -g codeclimate-test-reporter
