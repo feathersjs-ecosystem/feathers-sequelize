@@ -3,6 +3,8 @@ node_js:
   - node
   - '6'
   - '4'
+env:
+  - DB=postgres
 sudo: false
 before_script:
   - npm install -g codeclimate-test-reporter
