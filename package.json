@@ -45,7 +45,11 @@
     "lint": "eslint-if-supported semistandard --fix",
     "mocha": "mocha --opts mocha.opts --timeout 5000",
     "test": "npm run lint && npm run coverage",
-    "coverage": "istanbul cover node_modules/mocha/bin/_mocha -- --opts mocha.opts"
+    "test:postgres": "env DB=postgres npm run lint && npm run coverage:postgres",
+    "test:mysql": "env DB=mysql npm run lint && npm run coverage:mysql",
+    "coverage": "istanbul cover node_modules/mocha/bin/_mocha -- --opts mocha.opts",
+    "coverage:postgres": "env DB=postgres istanbul cover node_modules/mocha/bin/_mocha -- --opts mocha.opts",
+    "coverage:mysql": "env DB=mysql istanbul cover node_modules/mocha/bin/_mocha -- --opts mocha.opts"
   },
   "semistandard": {
     "env": [
@@ -80,6 +84,7 @@
     "feathers-service-tests": "^0.10.0",
     "istanbul": "^1.1.0-alpha.1",
     "mocha": "^3.0.0",
+    "mysql2": "^1.4.2",
     "pg": "^6.1.5",
     "pg-hstore": "^2.3.2",
     "rimraf": "^2.5.4",

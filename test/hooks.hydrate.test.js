@@ -2,11 +2,26 @@ import { expect } from 'chai';
 import hydrate from '../src/hooks/hydrate';
 import Sequelize from 'sequelize';
 
-const sequelize = new Sequelize('sequelize', '', '', {
-  dialect: 'sqlite',
-  storage: './db.sqlite',
-  logging: false
-});
+let sequelize;
+
+if (process.env.DB === 'postgres') {
+  sequelize = new Sequelize('sequelize', 'postgres', '', {
+    host: 'localhost',
+    dialect: 'postgres'
+  });
+} else if (process.env.DB === 'mysql') {
+  sequelize = new Sequelize('sequelize', 'root', '', {
+    host: '127.0.0.1',
+    dialect: 'mysql'
+  });
+} else {
+  sequelize = new Sequelize('sequelize', '', '', {
+    dialect: 'sqlite',
+    storage: './db.sqlite',
+    logging: false
+  });
+}
+
 const BlogPost = sequelize.define('blogpost', {
   title: {
     type: Sequelize.STRING,

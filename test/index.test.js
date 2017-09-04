@@ -14,15 +14,25 @@ import server from '../example/app';
 // https://github.com/sequelize/sequelize/issues/1774
 pg.defaults.parseInt8 = true;
 
-const sequelize = new Sequelize('sequelize', '', '', {
-  dialect: 'sqlite',
-  storage: './db.sqlite',
-  logging: false
-});
-const postgres = new Sequelize('sequelize', 'postgres', '', {
-  host: 'localhost',
-  dialect: 'postgres'
-});
+let sequelize;
+
+if (process.env.DB === 'postgres') {
+  sequelize = new Sequelize('sequelize', 'postgres', '', {
+    host: 'localhost',
+    dialect: 'postgres'
+  });
+} else if (process.env.DB === 'mysql') {
+  sequelize = new Sequelize('sequelize', 'root', '', {
+    host: '127.0.0.1',
+    dialect: 'mysql'
+  });
+} else {
+  sequelize = new Sequelize('sequelize', '', '', {
+    dialect: 'sqlite',
+    storage: './db.sqlite',
+    logging: false
+  });
+}
 
 const Model = sequelize.define('people', {
   name: {
@@ -36,7 +46,7 @@ const Model = sequelize.define('people', {
     type: Sequelize.BOOLEAN
   },
   time: {
-    type: Sequelize.INTEGER
+    type: Sequelize.BIGINT
   },
   status: {
     type: Sequelize.STRING,
@@ -57,23 +67,6 @@ const Model = sequelize.define('people', {
     }
   }
 });
-const PostgresModel = postgres.define('people', {
-  name: {
-    type: Sequelize.STRING,
-    allowNull: false
-  },
-  age: {
-    type: Sequelize.INTEGER
-  },
-  created: {
-    type: Sequelize.BOOLEAN
-  },
-  time: {
-    type: Sequelize.BIGINT
-  }
-}, {
-  freezeTableName: true
-});
 const CustomId = sequelize.define('people-customid', {
   customid: {
     type: Sequelize.INTEGER,
@@ -91,7 +84,7 @@ const CustomId = sequelize.define('people-customid', {
     type: Sequelize.BOOLEAN
   },
   time: {
-    type: Sequelize.INTEGER
+    type: Sequelize.BIGINT
   }
 }, {
   freezeTableName: true
@@ -333,17 +326,6 @@ describe('Feathers Sequelize Service', () => {
         )
       );
     });
-  });
-
-  describe('PostgreSQL', () => {
-    const app = feathers()
-      .use('/people', service({
-        Model: PostgresModel,
-        events: [ 'testing' ]
-      }));
-
-    before(() => PostgresModel.sync({ force: true }));
-    base(app, errors);
   });
 });
 
