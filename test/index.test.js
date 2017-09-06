@@ -123,7 +123,7 @@ describe('Feathers Sequelize Service', () => {
     });
   });
 
-  describe('Common functionality', () => {
+  describe('Common Tests', () => {
     const app = feathers()
       .use('/people', service({
         Model,
@@ -133,64 +133,102 @@ describe('Feathers Sequelize Service', () => {
         Model: CustomId,
         events: [ 'testing' ],
         id: 'customid'
+      }));
+
+    base(app, errors);
+    base(app, errors, 'people-customid', 'customid');
+  });
+
+  describe('Feathers-Sequelize Specific Tests', () => {
+    const app = feathers()
+      .use('/people', service({
+        Model,
+        events: [ 'testing' ]
       }))
       .use('/custom-getter-setter', service({
         Model: CustomGetterSetter,
         events: [ 'testing' ]
       }));
 
-    it('allows querying for null values (#45)', () => {
-      const name = 'Null test';
+    before(() => app.service('people')
+      .remove(null, { query: { $limit: 1000 } })
+    );
+
+    after(() => app.service('people')
+      .remove(null, { query: { $limit: 1000 } })
+    );
+
+    describe('Common functionality', () => {
       const people = app.service('people');
+      const _ids = {};
+      const _data = {};
 
-      return people.create({ name }).then(person =>
-        people.find({ query: { age: null } }).then(people => {
-          assert.equal(people.length, 1);
-          assert.equal(people[0].name, name);
-          assert.equal(people[0].age, null);
-        }).then(() => people.remove(person.id))
+      beforeEach(() =>
+        people.create({ name: 'Kirsten', age: 30 }).then(result => {
+          _data.Kirsten = result;
+          _ids.Kirsten = result.id;
+        })
       );
-    });
 
-    it('calls custom getters and setters (#113)', () => {
-      const value = 0;
-      const service = app.service('custom-getter-setter');
-      const data = {addsOneOnGet: value, addsOneOnSet: value};
+      afterEach(() =>
+        people.remove(_ids.Kirsten).catch(() => {})
+      );
 
-      return service.create(data).then(result => {
-        assert.equal(result.addsOneOnGet, value + 1);
-        assert.equal(result.addsOneOnSet, value + 1);
+      it('allows querying for null values (#45)', () => {
+        const name = 'Null test';
+
+        return people.create({ name }).then(person =>
+          people.find({ query: { age: null } }).then(people => {
+            assert.equal(people.length, 1);
+            assert.equal(people[0].name, name);
+            assert.equal(people[0].age, null);
+          })
+          .then(() => people.remove(person.id))
+          .catch((err) => { people.remove(person.id); throw (err); })
+        );
       });
     });
 
-    it('can ignore custom getters and setters (#113)', () => {
-      const value = 0;
-      const service = app.service('custom-getter-setter');
-      const data = {addsOneOnGet: value, addsOneOnSet: value};
-      const IGNORE_SETTERS = {sequelize: {ignoreSetters: true}};
-      return service.create(data, IGNORE_SETTERS).then(result => {
-        assert.equal(result.addsOneOnGet, value + 1);
-        assert.equal(result.addsOneOnSet, value);
+    describe('Custom getters and setters', () => {
+      it('calls custom getters and setters (#113)', () => {
+        const value = 0;
+        const service = app.service('custom-getter-setter');
+        const data = {addsOneOnGet: value, addsOneOnSet: value};
+
+        return service.create(data).then(result => {
+          assert.equal(result.addsOneOnGet, value + 1);
+          assert.equal(result.addsOneOnSet, value + 1);
+        });
+      });
+
+      it('can ignore custom getters and setters (#113)', () => {
+        const value = 0;
+        const service = app.service('custom-getter-setter');
+        const data = {addsOneOnGet: value, addsOneOnSet: value};
+        const IGNORE_SETTERS = {sequelize: {ignoreSetters: true}};
+        return service.create(data, IGNORE_SETTERS).then(result => {
+          assert.equal(result.addsOneOnGet, value + 1);
+          assert.equal(result.addsOneOnSet, value);
+        });
       });
     });
 
     it('can set the scope of an operation#130', () => {
-      const service = app.service('people');
+      const people = app.service('people');
       const data = {name: 'Active', status: 'active'};
       const SCOPE_TO_ACTIVE = {sequelize: {scope: 'active'}};
       const SCOPE_TO_PENDING = {sequelize: {scope: 'pending'}};
-      return service.create(data).then(person => {
-        return service.find(SCOPE_TO_ACTIVE).then(people => {
-          assert.equal(people.length, 1);
-          return service.find(SCOPE_TO_PENDING).then(people => {
-            assert.equal(people.length, 0);
+      return people.create(data).then(person => {
+        return people.find(SCOPE_TO_ACTIVE).then(result => {
+          assert.equal(result.length, 1);
+          return people.find(SCOPE_TO_PENDING).then(result => {
+            assert.equal(result.length, 0);
           });
-        }).then(() => service.remove(person.id));
+        })
+        .then(() => people.remove(person.id))
+        .catch((err) => { people.remove(person.id); throw (err); });
       });
     });
-
-    base(app, errors);
-    base(app, errors, 'people-customid', 'customid');
   });
 
   describe('ORM functionality', () => {
