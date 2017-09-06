@@ -1,5 +1,18 @@
 # Change Log
 
+## [v2.3.1](https://github.com/feathersjs/feathers-sequelize/tree/v2.3.1) (2017-09-06)
+[Full Changelog](https://github.com/feathersjs/feathers-sequelize/compare/v2.3.0...v2.3.1)
+
+**Closed issues:**
+
+- \[Question\] Should new tests be using Postgres or SQLite or both? [\#154](https://github.com/feathersjs/feathers-sequelize/issues/154)
+- Multiple rows delete [\#153](https://github.com/feathersjs/feathers-sequelize/issues/153)
+
+**Merged pull requests:**
+
+- Tests and fixes [\#162](https://github.com/feathersjs/feathers-sequelize/pull/162) ([Ryanthegiantlion](https://github.com/Ryanthegiantlion))
+- Extend test coverage [\#160](https://github.com/feathersjs/feathers-sequelize/pull/160) ([Ryanthegiantlion](https://github.com/Ryanthegiantlion))
+
 ## [v2.3.0](https://github.com/feathersjs/feathers-sequelize/tree/v2.3.0) (2017-08-19)
 [Full Changelog](https://github.com/feathersjs/feathers-sequelize/compare/v2.2.1...v2.3.0)
 
