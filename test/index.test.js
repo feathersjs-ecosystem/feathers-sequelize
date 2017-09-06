@@ -187,6 +187,16 @@ describe('Feathers Sequelize Service', () => {
           .catch((err) => { people.remove(person.id); throw (err); })
         );
       });
+
+      it('correctly persists updates (#125)', () => {
+        const updateName = 'Ryan';
+
+        return people.update(_ids.Kirsten, { name: updateName })
+            .then((data) => people.get(_ids.Kirsten))
+            .then(updatedPerson => {
+              assert.equal(updatedPerson.name, updateName);
+            });
+      });
     });
 
     describe('Custom getters and setters', () => {
