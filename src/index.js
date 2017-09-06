@@ -207,6 +207,7 @@ class Service {
 
     // Force the {raw: false} option as the instance is needed to properly
     // update
+
     return this._get(id, { sequelize: { raw: false } }).then(instance => {
       if (!instance) {
         throw new errors.NotFound(`No record found for id '${id}'`);
@@ -221,12 +222,7 @@ class Service {
         }
       });
 
-      return instance.update(copy, options).then(instance => {
-        if (options.raw === false) {
-          return instance;
-        }
-        return instance.toJSON();
-      });
+      return instance.update(copy, {raw: false}).then(() => this._get(id, {sequelize: options}));
     })
     .then(select(params, this.id))
     .catch(utils.errorHandler);
