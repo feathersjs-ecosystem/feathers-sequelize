@@ -43,7 +43,8 @@ class Service {
       order,
       limit: filters.$limit,
       offset: filters.$skip,
-      raw: this.raw
+      raw: this.raw,
+      distinct: true
     }, params.sequelize);
 
     if (filters.$select) {
@@ -51,6 +52,18 @@ class Service {
     }
 
     let Model = this.applyScope(params);
+
+    // Until Sequelize fix all the findAndCount issues, a few 'hacks' are needed to get the total count correct
+
+    // Adding an empty include changes the way the count is done
+    // See: https://github.com/sequelize/sequelize/blob/7e441a6a5ca44749acd3567b59b1d6ceb06ae64b/lib/model.js#L1780-L1782
+    q.include = q.include || [];
+
+    // Non-raw is the default but setting it manually breaks paging
+    // See: https://github.com/sequelize/sequelize/issues/7931
+    if (q.raw === false) {
+      delete q.raw;
+    }
 
     return Model.findAndCount(q).then(result => {
       return {
