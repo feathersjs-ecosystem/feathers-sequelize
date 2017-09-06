@@ -67,6 +67,14 @@ const Model = sequelize.define('people', {
     }
   }
 });
+const Order = sequelize.define('orders', {
+  name: {
+    type: Sequelize.STRING,
+    allowNull: false
+  }
+}, {
+  freezeTableName: true
+});
 const CustomId = sequelize.define('people-customid', {
   customid: {
     type: Sequelize.INTEGER,
@@ -105,12 +113,15 @@ const CustomGetterSetter = sequelize.define('custom-getter-setter', {
 }, {
   freezeTableName: true
 });
+Model.hasMany(Order);
+Order.belongsTo(Model);
 
 describe('Feathers Sequelize Service', () => {
   before(() =>
     Model.sync({ force: true })
       .then(() => CustomId.sync({ force: true }))
       .then(() => CustomGetterSetter.sync({ force: true }))
+      .then(() => Order.sync({ force: true }))
   );
 
   describe('Initialization', () => {
@@ -143,7 +154,13 @@ describe('Feathers Sequelize Service', () => {
     const app = feathers()
       .use('/people', service({
         Model,
+        paginate: {
+          default: 10
+        },
         events: [ 'testing' ]
+      }))
+      .use('/orders', service({
+        Model: Order
       }))
       .use('/custom-getter-setter', service({
         Model: CustomGetterSetter,
@@ -179,9 +196,9 @@ describe('Feathers Sequelize Service', () => {
 
         return people.create({ name }).then(person =>
           people.find({ query: { age: null } }).then(people => {
-            assert.equal(people.length, 1);
-            assert.equal(people[0].name, name);
-            assert.equal(people[0].age, null);
+            assert.equal(people.data.length, 1);
+            assert.equal(people.data[0].name, name);
+            assert.equal(people.data[0].age, null);
           })
           .then(() => people.remove(person.id))
           .catch((err) => { people.remove(person.id); throw (err); })
@@ -196,6 +213,57 @@ describe('Feathers Sequelize Service', () => {
             .then(updatedPerson => {
               assert.equal(updatedPerson.name, updateName);
             });
+      });
+    });
+
+    describe('Association Tests', () => {
+      const people = app.service('people');
+      const orders = app.service('orders');
+      const _ids = {};
+      const _data = {};
+
+      beforeEach(() =>
+        people.create({ name: 'Kirsten', age: 30 })
+        .then(result => {
+          _data.Kirsten = result;
+          _ids.Kirsten = result.id;
+          return orders.create([
+            { name: 'Order 1', personId: result.id },
+            { name: 'Order 2', personId: result.id },
+            { name: 'Order 3', personId: result.id }
+          ]);
+        })
+        .then(() => people.create({ name: 'Ryan', age: 30 }))
+        .then(result => {
+          _data.Ryan = result;
+          _ids.Ryan = result.id;
+          return orders.create([
+            { name: 'Order 4', personId: result.id },
+            { name: 'Order 5', personId: result.id },
+            { name: 'Order 6', personId: result.id }
+          ]);
+        })
+      );
+
+      afterEach(() =>
+        orders.remove(null, { query: { $limit: 1000 } })
+          .then(() => people.remove(_ids.Kirsten))
+          .then(() => people.remove(_ids.Ryan))
+          .catch(() => {})
+      );
+
+      it('find() returns correct total when using includes for non-raw requests (#137)', () => {
+        const options = {sequelize: {raw: false, include: Order}};
+        return people.find(options).then(result => {
+          assert.equal(result.total, 2);
+        });
+      });
+
+      it('find() returns correct total when using includes for raw requests', () => {
+        const options = {sequelize: {include: Order}};
+        return people.find(options).then(result => {
+          assert.equal(result.total, 2);
+        });
       });
     });
 
@@ -230,9 +298,9 @@ describe('Feathers Sequelize Service', () => {
       const SCOPE_TO_PENDING = {sequelize: {scope: 'pending'}};
       return people.create(data).then(person => {
         return people.find(SCOPE_TO_ACTIVE).then(result => {
-          assert.equal(result.length, 1);
+          assert.equal(result.data.length, 1);
           return people.find(SCOPE_TO_PENDING).then(result => {
-            assert.equal(result.length, 0);
+            assert.equal(result.data.length, 0);
           });
         })
         .then(() => people.remove(person.id))
