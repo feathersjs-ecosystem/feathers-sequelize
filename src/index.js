@@ -22,11 +22,15 @@ class Service {
     this.raw = options.raw !== false;
   }
 
+  getModel (params) {
+    return this.Model;
+  }
+
   applyScope (params) {
     if ((params.sequelize || {}).scope) {
-      return this.Model.scope(params.sequelize.scope);
+      return this.getModel(params).scope(params.sequelize.scope);
     }
-    return this.Model;
+    return this.getModel(params);
   }
 
   extend (obj) {
@@ -174,7 +178,7 @@ class Service {
       options.returning = true;
 
       return this._getOrFind(id, options)
-        .then(results => this.Model.update(omit(data, this.id), options))
+        .then(results => this.getModel(params).update(omit(data, this.id), options))
           .then(results => {
             if (id === null) {
               return results[1];
