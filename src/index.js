@@ -177,7 +177,7 @@ class Service {
     if (Model.sequelize.options.dialect === 'postgres') {
       options.returning = true;
 
-      return this._getOrFind(id, options)
+      return this._getOrFind(id, params)
         .then(results => this.getModel(params).update(omit(data, this.id), options))
           .then(results => {
             if (id === null) {
