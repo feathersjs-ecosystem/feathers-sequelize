@@ -1,5 +1,23 @@
 # Change Log
 
+## [v2.3.2](https://github.com/feathersjs/feathers-sequelize/tree/v2.3.2) (2017-10-14)
+[Full Changelog](https://github.com/feathersjs/feathers-sequelize/compare/v2.3.1...v2.3.2)
+
+**Closed issues:**
+
+- The patch on postgres is selecting every row from the table before updating [\#168](https://github.com/feathersjs/feathers-sequelize/issues/168)
+- Can't override id field when declaring a \(MySQL\) service [\#164](https://github.com/feathersjs/feathers-sequelize/issues/164)
+- Run tests against all sequelize dialects [\#163](https://github.com/feathersjs/feathers-sequelize/issues/163)
+- Adding model includes returns incorrect paging count [\#161](https://github.com/feathersjs/feathers-sequelize/issues/161)
+- Raw associations prevent pagination total being available [\#137](https://github.com/feathersjs/feathers-sequelize/issues/137)
+- update not working? [\#125](https://github.com/feathersjs/feathers-sequelize/issues/125)
+
+**Merged pull requests:**
+
+- Fixed the patch method to not fetch all rows [\#169](https://github.com/feathersjs/feathers-sequelize/pull/169) ([andymoon](https://github.com/andymoon))
+- Update mocha to the latest version 🚀 [\#167](https://github.com/feathersjs/feathers-sequelize/pull/167) ([greenkeeper[bot]](https://github.com/apps/greenkeeper))
+- Slightly better class for extending. [\#166](https://github.com/feathersjs/feathers-sequelize/pull/166) ([devel-pa](https://github.com/devel-pa))
+
 ## [v2.3.1](https://github.com/feathersjs/feathers-sequelize/tree/v2.3.1) (2017-09-06)
 [Full Changelog](https://github.com/feathersjs/feathers-sequelize/compare/v2.3.0...v2.3.1)
 
