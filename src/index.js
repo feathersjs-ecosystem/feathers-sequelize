@@ -41,7 +41,7 @@ class Service {
     const { filters, query } = getFilter(params.query || {});
     const where = utils.getWhere(query);
     const order = utils.getOrder(filters.$sort);
-    console.log('filter', filters, 'query', query, 'params', params, 'paginate', paginate);
+
     const q = Object.assign({
       where,
       order,
