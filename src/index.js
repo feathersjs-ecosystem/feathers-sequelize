@@ -37,11 +37,11 @@ class Service {
     return Proto.extend(obj, this);
   }
 
-  _find (params, getFilter = filter) {
+  _find (params, getFilter = filter, paginate) {
     const { filters, query } = getFilter(params.query || {});
     const where = utils.getWhere(query);
     const order = utils.getOrder(filters.$sort);
-
+    console.log('filter', filters, 'query', query, 'params', params, 'paginate', paginate);
     const q = Object.assign({
       where,
       order,
@@ -69,19 +69,27 @@ class Service {
       delete q.raw;
     }
 
-    return Model.findAndCount(q).then(result => {
-      return {
-        total: result.count,
-        limit: filters.$limit,
-        skip: filters.$skip || 0,
-        data: result.rows
-      };
-    }).catch(utils.errorHandler);
+    if (paginate) {
+      return Model.findAndCountAll(q).then(result => {
+        return {
+          total: result.count,
+          limit: filters.$limit,
+          skip: filters.$skip || 0,
+          data: result.rows
+        };
+      }).catch(utils.errorHandler);
+    } else {
+      return Model.findAll(q).then(result => {
+        return {
+          data: result
+        };
+      }).catch(utils.errorHandler);
+    }
   }
 
   find (params) {
     const paginate = (params && typeof params.paginate !== 'undefined') ? params.paginate : this.paginate;
-    const result = this._find(params, where => filter(where, paginate));
+    const result = this._find(params, where => filter(where, paginate), paginate);
 
     if (!paginate.default) {
       return result.then(page => page.data);
