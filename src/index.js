@@ -182,7 +182,7 @@ class Service {
     let Model = this.applyScope(params);
 
     // This is the best way to implement patch in sql, the other dialects 'should' use a transaction.
-    if (Model.sequelize.options.dialect === 'postgres') {
+    if (Model.sequelize.options.dialect === 'postgres' && params.$returning !== false) {
       options.returning = true;
 
       return this._getOrFind(id, params)
@@ -217,7 +217,13 @@ class Service {
         });
 
         return Model.update(omit(data, this.id), options)
-            .then(() => this._getOrFind(id, findParams));
+            .then(() => {
+              if (params.$returning !== false) {
+                return this._getOrFind(id, findParams);
+              } else {
+                return Promise.resolve([]);
+              }
+            });
       })
       .then(select(params, this.id))
       .catch(utils.errorHandler);
@@ -255,21 +261,27 @@ class Service {
 
   remove (id, params) {
     const opts = Object.assign({ raw: this.raw }, params);
-    return this._getOrFind(id, opts).then(data => {
-      const where = Object.assign({}, filter(params.query || {}).query);
+    const where = Object.assign({}, filter(params.query || {}).query);
 
-      if (id !== null) {
-        where[this.id] = id;
-      }
+    if (id !== null) {
+      where[this.id] = id;
+    }
 
-      const options = Object.assign({}, params.sequelize, { where });
+    const options = Object.assign({}, params.sequelize, { where });
 
-      let Model = this.applyScope(params);
+    let Model = this.applyScope(params);
 
-      return Model.destroy(options).then(() => data);
-    })
-    .then(select(params, this.id))
-    .catch(utils.errorHandler);
+    if (params.$returning !== false) {
+      return this._getOrFind(id, opts).then(data => {
+        return Model.destroy(options).then(() => data);
+      })
+        .then(select(params, this.id))
+        .catch(utils.errorHandler);
+    } else {
+      return Model.destroy(options).then(() => Promise.resolve([]))
+        .then(select(params, this.id))
+        .catch(utils.errorHandler);
+    }
   }
 }
 
