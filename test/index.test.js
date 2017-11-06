@@ -371,6 +371,12 @@ describe('Feathers Sequelize Service', () => {
         )
       );
 
+      it('patch() with $returning=false returns empty array', () =>
+        people.patch(_ids.David, {name: 'Sarah'}, {$returning: false}).then(response =>
+          expect(response).to.deep.equal([])
+        )
+      );
+
       it('update() returns a model instance', () =>
         people.update(_ids.David, _data.David).then(instance =>
           expect(instance instanceof Model).to.be.ok
@@ -380,6 +386,12 @@ describe('Feathers Sequelize Service', () => {
       it('remove() returns a model instance', () =>
         people.remove(_ids.David).then(instance =>
           expect(instance instanceof Model).to.be.ok
+        )
+      );
+
+      it('remove() with $returning=false returns empty array', () =>
+        people.remove(_ids.David, {$returning: false}).then(response =>
+          expect(response).to.deep.equal([])
         )
       );
     });
