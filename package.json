@@ -2,7 +2,7 @@
   "name": "feathers-sequelize",
   "description": "A service adapter for Sequelize an SQL ORM",
   "version": "2.3.2",
-  "homepage": "https://github.com/feathersjs/feathers-sequelize",
+  "homepage": "https://github.com/feathersjs-ecosystem/feathers-sequelize",
   "main": "lib/",
   "keywords": [
     "feathers",
@@ -19,7 +19,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git://github.com/feathersjs/feathers-sequelize.git"
+    "url": "git://github.com/feathersjs-ecosystem/feathers-sequelize.git"
   },
   "author": {
     "name": "Feathers contributors",
@@ -28,7 +28,7 @@
   },
   "contributors": [],
   "bugs": {
-    "url": "https://github.com/feathersjs/feathers-sequelize/issues"
+    "url": "https://github.com/feathersjs-ecosystem/feathers-sequelize/issues"
   },
   "engines": {
     "node": ">= 4"
