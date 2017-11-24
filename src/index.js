@@ -4,6 +4,7 @@ import filter from 'feathers-query-filters';
 import errors from 'feathers-errors';
 import { select } from 'feathers-commons';
 import * as utils from './utils';
+import { Op } from 'sequelize';
 
 class Service {
   constructor (options) {
@@ -213,7 +214,7 @@ class Service {
         // Create a new query that re-queries all ids that
         // were originally changed
         const findParams = Object.assign({}, params, {
-          query: { [this.id]: { $in: idList } }
+          query: { [this.id]: { [Op.in]: idList } }
         });
 
         return Model.update(omit(data, this.id), options)

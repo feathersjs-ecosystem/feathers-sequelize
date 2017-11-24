@@ -1,4 +1,5 @@
 import errors from 'feathers-errors';
+import { Op } from 'sequelize';
 
 export function errorHandler (error) {
   let feathersError = error;
@@ -53,7 +54,7 @@ export function getWhere (query) {
     if (value && value.$nin) {
       value = Object.assign({}, value);
 
-      value.$notIn = value.$nin;
+      value[Op.notIn] = value.$nin;
       delete value.$nin;
 
       where[prop] = value;
