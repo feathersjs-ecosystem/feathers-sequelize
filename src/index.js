@@ -12,26 +12,56 @@ class Service {
       throw new Error('Sequelize options have to be provided');
     }
 
-    if (!options.Model) {
-      throw new Error('You must provide a Sequelize Model');
+    if (!options.model) {
+      throw new Error('You must provide a Sequelize model name');
+    }
+
+    if (!options.master) {
+      throw new Error('You must provide a Sequelize master instance');
     }
 
     this.paginate = options.paginate || {};
-    this.Model = options.Model;
+    this.model = options.model;
+    this.master = options.master;
+    this.replicas = options.replicas;
     this.id = options.id || 'id';
     this.events = options.events;
     this.raw = options.raw !== false;
   }
 
-  getModel (params) {
-    return this.Model;
+  getModel (params, server) {
+    return server.model(this.model);
   }
 
-  applyScope (params) {
-    if ((params.sequelize || {}).scope) {
-      return this.getModel(params).scope(params.sequelize.scope);
+  applyScope (params, server) {
+    let Model;
+
+    const sequelize = this.computeSequelizeParam(params.sequelize, server);
+
+    Model = this.getModel(params, server);
+
+    if (sequelize.scope) {
+      return Model.scope(sequelize.scope);
     }
-    return this.getModel(params);
+
+    return Model;
+  }
+
+  decideServer (method, params) {
+    if ((!params.forceMaster) && this.replicas && (this.replicas.length > 0) && (method === 'find' || method === 'get')) {
+      // Read queries go to replicas
+      return this.replicas[Math.floor(Math.random() * this.replicas.length)];
+    } else {
+      // Write queries go to master
+      return this.master;
+    }
+  }
+
+  computeSequelizeParam (sequelize, server) {
+    if (typeof sequelize === 'function') {
+      return sequelize(server);
+    }
+    return sequelize || {};
   }
 
   extend (obj) {
@@ -39,6 +69,7 @@ class Service {
   }
 
   _find (params, getFilter = filter, paginate) {
+    const server = this.decideServer('find', params);
     const { filters, query } = getFilter(params.query || {});
     const where = utils.getWhere(query);
     const order = utils.getOrder(filters.$sort);
@@ -50,13 +81,13 @@ class Service {
       offset: filters.$skip,
       raw: this.raw,
       distinct: true
-    }, params.sequelize);
+    }, this.computeSequelizeParam(params.sequelize, server));
 
     if (filters.$select) {
       q.attributes = filters.$select;
     }
 
-    let Model = this.applyScope(params);
+    let Model = this.applyScope(params, server);
 
     // Until Sequelize fix all the findAndCount issues, a few 'hacks' are needed to get the total count correct
 
@@ -100,15 +131,16 @@ class Service {
   }
 
   _get (id, params) {
+    const server = this.decideServer('get', params);
     const where = utils.getWhere(params.query);
 
     // Attach 'where' constraints, if any were used.
     const q = Object.assign({
       raw: this.raw,
       where: Object.assign({[this.id]: id}, where)
-    }, params.sequelize);
+    }, this.computeSequelizeParam(params.sequelize, server));
 
-    let Model = this.applyScope(params);
+    let Model = this.applyScope(params, server);
 
     // findById calls findAll under the hood. We use findAll so that
     // eager loading can be used without a separate code path.
@@ -140,7 +172,8 @@ class Service {
   }
 
   create (data, params) {
-    const options = Object.assign({raw: this.raw}, params.sequelize);
+    const server = this.decideServer('create', params);
+    const options = Object.assign({raw: this.raw}, this.computeSequelizeParam(params.sequelize, server));
     // Model.create's `raw` option is different from other methods.
     // In order to use `raw` consistently to serialize the result,
     // we need to shadow the Model.create use of raw, which we provide
@@ -150,7 +183,7 @@ class Service {
     const isArray = Array.isArray(data);
     let promise;
 
-    let Model = this.applyScope(params);
+    let Model = this.applyScope(params, server);
 
     if (isArray) {
       promise = Model.bulkCreate(data, createOptions);
@@ -171,6 +204,7 @@ class Service {
   }
 
   patch (id, data, params) {
+    const server = this.decideServer('patch', params);
     const where = Object.assign({}, filter(params.query || {}).query);
     const mapIds = page => page.data.map(current => current[this.id]);
 
@@ -178,9 +212,9 @@ class Service {
       where[this.id] = id;
     }
 
-    const options = Object.assign({raw: this.raw}, params.sequelize, { where });
+    const options = Object.assign({raw: this.raw}, this.computeSequelizeParam(params.sequelize, server), { where });
 
-    let Model = this.applyScope(params);
+    let Model = this.applyScope(params, server);
 
     // This is the best way to implement patch in sql, the other dialects 'should' use a transaction.
     if (Model.sequelize.options.dialect === 'postgres' && params.$returning !== false) {
@@ -231,7 +265,8 @@ class Service {
   }
 
   update (id, data, params) {
-    const options = Object.assign({ raw: this.raw }, params.sequelize);
+    const server = this.decideServer('update', params);
+    const options = Object.assign({ raw: this.raw }, this.computeSequelizeParam(params.sequelize, server));
 
     if (Array.isArray(data)) {
       return Promise.reject(new errors.BadRequest('Not replacing multiple records. Did you mean `patch`?'));
@@ -261,6 +296,7 @@ class Service {
   }
 
   remove (id, params) {
+    const server = this.decideServer('remove', params);
     const opts = Object.assign({ raw: this.raw }, params);
     const where = Object.assign({}, filter(params.query || {}).query);
 
@@ -268,9 +304,9 @@ class Service {
       where[this.id] = id;
     }
 
-    const options = Object.assign({}, params.sequelize, { where });
+    const options = Object.assign({}, this.computeSequelizeParam(params.sequelize, server), { where });
 
-    let Model = this.applyScope(params);
+    let Model = this.applyScope(params, server);
 
     if (params.$returning !== false) {
       return this._getOrFind(id, opts).then(data => {
