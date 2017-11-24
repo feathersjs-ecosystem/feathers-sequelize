@@ -203,13 +203,49 @@ class Service {
     }).catch(utils.errorHandler);
   }
 
+  _patch (id, data, params) {
+    const server = this.decideServer('patch', params);
+    const options = Object.assign({ raw: this.raw }, this.computeSequelizeParam(params.sequelize, server));
+
+    if (Array.isArray(data)) {
+      return Promise.reject(new errors.BadRequest('Not replacing multiple records.'));
+    }
+
+    let Model = this.applyScope(params, server);
+
+    // Force the {raw: false} option as the instance is needed to properly
+    // update
+    return Model.findById(id, { raw: false }).then(instance => {
+      if (!instance) {
+        throw new errors.NotFound(`No record found for id '${id}'`);
+      }
+
+      let copy = {};
+      Object.keys(instance.toJSON()).forEach(key => {
+        if (typeof data[key] !== 'undefined') {
+          copy[key] = data[key];
+        }
+      });
+
+      return instance.update(copy, { raw: false }).then(instance => {
+        if (options.raw === false) {
+          return instance;
+        }
+        return instance.toJSON();
+      });
+    })
+      .then(select(params, this.id))
+      .catch(utils.errorHandler);
+  }
+
   patch (id, data, params) {
     const server = this.decideServer('patch', params);
     const where = Object.assign({}, filter(params.query || {}).query);
     const mapIds = page => page.data.map(current => current[this.id]);
 
     if (id !== null) {
-      where[this.id] = id;
+      // single instance
+      return this._patch(id, data, params)
     }
 
     const options = Object.assign({raw: this.raw}, this.computeSequelizeParam(params.sequelize, server), { where });
