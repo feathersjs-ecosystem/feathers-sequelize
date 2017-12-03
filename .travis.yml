@@ -2,7 +2,6 @@ language: node_js
 node_js:
   - '8'
   - '6'
-  - '4'
 env:
   - DB=postgres
   - DB=mysql
@@ -12,15 +11,5 @@ before_script:
   - npm install -g codeclimate-test-reporter
   - psql -c 'create database sequelize;' -U postgres
   - mysql -e 'CREATE DATABASE sequelize;'
-after_script:
-  - codeclimate-test-reporter < coverage/lcov.info
 services:
   - postgresql
-addons:
-  code_climate:
-    repo_token: 33b28689db8a39594e6b4be33d03db7c9df4f9690d45d2cb21949e3b12bdbfb2
-notifications:
-  email: false
-  slack:
-    rooms:
-      secure: SqGcdpDBYLZvlN+OV+cof0WNGANmN5JHBHVcZZvGAcSHwJAYmJ5Ar39hD88CY/ltRRg6uvu6RDHV/HJe4fbmXxN6AU8FfDiL1icy16p+0lErgET35S4sbAsP3hMptnsRKP5uKmITXWnyvOcu8dFcvwPsHKLp2F3aXHck3+kvaWsLiBUFu9yaczDVePQZqsvtCRDotUUp2EeI6hDkJuBfIUMomwzcpVhUHvDnB1Vnlsq260OjhH73rLZPfTatiNDozavNpPPJNk2pwpJdWM4m6RCZTsJytA5FcnmLlDA5/l8V+6SXsV4kdcdeHiUeeSQvTazz6hgZnfdXrciHv3G+qhPa0+xt3iWcTc4p8P6wM0MhOUvUoDV+D23X08HqL9LgN7NPKJ1rScAcZ4bIbUny8hCI/fv/jlzotfKPIkJWpZDhPlHJDOhc1OJC/j9UDtISEW8sZtUAQYyX+5cJUXmw1T+bdlso3rQg25loRRDI48WJ2w1gPMG766sikjM6ygv4csDvFzX+TFagSDldNI3KUqmoUNmA5AfX4RlgC6sfmbbtQYBz8mNJlok4zyGMbeS/CHjN4MHsGerxWbi2lA0262JKWxKOyYx5lXEei570tiAiufTAkceiNePnRcMJuh+W8HCG/mL3/u+1oK8upMbxcTRcytMhV9CQXzT70UcDdOE=

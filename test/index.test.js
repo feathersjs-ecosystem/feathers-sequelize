@@ -1,13 +1,14 @@
-import pg from 'pg';
-import assert from 'assert';
-import { expect } from 'chai';
-import { base, example, orm } from 'feathers-service-tests';
+const pg = require('pg');
+const assert = require('assert');
+const { expect } = require('chai');
 
-import Sequelize from 'sequelize';
-import errors from 'feathers-errors';
-import feathers from 'feathers';
-import service from '../src';
-import server from '../example/app';
+const { base, orm } = require('feathers-service-tests');
+
+const Sequelize = require('sequelize');
+const errors = require('feathers-errors');
+const feathers = require('feathers');
+
+const service = require('../lib');
 
 // The base tests require the use of Sequelize.BIGINT to avoid 'out of range errors'
 // Unfortunetly BIGINT's are serialized as Strings:
@@ -455,10 +456,4 @@ describe('Feathers Sequelize Service', () => {
       );
     });
   });
-});
-
-describe('Sequelize service example test', () => {
-  after(done => server.close(() => done()));
-
-  example();
 });

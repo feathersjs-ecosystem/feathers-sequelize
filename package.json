@@ -31,18 +31,15 @@
     "url": "https://github.com/feathersjs-ecosystem/feathers-sequelize/issues"
   },
   "engines": {
-    "node": ">= 4"
+    "node": ">= 6"
   },
   "scripts": {
-    "prepublish": "npm run compile",
     "publish": "git push origin --tags && npm run changelog && git push origin",
     "changelog": "github_changelog_generator && git add CHANGELOG.md && git commit -am \"Updating changelog\"",
     "release:patch": "npm version patch && npm publish",
     "release:minor": "npm version minor && npm publish",
     "release:major": "npm version major && npm publish",
-    "compile": "rimraf lib/ && babel -d lib/ src/",
-    "watch": "babel --watch -d lib/ src/",
-    "lint": "eslint-if-supported semistandard --fix",
+    "lint": "semistandard --fix",
     "mocha": "mocha --opts mocha.opts --timeout 5000",
     "test": "npm run lint && npm run coverage",
     "test:postgres": "env DB=postgres npm run lint && npm run coverage:postgres",
@@ -54,9 +51,6 @@
   "semistandard": {
     "env": [
       "mocha"
-    ],
-    "ignore": [
-      "/lib"
     ]
   },
   "directories": {
@@ -71,14 +65,8 @@
     "uberproto": "^1.1.2"
   },
   "devDependencies": {
-    "babel-cli": "^6.1.2",
-    "babel-core": "^6.1.2",
-    "babel-plugin-add-module-exports": "^0.2.0",
-    "babel-plugin-transform-object-assign": "^6.1.18",
-    "babel-preset-es2015": "^6.18.0",
     "body-parser": "^1.14.1",
     "chai": "^4.0.0",
-    "eslint-if-supported": "^1.0.1",
     "feathers": "^2.0.0",
     "feathers-rest": "^1.3.0",
     "feathers-service-tests": "^0.10.0",
@@ -87,7 +75,6 @@
     "mysql2": "^1.4.2",
     "pg": "^7.3.0",
     "pg-hstore": "^2.3.2",
-    "rimraf": "^2.5.4",
     "semistandard": "^11.0.0",
     "sqlite3": "^3.1.7"
   }
