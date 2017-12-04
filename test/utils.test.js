@@ -1,6 +1,6 @@
 const { expect } = require('chai');
 
-const errors = require('feathers-errors');
+const errors = require('@feathersjs/errors');
 const Sequelize = require('sequelize');
 
 const utils = require('../lib/utils');
