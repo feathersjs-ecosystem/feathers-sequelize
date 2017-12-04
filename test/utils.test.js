@@ -1,7 +1,9 @@
-import { expect } from 'chai';
-import errors from 'feathers-errors';
-import * as utils from '../src/utils';
-import Sequelize from 'sequelize';
+const { expect } = require('chai');
+
+const errors = require('feathers-errors');
+const Sequelize = require('sequelize');
+
+const utils = require('../lib/utils');
 
 describe('Feathers Sequelize Utils', () => {
   describe('errorHandler', () => {

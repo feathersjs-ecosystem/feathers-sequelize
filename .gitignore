@@ -1,3 +1,5 @@
+.DS_Store
+
 # Logs
 logs
 *.log
@@ -27,6 +29,5 @@ node_modules
 # Users Environment Variables
 .lock-wscript
 
-lib/
-*.sqlite
-*.sqlite-journal
+dist/
+db.sqlite

@@ -1,6 +1,6 @@
-import { expect } from 'chai';
-import dehydrate from '../src/hooks/dehydrate';
-import Sequelize from 'sequelize';
+const { expect } = require('chai');
+const dehydrate = require('../lib/hooks/dehydrate');
+const Sequelize = require('sequelize');
 
 let sequelize;
 
