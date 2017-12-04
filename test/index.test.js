@@ -5,8 +5,8 @@ const { expect } = require('chai');
 const { base, orm } = require('feathers-service-tests');
 
 const Sequelize = require('sequelize');
-const errors = require('feathers-errors');
-const feathers = require('feathers');
+const errors = require('@feathersjs/errors');
+const feathers = require('@feathersjs/feathers');
 
 const service = require('../lib');
 
