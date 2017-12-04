@@ -1,5 +1,20 @@
 # Change Log
 
+## [v3.0.0](https://github.com/feathersjs-ecosystem/feathers-sequelize/tree/v3.0.0) (2017-12-04)
+[Full Changelog](https://github.com/feathersjs-ecosystem/feathers-sequelize/compare/v2.4.0...v3.0.0)
+
+**Closed issues:**
+
+- Populate joined table on create [\#180](https://github.com/feathersjs-ecosystem/feathers-sequelize/issues/180)
+- Return associated data from joined table? [\#177](https://github.com/feathersjs-ecosystem/feathers-sequelize/issues/177)
+- How to work with the relationship from URL query? [\#176](https://github.com/feathersjs-ecosystem/feathers-sequelize/issues/176)
+
+**Merged pull requests:**
+
+- Upgrade to Feathers Buzzard \(v3\) [\#183](https://github.com/feathersjs-ecosystem/feathers-sequelize/pull/183) ([daffl](https://github.com/daffl))
+- Update to new plugin infrastructure [\#182](https://github.com/feathersjs-ecosystem/feathers-sequelize/pull/182) ([daffl](https://github.com/daffl))
+- Update dependencies to enable Greenkeeper 🌴 [\#170](https://github.com/feathersjs-ecosystem/feathers-sequelize/pull/170) ([greenkeeper[bot]](https://github.com/apps/greenkeeper))
+
 ## [v2.4.0](https://github.com/feathersjs-ecosystem/feathers-sequelize/tree/v2.4.0) (2017-11-06)
 [Full Changelog](https://github.com/feathersjs-ecosystem/feathers-sequelize/compare/v2.3.2...v2.4.0)
 
