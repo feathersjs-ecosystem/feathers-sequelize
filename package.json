@@ -74,7 +74,7 @@
     "mysql2": "^1.4.2",
     "pg": "^7.3.0",
     "pg-hstore": "^2.3.2",
-    "semistandard": "^11.0.0",
+    "semistandard": "^12.0.0",
     "sqlite3": "^3.1.7"
   }
 }
