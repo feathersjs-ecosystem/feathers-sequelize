@@ -1,5 +1,19 @@
 # Change Log
 
+## [v3.0.1](https://github.com/feathersjs-ecosystem/feathers-sequelize/tree/v3.0.1) (2018-03-07)
+[Full Changelog](https://github.com/feathersjs-ecosystem/feathers-sequelize/compare/v3.0.0...v3.0.1)
+
+**Closed issues:**
+
+- `raw: false,` does not work with with Buzzard [\#184](https://github.com/feathersjs-ecosystem/feathers-sequelize/issues/184)
+- "error:  NotFound: No record found for id" when calling with socket.io [\#179](https://github.com/feathersjs-ecosystem/feathers-sequelize/issues/179)
+
+**Merged pull requests:**
+
+- Add default ES module export for TS compatibility [\#190](https://github.com/feathersjs-ecosystem/feathers-sequelize/pull/190) ([Bubomir](https://github.com/Bubomir))
+- Update mocha to the latest version 🚀 [\#187](https://github.com/feathersjs-ecosystem/feathers-sequelize/pull/187) ([greenkeeper[bot]](https://github.com/apps/greenkeeper))
+- Update semistandard to the latest version 🚀 [\#185](https://github.com/feathersjs-ecosystem/feathers-sequelize/pull/185) ([greenkeeper[bot]](https://github.com/apps/greenkeeper))
+
 ## [v3.0.0](https://github.com/feathersjs-ecosystem/feathers-sequelize/tree/v3.0.0) (2017-12-04)
 [Full Changelog](https://github.com/feathersjs-ecosystem/feathers-sequelize/compare/v2.4.0...v3.0.0)
 
