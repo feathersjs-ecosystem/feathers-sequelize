@@ -8,6 +8,8 @@
 
 A [Feathers](https://feathersjs.com) database adapter for [Sequelize](http://sequelizejs.com), an ORM for Node.js. It supports PostgreSQL, MySQL, MariaDB, SQLite and MSSQL and features transaction support, relations, read replication and more.
 
+> __Very Important:__ Before using this adapter you have to be familiar with both, the [Feathers Basics](https://docs.feathersjs.com/guides/basics/readme.html) and general use of [Sequelize](http://docs.sequelizejs.com/). For associations and relations see the [associations](#associations) section. This adapter may not cover all use cases but they can still be implemented using Sequelize models directly in a [Custom Feathers service](https://docs.feathersjs.com/guides/basics/services.html).
+
 ```bash
 npm install --save feathers-sequelize
 ```
@@ -22,7 +24,6 @@ npm install --save tedious // MSSQL
 ```
 
 > __Important:__ `feathers-sequelize` implements the [Feathers Common database adapter API](https://docs.feathersjs.com/api/databases/common.html) and [querying syntax](https://docs.feathersjs.com/api/databases/querying.html).
-
 > For more information about models and general Sequelize usage, follow up in the [Sequelize documentation](http://docs.sequelizejs.com/en/latest/).
 
 ## API
@@ -150,17 +151,48 @@ app.listen(port, () => {
 Run the example with `node app` and go to [localhost:3030/messages](http://localhost:3030/messages).
 
 
+## Associations
+
+### Embrace the ORM
+
+The documentation on [Sequelize associations and relations](http://docs.sequelizejs.com/manual/tutorial/associations.html) is essential to implementing associations with this adapter and one of the steepest parts of the Sequelize learning curve. If you have never used an ORM, let it do a lot of the heavy lifting for you!
+
+### Setting `params.sequelize.include`
+
+Once you understand how the `include` option works with Sequelize, you will want to set that option from a [before hook](https://docs.feathersjs.com/guides/basics/hooks.html) in Feathers. Feathers will pass the value of `context.params.sequelize` as the options parameter for all Sequelize method calls. This is what your hook might look like:
+
+```js
+// GET /my-service?name=John&include=1
+function (context) {
+   if (hook.params.query.include) {
+      const AssociatedModel = hook.app.services.fooservice.Model;
+      hook.params.sequelize = {
+         include: [{ model: AssociatedModel }]
+      };
+      // delete any special query params so they are not used
+      // in the WHERE clause in the db query.
+      delete context.params.query.include;
+   }
+
+   return Promise.resolve(context);
+}
+```
+
+Underneath the hood, feathers will call your models find method sort of like this:
+
+```js
+// YourModel is a sequelize model
+const options = Object.assign({ where: { name: 'John' }}, context.params.sequelize);
+YourModel.findAndCount(options);
+```
+
+For more information, follow up up in the [Sequelize documentation for associations](http://docs.sequelizejs.com/manual/tutorial/associations.html)and [this issue](https://github.com/feathersjs-ecosystem/feathers-sequelize/issues/20).
+
 ## Querying
 
 Additionally to the [common querying mechanism](https://docs.feathersjs.com/api/databases/querying.html) this adapter also supports all [Sequelize query operators](http://docs.sequelizejs.com/manual/tutorial/querying.html).
 
 > **Note**: This adapter supports an additional `$returning` parameter for patch and remove queries. By setting `params.$returning = false` it will disable feathers and sequelize from returning what was changed, so mass updates can be done without overwhelming node and/or clients.
-
-
-
-## Associations and relations
-
-Follow up in the [Sequelize documentation for associations](http://docs.sequelizejs.com/manual/tutorial/associations.html), [this issue](https://github.com/feathersjs-ecosystem/feathers-sequelize/issues/20) and [this Stackoverflow answer](https://stackoverflow.com/questions/42841810/feathers-js-sequelize-service-with-relations-between-two-models/42846215#42846215).
 
 ## Working with Sequelize Model instances
 
