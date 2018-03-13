@@ -306,7 +306,7 @@ All of the following commands assume that you have defined the same environment 
 
 > **ProTip:** To save typing, you can export environment variables for your current bash/terminal session:
 
-> ```
+```
 export DATABASE_URL=postgres://user:pass@host:port/db
 ```
 
