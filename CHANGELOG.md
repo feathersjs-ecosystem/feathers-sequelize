@@ -1,5 +1,22 @@
 # Change Log
 
+## [v3.0.2](https://github.com/feathersjs-ecosystem/feathers-sequelize/tree/v3.0.2) (2018-03-25)
+[Full Changelog](https://github.com/feathersjs-ecosystem/feathers-sequelize/compare/v3.0.1...v3.0.2)
+
+**Closed issues:**
+
+- Requesting for associated data returns empty [\#197](https://github.com/feathersjs-ecosystem/feathers-sequelize/issues/197)
+- Is it possible to query for related data through REST? [\#195](https://github.com/feathersjs-ecosystem/feathers-sequelize/issues/195)
+- sequelize version 4.35 not permit $in [\#193](https://github.com/feathersjs-ecosystem/feathers-sequelize/issues/193)
+- Custom getter not being called properly. [\#129](https://github.com/feathersjs-ecosystem/feathers-sequelize/issues/129)
+
+**Merged pull requests:**
+
+- Update sqlite3 to the latest version 🚀 [\#196](https://github.com/feathersjs-ecosystem/feathers-sequelize/pull/196) ([greenkeeper[bot]](https://github.com/apps/greenkeeper))
+- Fix Sequelize dependency [\#194](https://github.com/feathersjs-ecosystem/feathers-sequelize/pull/194) ([daffl](https://github.com/daffl))
+- Update README.md [\#192](https://github.com/feathersjs-ecosystem/feathers-sequelize/pull/192) ([murbanowicz](https://github.com/murbanowicz))
+- Update Readme on associations [\#191](https://github.com/feathersjs-ecosystem/feathers-sequelize/pull/191) ([daffl](https://github.com/daffl))
+
 ## [v3.0.1](https://github.com/feathersjs-ecosystem/feathers-sequelize/tree/v3.0.1) (2018-03-07)
 [Full Changelog](https://github.com/feathersjs-ecosystem/feathers-sequelize/compare/v3.0.0...v3.0.1)
 
