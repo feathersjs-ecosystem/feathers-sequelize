@@ -201,8 +201,8 @@ describe('Feathers Sequelize Service', () => {
             assert.equal(people.data[0].name, name);
             assert.equal(people.data[0].age, null);
           })
-          .then(() => people.remove(person.id))
-          .catch((err) => { people.remove(person.id); throw (err); })
+            .then(() => people.remove(person.id))
+            .catch((err) => { people.remove(person.id); throw (err); })
         );
       });
 
@@ -210,10 +210,28 @@ describe('Feathers Sequelize Service', () => {
         const updateName = 'Ryan';
 
         return people.update(_ids.Kirsten, { name: updateName })
-            .then((data) => people.get(_ids.Kirsten))
-            .then(updatedPerson => {
-              assert.equal(updatedPerson.name, updateName);
-            });
+          .then((data) => people.get(_ids.Kirsten))
+          .then(updatedPerson => {
+            assert.equal(updatedPerson.name, updateName);
+          });
+      });
+
+      it('corrently updates records using optional query param', () => {
+        const updateAge = 40;
+        const updateName = 'Kirtsten';
+        return people.update(_ids.Kirsten, { name: updateName, age: updateAge }, {query: {name: 'Kirsten'}})
+          .then((data) => people.get(_ids.Kirsten))
+          .then(updatedPerson => {
+            assert.equal(updatedPerson.age, updateAge);
+          });
+      });
+
+      it('fails update when query prevents result in no record match for id', () => {
+        const updateAge = 50;
+        const updateName = 'Kirtsten';
+        return people.update(_ids.Kirsten, { name: updateName, age: updateAge }, {query: {name: 'John'}})
+          .then((data) => assert(false, 'Should have thrown an error'))
+          .catch(err => assert(err.message.indexOf('No record found') >= 0));
       });
     });
 
@@ -225,25 +243,25 @@ describe('Feathers Sequelize Service', () => {
 
       beforeEach(() =>
         people.create({ name: 'Kirsten', age: 30 })
-        .then(result => {
-          _data.Kirsten = result;
-          _ids.Kirsten = result.id;
-          return orders.create([
-            { name: 'Order 1', personId: result.id },
-            { name: 'Order 2', personId: result.id },
-            { name: 'Order 3', personId: result.id }
-          ]);
-        })
-        .then(() => people.create({ name: 'Ryan', age: 30 }))
-        .then(result => {
-          _data.Ryan = result;
-          _ids.Ryan = result.id;
-          return orders.create([
-            { name: 'Order 4', personId: result.id },
-            { name: 'Order 5', personId: result.id },
-            { name: 'Order 6', personId: result.id }
-          ]);
-        })
+          .then(result => {
+            _data.Kirsten = result;
+            _ids.Kirsten = result.id;
+            return orders.create([
+              { name: 'Order 1', personId: result.id },
+              { name: 'Order 2', personId: result.id },
+              { name: 'Order 3', personId: result.id }
+            ]);
+          })
+          .then(() => people.create({ name: 'Ryan', age: 30 }))
+          .then(result => {
+            _data.Ryan = result;
+            _ids.Ryan = result.id;
+            return orders.create([
+              { name: 'Order 4', personId: result.id },
+              { name: 'Order 5', personId: result.id },
+              { name: 'Order 6', personId: result.id }
+            ]);
+          })
       );
 
       afterEach(() =>
@@ -304,8 +322,8 @@ describe('Feathers Sequelize Service', () => {
             assert.equal(result.data.length, 0);
           });
         })
-        .then(() => people.remove(person.id))
-        .catch((err) => { people.remove(person.id); throw (err); });
+          .then(() => people.remove(person.id))
+          .catch((err) => { people.remove(person.id); throw (err); });
       });
     });
   });
