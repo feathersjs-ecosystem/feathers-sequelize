@@ -1,5 +1,12 @@
 # Change Log
 
+## [v3.1.0](https://github.com/feathersjs-ecosystem/feathers-sequelize/tree/v3.1.0) (2018-03-27)
+[Full Changelog](https://github.com/feathersjs-ecosystem/feathers-sequelize/compare/v3.0.2...v3.1.0)
+
+**Merged pull requests:**
+
+- Support params.query in update\(\) [\#189](https://github.com/feathersjs-ecosystem/feathers-sequelize/pull/189) ([TimNZ](https://github.com/TimNZ))
+
 ## [v3.0.2](https://github.com/feathersjs-ecosystem/feathers-sequelize/tree/v3.0.2) (2018-03-25)
 [Full Changelog](https://github.com/feathersjs-ecosystem/feathers-sequelize/compare/v3.0.1...v3.0.2)
 
