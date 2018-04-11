@@ -186,7 +186,7 @@ const options = Object.assign({ where: { name: 'John' }}, context.params.sequeli
 YourModel.findAndCount(options);
 ```
 
-For more information, follow up up in the [Sequelize documentation for associations](http://docs.sequelizejs.com/manual/tutorial/associations.html)and [this issue](https://github.com/feathersjs-ecosystem/feathers-sequelize/issues/20).
+For more information, follow up up in the [Sequelize documentation for associations](http://docs.sequelizejs.com/manual/tutorial/associations.html) and [this issue](https://github.com/feathersjs-ecosystem/feathers-sequelize/issues/20).
 
 ## Querying
 
