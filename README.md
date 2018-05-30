@@ -248,6 +248,8 @@ Creat a temporary file in your project root like this:
 ```js
 // test.js
 const app = require('./src/app');
+// run setup to initialize relations
+app.setup();
 const seqClient = app.get('sequelizeClient');
 const SomeModel = seqClient.models['some-model'];
 const log = console.log.bind(console);
