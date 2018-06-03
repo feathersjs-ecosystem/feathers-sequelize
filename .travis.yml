@@ -8,6 +8,7 @@ env:
   - DB=mysql
   - DB=sqlite
 sudo: false
+install: npm install
 before_script:
   - npm install -g codeclimate-test-reporter
   - psql -c 'create database sequelize;' -U postgres
