@@ -1,5 +1,23 @@
 # Change Log
 
+## [v3.1.1](https://github.com/feathersjs-ecosystem/feathers-sequelize/tree/v3.1.1) (2018-06-03)
+[Full Changelog](https://github.com/feathersjs-ecosystem/feathers-sequelize/compare/v3.1.0...v3.1.1)
+
+**Closed issues:**
+
+- Custom id field does not work in get request with id [\#210](https://github.com/feathersjs-ecosystem/feathers-sequelize/issues/210)
+- Question about executing sql string using feathers-sequelize [\#208](https://github.com/feathersjs-ecosystem/feathers-sequelize/issues/208)
+- Version 10 of node.js has been released [\#205](https://github.com/feathersjs-ecosystem/feathers-sequelize/issues/205)
+- sub include relations with Sequelize: Query error [\#204](https://github.com/feathersjs-ecosystem/feathers-sequelize/issues/204)
+
+**Merged pull requests:**
+
+- Update uberproto to the latest version 🚀 [\#214](https://github.com/feathersjs-ecosystem/feathers-sequelize/pull/214) ([greenkeeper[bot]](https://github.com/apps/greenkeeper))
+- Add the explicit call to setup\(\) to initialize relations. [\#212](https://github.com/feathersjs-ecosystem/feathers-sequelize/pull/212) ([edwardmsmith](https://github.com/edwardmsmith))
+- Update to node 10 in .travis.yml [\#206](https://github.com/feathersjs-ecosystem/feathers-sequelize/pull/206) ([daffl](https://github.com/daffl))
+- Fixing references to context vs. hook [\#202](https://github.com/feathersjs-ecosystem/feathers-sequelize/pull/202) ([corymsmith](https://github.com/corymsmith))
+- Update README.md [\#200](https://github.com/feathersjs-ecosystem/feathers-sequelize/pull/200) ([DesignByOnyx](https://github.com/DesignByOnyx))
+
 ## [v3.1.0](https://github.com/feathersjs-ecosystem/feathers-sequelize/tree/v3.1.0) (2018-03-27)
 [Full Changelog](https://github.com/feathersjs-ecosystem/feathers-sequelize/compare/v3.0.2...v3.1.0)
 
