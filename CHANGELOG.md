@@ -1,5 +1,21 @@
 # Change Log
 
+## [v3.1.2](https://github.com/feathersjs-ecosystem/feathers-sequelize/tree/v3.1.2) (2018-06-07)
+[Full Changelog](https://github.com/feathersjs-ecosystem/feathers-sequelize/compare/v3.1.1...v3.1.2)
+
+**Fixed bugs:**
+
+- `Paginate` option for a feathers-sequelize service is not working as expected [\#186](https://github.com/feathersjs-ecosystem/feathers-sequelize/issues/186)
+
+**Closed issues:**
+
+- options object extra data lost [\#209](https://github.com/feathersjs-ecosystem/feathers-sequelize/issues/209)
+
+**Merged pull requests:**
+
+- Default paginate option value set to false instead of empty object [\#217](https://github.com/feathersjs-ecosystem/feathers-sequelize/pull/217) ([alex-friedl](https://github.com/alex-friedl))
+- keeping options data with the service [\#216](https://github.com/feathersjs-ecosystem/feathers-sequelize/pull/216) ([pyvkd](https://github.com/pyvkd))
+
 ## [v3.1.1](https://github.com/feathersjs-ecosystem/feathers-sequelize/tree/v3.1.1) (2018-06-03)
 [Full Changelog](https://github.com/feathersjs-ecosystem/feathers-sequelize/compare/v3.1.0...v3.1.1)
 
