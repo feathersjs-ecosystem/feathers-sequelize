@@ -18,7 +18,7 @@ And [one of the following](http://docs.sequelizejs.com/en/latest/docs/getting-st
 
 ```bash
 npm install --save pg pg-hstore
-npm install --save mysql // For both mysql and mariadb dialects
+npm install --save mysql2 // For both mysql and mariadb dialects
 npm install --save sqlite3
 npm install --save tedious // MSSQL
 ```
