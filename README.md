@@ -58,10 +58,13 @@ app.service('messages').hooks({
     find(context) {
       // Get the Sequelize instance. In the generated application via:
       const sequelize = context.app.get('sequelizeClient');
+      const { User } = sequelize.models;
       
       context.params.sequelize = {
         include: [ User ]
       }
+      
+      return context;
     }
   }
 });
