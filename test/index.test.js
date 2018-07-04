@@ -8,32 +8,13 @@ const Sequelize = require('sequelize');
 const errors = require('@feathersjs/errors');
 const feathers = require('@feathersjs/feathers');
 
+const sequelize = require('./connection');
 const service = require('../lib');
 
 // The base tests require the use of Sequelize.BIGINT to avoid 'out of range errors'
 // Unfortunetly BIGINT's are serialized as Strings:
 // https://github.com/sequelize/sequelize/issues/1774
 pg.defaults.parseInt8 = true;
-
-let sequelize;
-
-if (process.env.DB === 'postgres') {
-  sequelize = new Sequelize('sequelize', 'postgres', '', {
-    host: 'localhost',
-    dialect: 'postgres'
-  });
-} else if (process.env.DB === 'mysql') {
-  sequelize = new Sequelize('sequelize', 'root', '', {
-    host: '127.0.0.1',
-    dialect: 'mysql'
-  });
-} else {
-  sequelize = new Sequelize('sequelize', '', '', {
-    dialect: 'sqlite',
-    storage: './db.sqlite',
-    logging: false
-  });
-}
 
 const Model = sequelize.define('people', {
   name: {
