@@ -1,5 +1,31 @@
 # Change Log
 
+## [v3.1.3](https://github.com/feathersjs-ecosystem/feathers-sequelize/tree/v3.1.3) (2018-10-29)
+[Full Changelog](https://github.com/feathersjs-ecosystem/feathers-sequelize/compare/v3.1.2...v3.1.3)
+
+**Closed issues:**
+
+- Include hook doesn't work on create [\#242](https://github.com/feathersjs-ecosystem/feathers-sequelize/issues/242)
+- Warning messages when using "sequelize db:migrate" [\#240](https://github.com/feathersjs-ecosystem/feathers-sequelize/issues/240)
+- Extending service class fails when transpiling to ES5 [\#237](https://github.com/feathersjs-ecosystem/feathers-sequelize/issues/237)
+- Example in readme.md doesn't work [\#236](https://github.com/feathersjs-ecosystem/feathers-sequelize/issues/236)
+- How to use raw where clause [\#233](https://github.com/feathersjs-ecosystem/feathers-sequelize/issues/233)
+- Associations on Create [\#230](https://github.com/feathersjs-ecosystem/feathers-sequelize/issues/230)
+- Valid password characters can break the connection string [\#229](https://github.com/feathersjs-ecosystem/feathers-sequelize/issues/229)
+- Does Feathers-Sequalize support class and instance methods? [\#225](https://github.com/feathersjs-ecosystem/feathers-sequelize/issues/225)
+- Find & include data structure shape [\#224](https://github.com/feathersjs-ecosystem/feathers-sequelize/issues/224)
+- Fix bug Pg-Native [\#222](https://github.com/feathersjs-ecosystem/feathers-sequelize/issues/222)
+- Connection pool [\#221](https://github.com/feathersjs-ecosystem/feathers-sequelize/issues/221)
+- Question: Feathers Sequelize raw query and feathers service without using model. [\#215](https://github.com/feathersjs-ecosystem/feathers-sequelize/issues/215)
+- Sub include relations with Sequelize: Query erro [\#203](https://github.com/feathersjs-ecosystem/feathers-sequelize/issues/203)
+
+**Merged pull requests:**
+
+- use transactions in `update`, related to \#188 [\#243](https://github.com/feathersjs-ecosystem/feathers-sequelize/pull/243) ([jiangts](https://github.com/jiangts))
+- Update README to fix \#240 [\#241](https://github.com/feathersjs-ecosystem/feathers-sequelize/pull/241) ([leedongwei](https://github.com/leedongwei))
+- minor typos [\#232](https://github.com/feathersjs-ecosystem/feathers-sequelize/pull/232) ([Strongbyte-ES](https://github.com/Strongbyte-ES))
+- Update README: Latest version requires mysql2 [\#219](https://github.com/feathersjs-ecosystem/feathers-sequelize/pull/219) ([ricardopolo](https://github.com/ricardopolo))
+
 ## [v3.1.2](https://github.com/feathersjs-ecosystem/feathers-sequelize/tree/v3.1.2) (2018-06-07)
 [Full Changelog](https://github.com/feathersjs-ecosystem/feathers-sequelize/compare/v3.1.1...v3.1.2)
 
