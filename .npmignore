@@ -8,3 +8,5 @@
 test/
 coverage/
 .github/
+db.sqlite
+mocha.opts
