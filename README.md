@@ -47,6 +47,9 @@ __Options:__
 - `raw` (*optional*, default: `true`) - Runs queries faster by returning plain objects instead of Sequelize models.
 - `events` (*optional*) - A list of [custom service events](https://docs.feathersjs.com/api/events.html#custom-events) sent by this service
 - `paginate` (*optional*) - A [pagination object](https://docs.feathersjs.com/api/databases/common.html#pagination) containing a `default` and `max` page size
+- `multi` (*optional*) - Allow `create` with arrays and `update` and `remove` with `id` `null` to change multiple items. Can be `true` for all methods or an array of allowed methods (e.g. `[ 'remove', 'create' ]`)
+- `operators` (*optional*) - A mapping from query syntax property names to to [Sequelize secure operators](http://docs.sequelizejs.com/manual/tutorial/querying.html)
+- `whitelist` (*optional*) - A list of additional query parameters to allow (e..g `[ '$regex', '$geoNear' ]`). Default is the supported `operators`
 
 ### params.sequelize
 
@@ -68,6 +71,27 @@ app.service('messages').hooks({
     }
   }
 });
+```
+
+### operators
+
+Sequelize deprecated string based operators a while ago for security reasons. Starting at version 4.0.0 `feathers-sequelize` converts queries securely. If you want to support additional Sequelize operators, the `operators` service option can contain a mapping from query parameter name to Sequelize operator. By default supported are:
+
+```
+'$eq',
+'$ne',
+'$gte',
+'$gt',
+'$lte',
+'$lt',
+'$in',
+'$nin',
+'$like',
+'$notLike',
+'$iLike',
+'$notILike',
+'$or',
+'$and'
 ```
 
 ## Sequelize `raw` queries
@@ -480,8 +504,34 @@ In the unfortunate case where you must revert your app to a previous state, it i
 1. Revert your code back to the previous state
 1. Start your app
 
+### Migrating
+
+`feathers-sequelize` 4.0.0 comes with important security and usability updates.
+
+> __Important:__ For general migration information to the new database adapter functionality see [crow.docs.feathersjs.com/migrating.html#database-adapters](https://crow.docs.feathersjs.com/migrating.html#database-adapters).
+
+The following breaking changes have been introduced:
+
+- All methods now take `params.sequelize` into account
+- All methods allow additional query parameters
+- Multiple updates are disabled by default (see the `multi` option)
+- Upgraded to secure Sequelize operators (see the [operators](#operators) option)
+- Errors no longer contain Sequelize specific information. The original Sequelize error can be retrieved on the server via:
+
+```js
+const { ERROR } = require('feathers-sequelize');
+
+try {
+  await sequelizeService.doSomethign();
+} catch(error) {
+  // error is a FeathersError
+  // Safely retrieve the Sequelize error
+  const sequelizeError = error.data[ERROR];
+}
+```
+
 ## License
 
-Copyright (c) 2017
+Copyright (c) 2019
 
 Licensed under the [MIT license](LICENSE).
