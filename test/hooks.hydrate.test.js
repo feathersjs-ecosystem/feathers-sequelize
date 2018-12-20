@@ -42,28 +42,28 @@ describe('Feathers Sequelize Hydrate Hook', () => {
   });
 
   it('hydrates results for find()', async () => {
-    const hook = await callHook(BlogPost, 'find', [{title: 'David'}]);
+    const hook = await callHook(BlogPost, 'find', [{ title: 'David' }]);
 
     expect(hook.result[0] instanceof BlogPost);
   });
 
   it('hydrates results for paginated find()', async () => {
     const hook = await callHook(BlogPost, 'find', {
-      data: [{title: 'David'}]
+      data: [{ title: 'David' }]
     });
 
     expect(hook.result.data[0] instanceof BlogPost);
   });
 
   it('hydrates results for get()', async () => {
-    const hook = await callHook(BlogPost, 'get', {title: 'David'});
+    const hook = await callHook(BlogPost, 'get', { title: 'David' });
 
     expect(hook.result instanceof BlogPost);
   });
 
   ['create', 'update', 'patch'].forEach(method => {
     it(`hydrates results for single ${method}()`, async () => {
-      const hook = await callHook(BlogPost, method, {title: 'David'});
+      const hook = await callHook(BlogPost, method, { title: 'David' });
 
       expect(hook.result instanceof BlogPost);
     });
@@ -71,7 +71,7 @@ describe('Feathers Sequelize Hydrate Hook', () => {
 
   ['create', 'patch'].forEach(method => {
     it(`hydrates results for bulk ${method}()`, async () => {
-      const hook = await callHook(BlogPost, method, [{title: 'David'}]);
+      const hook = await callHook(BlogPost, method, [{ title: 'David' }]);
 
       expect(hook.result[0] instanceof BlogPost);
     });
