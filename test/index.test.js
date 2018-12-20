@@ -239,6 +239,18 @@ describe('Feathers Sequelize Service', () => {
         await people.remove(person.id);
       });
 
+      it('hides the Sequelize error in ERROR symbol', async () => {
+        try {
+          await people.create({
+            age: 10
+          });
+          assert.ok(false, 'Should never get here');
+        } catch (error) {
+          assert.ok(error[service.ERROR]);
+          assert.strictEqual(error.name, 'BadRequest');
+        }
+      });
+
       it('correctly persists updates (#125)', async () => {
         const updateName = 'Ryan';
 
@@ -249,7 +261,7 @@ describe('Feathers Sequelize Service', () => {
         assert.strictEqual(updatedPerson.name, updateName);
       });
 
-      it('corrently updates records using optional query param', async () => {
+      it('correctly updates records using optional query param', async () => {
         const updateAge = 40;
         const updateName = 'Kirtsten';
 
