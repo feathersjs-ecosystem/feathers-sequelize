@@ -526,7 +526,7 @@ try {
 } catch(error) {
   // error is a FeathersError
   // Safely retrieve the Sequelize error
-  const sequelizeError = error.data[ERROR];
+  const sequelizeError = error[ERROR];
 }
 ```
 
