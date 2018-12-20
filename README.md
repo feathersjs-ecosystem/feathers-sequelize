@@ -514,6 +514,7 @@ The following breaking changes have been introduced:
 
 - All methods now take `params.sequelize` into account
 - All methods allow additional query parameters
+- `this.Model` has been remove. Use `this.getModel()` instead.
 - Multiple updates are disabled by default (see the `multi` option)
 - Upgraded to secure Sequelize operators (see the [operators](#operators) option)
 - Errors no longer contain Sequelize specific information. The original Sequelize error can be retrieved on the server via:
