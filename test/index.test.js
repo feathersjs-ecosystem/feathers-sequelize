@@ -2,7 +2,7 @@ const pg = require('pg');
 const assert = require('assert');
 const { expect } = require('chai');
 
-const { base, orm } = require('feathers-service-tests');
+const { base } = require('feathers-service-tests');
 
 const Sequelize = require('sequelize');
 const errors = require('@feathersjs/errors');
@@ -100,12 +100,13 @@ Model.hasMany(Order);
 Order.belongsTo(Model);
 
 describe('Feathers Sequelize Service', () => {
-  before(() =>
-    Model.sync({ force: true })
-      .then(() => CustomId.sync({ force: true }))
-      .then(() => CustomGetterSetter.sync({ force: true }))
-      .then(() => Order.sync({ force: true }))
-  );
+  before(async () => {
+    await Model.sync({ force: true });
+
+    await CustomId.sync({ force: true });
+    await CustomGetterSetter.sync({ force: true });
+    await Order.sync({ force: true });
+  });
 
   describe('Initialization', () => {
     it('throws an error when missing options', () => {
@@ -160,153 +161,147 @@ describe('Feathers Sequelize Service', () => {
 
     describe('Common functionality', () => {
       const people = app.service('people');
-      const _ids = {};
-      const _data = {};
+      let kirsten;
 
-      beforeEach(() =>
-        people.create({ name: 'Kirsten', age: 30 }).then(result => {
-          _data.Kirsten = result;
-          _ids.Kirsten = result.id;
-        })
-      );
-
-      afterEach(() =>
-        people.remove(_ids.Kirsten).catch(() => {})
-      );
-
-      it('allows querying for null values (#45)', () => {
-        const name = 'Null test';
-
-        return people.create({ name }).then(person =>
-          people.find({ query: { age: null } }).then(people => {
-            assert.equal(people.data.length, 1);
-            assert.equal(people.data[0].name, name);
-            assert.equal(people.data[0].age, null);
-          })
-            .then(() => people.remove(person.id))
-            .catch((err) => { people.remove(person.id); throw (err); })
-        );
+      beforeEach(async () => {
+        kirsten = await people.create({ name: 'Kirsten', age: 30 });
       });
 
-      it('correctly persists updates (#125)', () => {
+      afterEach(() => people.remove(kirsten.id).catch(() => {}));
+
+      it('allows querying for null values (#45)', async () => {
+        const name = 'Null test';
+        const person = await people.create({ name });
+        const { data } = await people.find({ query: { age: null } });
+
+        assert.equal(data.length, 1);
+        assert.equal(data[0].name, name);
+        assert.equal(data[0].age, null);
+
+        await people.remove(person.id);
+      });
+
+      it('correctly persists updates (#125)', async () => {
         const updateName = 'Ryan';
 
-        return people.update(_ids.Kirsten, { name: updateName })
-          .then((data) => people.get(_ids.Kirsten))
-          .then(updatedPerson => {
-            assert.equal(updatedPerson.name, updateName);
-          });
+        await people.update(kirsten.id, { name: updateName });
+
+        const updatedPerson = await people.get(kirsten.id);
+
+        assert.equal(updatedPerson.name, updateName);
       });
 
-      it('corrently updates records using optional query param', () => {
+      it('corrently updates records using optional query param', async () => {
         const updateAge = 40;
         const updateName = 'Kirtsten';
-        return people.update(_ids.Kirsten, { name: updateName, age: updateAge }, {query: {name: 'Kirsten'}})
-          .then((data) => people.get(_ids.Kirsten))
-          .then(updatedPerson => {
-            assert.equal(updatedPerson.age, updateAge);
-          });
+
+        await people.update(kirsten.id, { name: updateName, age: updateAge }, {
+          query: {name: 'Kirsten'}
+        });
+
+        const updatedPerson = await people.get(kirsten.id);
+
+        assert.equal(updatedPerson.age, updateAge);
       });
 
-      it('fails update when query prevents result in no record match for id', () => {
+      it('fails update when query prevents result in no record match for id', async () => {
         const updateAge = 50;
         const updateName = 'Kirtsten';
-        return people.update(_ids.Kirsten, { name: updateName, age: updateAge }, {query: {name: 'John'}})
-          .then((data) => assert(false, 'Should have thrown an error'))
-          .catch(err => assert(err.message.indexOf('No record found') >= 0));
+
+        try {
+          await people.update(kirsten.id, { name: updateName, age: updateAge }, {
+            query: {name: 'John'}
+          });
+          assert.ok(false, 'Should never get here');
+        } catch (error) {
+          assert(error.message.indexOf('No record found') >= 0);
+        }
       });
     });
 
     describe('Association Tests', () => {
       const people = app.service('people');
       const orders = app.service('orders');
-      const _ids = {};
-      const _data = {};
+      let kirsten, ryan;
 
-      beforeEach(() =>
-        people.create({ name: 'Kirsten', age: 30 })
-          .then(result => {
-            _data.Kirsten = result;
-            _ids.Kirsten = result.id;
-            return orders.create([
-              { name: 'Order 1', personId: result.id },
-              { name: 'Order 2', personId: result.id },
-              { name: 'Order 3', personId: result.id }
-            ]);
-          })
-          .then(() => people.create({ name: 'Ryan', age: 30 }))
-          .then(result => {
-            _data.Ryan = result;
-            _ids.Ryan = result.id;
-            return orders.create([
-              { name: 'Order 4', personId: result.id },
-              { name: 'Order 5', personId: result.id },
-              { name: 'Order 6', personId: result.id }
-            ]);
-          })
-      );
+      beforeEach(async () => {
+        kirsten = await people.create({ name: 'Kirsten', age: 30 });
+
+        await orders.create([
+          { name: 'Order 1', personId: kirsten.id },
+          { name: 'Order 2', personId: kirsten.id },
+          { name: 'Order 3', personId: kirsten.id }
+        ]);
+
+        ryan = await people.create({ name: 'Ryan', age: 30 });
+        await orders.create([
+          { name: 'Order 4', personId: ryan.id },
+          { name: 'Order 5', personId: ryan.id },
+          { name: 'Order 6', personId: ryan.id }
+        ]);
+      });
 
       afterEach(() =>
         orders.remove(null, { query: { $limit: 1000 } })
-          .then(() => people.remove(_ids.Kirsten))
-          .then(() => people.remove(_ids.Ryan))
+          .then(() => people.remove(kirsten.id))
+          .then(() => people.remove(ryan.id))
           .catch(() => {})
       );
 
-      it('find() returns correct total when using includes for non-raw requests (#137)', () => {
+      it('find() returns correct total when using includes for non-raw requests (#137)', async () => {
         const options = {sequelize: {raw: false, include: Order}};
-        return people.find(options).then(result => {
-          assert.equal(result.total, 2);
-        });
+
+        const result = await people.find(options);
+
+        assert.equal(result.total, 2);
       });
 
-      it('find() returns correct total when using includes for raw requests', () => {
+      it('find() returns correct total when using includes for raw requests', async () => {
         const options = {sequelize: {include: Order}};
-        return people.find(options).then(result => {
-          assert.equal(result.total, 2);
-        });
+
+        const result = await people.find(options);
+
+        assert.equal(result.total, 2);
       });
     });
 
     describe('Custom getters and setters', () => {
-      it('calls custom getters and setters (#113)', () => {
+      it('calls custom getters and setters (#113)', async () => {
         const value = 0;
         const service = app.service('custom-getter-setter');
         const data = {addsOneOnGet: value, addsOneOnSet: value};
+        const result = await service.create(data);
 
-        return service.create(data).then(result => {
-          assert.equal(result.addsOneOnGet, value + 1);
-          assert.equal(result.addsOneOnSet, value + 1);
-        });
+        assert.equal(result.addsOneOnGet, value + 1);
+        assert.equal(result.addsOneOnSet, value + 1);
       });
 
-      it('can ignore custom getters and setters (#113)', () => {
+      it('can ignore custom getters and setters (#113)', async () => {
         const value = 0;
         const service = app.service('custom-getter-setter');
         const data = {addsOneOnGet: value, addsOneOnSet: value};
         const IGNORE_SETTERS = {sequelize: {ignoreSetters: true}};
-        return service.create(data, IGNORE_SETTERS).then(result => {
-          assert.equal(result.addsOneOnGet, value + 1);
-          assert.equal(result.addsOneOnSet, value);
-        });
+        const result = await service.create(data, IGNORE_SETTERS);
+
+        assert.equal(result.addsOneOnGet, value + 1);
+        assert.equal(result.addsOneOnSet, value);
       });
     });
 
-    it('can set the scope of an operation#130', () => {
+    it('can set the scope of an operation#130', async () => {
       const people = app.service('people');
       const data = {name: 'Active', status: 'active'};
       const SCOPE_TO_ACTIVE = {sequelize: {scope: 'active'}};
       const SCOPE_TO_PENDING = {sequelize: {scope: 'pending'}};
-      return people.create(data).then(person => {
-        return people.find(SCOPE_TO_ACTIVE).then(result => {
-          assert.equal(result.data.length, 1);
-          return people.find(SCOPE_TO_PENDING).then(result => {
-            assert.equal(result.data.length, 0);
-          });
-        })
-          .then(() => people.remove(person.id))
-          .catch((err) => { people.remove(person.id); throw (err); });
-      });
+      const person = await people.create(data);
+
+      const staPeople = await people.find(SCOPE_TO_ACTIVE);
+      assert.equal(staPeople.data.length, 1);
+
+      const stpPeople = await people.find(SCOPE_TO_PENDING);
+      assert.equal(stpPeople.data.length, 0);
+
+      await people.remove(person.id);
     });
   });
 
@@ -318,9 +313,6 @@ describe('Feathers Sequelize Service', () => {
     }));
     const rawPeople = app.service('raw-people');
 
-    // common ORM tests
-    orm(rawPeople, errors);
-
     describe('Non-raw Service Config', () => {
       app.use('/people', service({
         Model,
@@ -328,132 +320,130 @@ describe('Feathers Sequelize Service', () => {
         raw: false // -> this is what we are testing
       }));
       const people = app.service('people');
-      const _ids = {};
-      const _data = {};
+      let david;
 
-      beforeEach(() =>
-        people.create({name: 'David'}).then(result => {
-          _data.David = result;
-          _ids.David = result.id;
-        })
-      );
+      beforeEach(async () => {
+        david = await people.create({name: 'David'});
+      });
 
-      afterEach(() =>
-        people.remove(_ids.David).catch(() => {})
-      );
+      afterEach(() => people.remove(david.id).catch(() => {}));
 
-      it('find() returns model instances', () =>
-        people.find().then(results =>
-          expect(results[0] instanceof Model).to.be.ok
-        )
-      );
+      it('find() returns model instances', async () => {
+        const results = await people.find();
 
-      it('get() returns a model instance', () =>
-        people.get(_ids.David).then(instance =>
-          expect(instance instanceof Model).to.be.ok
-        )
-      );
+        expect(results[0] instanceof Model);
+      });
 
-      it('create() returns a model instance', () =>
-        people.create({name: 'Sarah'}).then(instance =>
-          expect(instance instanceof Model).to.be.ok
-        )
-      );
+      it('get() returns a model instance', async () => {
+        const instance = await people.get(david.id);
 
-      it('bulk create() returns model instances', () =>
-        people.create([{name: 'Sarah'}]).then(results =>
-          expect(results[0] instanceof Model).to.be.ok
-        )
-      );
+        expect(instance instanceof Model);
+      });
 
-      it('patch() returns a model instance', () =>
-        people.patch(_ids.David, {name: 'Sarah'}).then(instance =>
-          expect(instance instanceof Model).to.be.ok
-        )
-      );
+      it('create() returns a model instance', async () => {
+        const instance = await people.create({name: 'Sarah'});
 
-      it('patch() with $returning=false returns empty array', () =>
-        people.patch(_ids.David, {name: 'Sarah'}, {$returning: false}).then(response =>
-          expect(response).to.deep.equal([])
-        )
-      );
+        expect(instance instanceof Model);
 
-      it('update() returns a model instance', () =>
-        people.update(_ids.David, _data.David).then(instance =>
-          expect(instance instanceof Model).to.be.ok
-        )
-      );
+        await people.remove(instance.id);
+      });
 
-      it('remove() returns a model instance', () =>
-        people.remove(_ids.David).then(instance =>
-          expect(instance instanceof Model).to.be.ok
-        )
-      );
+      it('bulk create() returns model instances', async () => {
+        const results = await people.create([{name: 'Sarah'}]);
 
-      it('remove() with $returning=false returns empty array', () =>
-        people.remove(_ids.David, {$returning: false}).then(response =>
-          expect(response).to.deep.equal([])
-        )
-      );
+        expect(results.length).to.equal(1);
+        expect(results[0] instanceof Model);
+
+        await people.remove(results[0].id);
+      });
+
+      it('patch() returns a model instance', async () => {
+        const instance = await people.patch(david.id, {name: 'Sarah'});
+
+        expect(instance instanceof Model);
+      });
+
+      it('patch() with $returning=false returns empty array', async () => {
+        const response = await people.patch(david.id, {name: 'Sarah'}, {$returning: false});
+
+        expect(response).to.deep.equal([]);
+      });
+
+      it('update() returns a model instance', async () => {
+        const instance = await people.update(david.id, david);
+
+        expect(instance instanceof Model);
+      });
+
+      it('remove() returns a model instance', async () => {
+        const instance = await people.remove(david.id);
+
+        expect(instance instanceof Model);
+      });
+
+      it('remove() with $returning=false returns empty array', async () => {
+        const response = await people.remove(david.id, {$returning: false});
+
+        expect(response).to.deep.equal([]);
+      });
     });
 
     describe('Non-raw Service Method Calls', () => {
-      const _ids = {};
-      const _data = {};
       const NOT_RAW = {sequelize: {raw: false}};
+      let david;
 
-      beforeEach(() =>
-        rawPeople.create({name: 'David'}).then(result => {
-          _data.David = result;
-          _ids.David = result.id;
-        })
-      );
+      beforeEach(async () => {
+        david = await rawPeople.create({name: 'David'});
+      });
 
-      afterEach(() =>
-        rawPeople.remove(_ids.David).catch(() => {})
-      );
+      afterEach(() => rawPeople.remove(david.id).catch(() => {}));
 
-      it('`raw: false` works for find()', () =>
-        rawPeople.find(NOT_RAW).then(results =>
-          expect(results[0] instanceof Model).to.be.ok
-        )
-      );
+      it('`raw: false` works for find()', async () => {
+        const results = await rawPeople.find(NOT_RAW);
 
-      it('`raw: false` works for get()', () =>
-        rawPeople.get(_ids.David, NOT_RAW).then(instance =>
-          expect(instance instanceof Model).to.be.ok
-        )
-      );
+        expect(results[0] instanceof Model);
+      });
 
-      it('`raw: false` works for create()', () =>
-        rawPeople.create({name: 'Sarah'}, NOT_RAW).then(instance =>
-          expect(instance instanceof Model).to.be.ok
-        )
-      );
+      it('`raw: false` works for get()', async () => {
+        const instance = await rawPeople.get(david.id, NOT_RAW);
 
-      it('`raw: false` works for bulk create()', () =>
-        rawPeople.create([{name: 'Sarah'}], NOT_RAW).then(results =>
-          expect(results[0] instanceof Model).to.be.ok
-        )
-      );
+        expect(instance instanceof Model);
+      });
 
-      it('`raw: false` works for patch()', () =>
-        rawPeople.patch(_ids.David, {name: 'Sarah'}, NOT_RAW).then(instance =>
-          expect(instance instanceof Model).to.be.ok
-        )
-      );
+      it('`raw: false` works for create()', async () => {
+        const instance = await rawPeople.create({name: 'Sarah'}, NOT_RAW);
 
-      it('`raw: false` works for update()', () =>
-        rawPeople.update(_ids.David, _data.David, NOT_RAW).then(instance =>
-          expect(instance instanceof Model).to.be.ok
-        )
-      );
+        expect(instance instanceof Model);
 
-      it('`raw: false` works for remove()', () =>
-        rawPeople.remove(_ids.David, NOT_RAW).then(instance =>
-          expect(instance instanceof Model).to.be.ok
-        )
-      );
+        await rawPeople.remove(instance.id);
+      });
+
+      it('`raw: false` works for bulk create()', async () => {
+        const results = await rawPeople.create([{name: 'Sarah'}], NOT_RAW);
+
+        expect(results.length).to.equal(1);
+        expect(results[0] instanceof Model);
+
+        await rawPeople.remove(results[0].id);
+      });
+
+      it('`raw: false` works for patch()', async () => {
+        const instance = await rawPeople.patch(david.id, {name: 'Sarah'}, NOT_RAW);
+
+        expect(instance instanceof Model);
+      });
+
+      it('`raw: false` works for update()', async () => {
+        const instance = await rawPeople.update(david.id, david, NOT_RAW);
+
+        expect(instance instanceof Model);
+      });
+
+      it('`raw: false` works for remove()', async () => {
+        const instance = await rawPeople.remove(david.id, NOT_RAW);
+
+        expect(instance instanceof Model);
+      });
     });
   });
 });
