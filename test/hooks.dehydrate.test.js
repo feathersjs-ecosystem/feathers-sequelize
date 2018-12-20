@@ -1,26 +1,8 @@
 const { expect } = require('chai');
-const dehydrate = require('../lib/hooks/dehydrate');
 const Sequelize = require('sequelize');
 
-let sequelize;
-
-if (process.env.DB === 'postgres') {
-  sequelize = new Sequelize('sequelize', 'postgres', '', {
-    host: 'localhost',
-    dialect: 'postgres'
-  });
-} else if (process.env.DB === 'mysql') {
-  sequelize = new Sequelize('sequelize', 'root', '', {
-    host: '127.0.0.1',
-    dialect: 'mysql'
-  });
-} else {
-  sequelize = new Sequelize('sequelize', '', '', {
-    dialect: 'sqlite',
-    storage: './db.sqlite',
-    logging: false
-  });
-}
+const dehydrate = require('../lib/hooks/dehydrate');
+const sequelize = require('./connection')();
 
 const BlogPost = sequelize.define('blogpost', {
   title: {

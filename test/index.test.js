@@ -15,25 +15,7 @@ const service = require('../lib');
 // https://github.com/sequelize/sequelize/issues/1774
 pg.defaults.parseInt8 = true;
 
-let sequelize;
-
-if (process.env.DB === 'postgres') {
-  sequelize = new Sequelize('sequelize', 'postgres', '', {
-    host: 'localhost',
-    dialect: 'postgres'
-  });
-} else if (process.env.DB === 'mysql') {
-  sequelize = new Sequelize('sequelize', 'root', '', {
-    host: '127.0.0.1',
-    dialect: 'mysql'
-  });
-} else {
-  sequelize = new Sequelize('sequelize', '', '', {
-    dialect: 'sqlite',
-    storage: './db.sqlite',
-    logging: false
-  });
-}
+const sequelize = require('./connection')();
 
 const Model = sequelize.define('people', {
   name: {
