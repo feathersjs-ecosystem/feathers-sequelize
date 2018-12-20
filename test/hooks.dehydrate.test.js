@@ -44,28 +44,28 @@ describe('Feathers Sequelize Dehydrate Hook', () => {
   );
 
   it('serializes results for find()', async () => {
-    const hook = await callHook(BlogPost, 'find', [{title: 'David'}]);
+    const hook = await callHook(BlogPost, 'find', [{ title: 'David' }]);
 
     expect(Object.getPrototypeOf(hook.result[0])).to.equal(Object.prototype);
   });
 
   it('serializes results for paginated find()', async () => {
     const hook = await callHook(BlogPost, 'find', {
-      data: [{title: 'David'}]
+      data: [{ title: 'David' }]
     });
 
     expect(Object.getPrototypeOf(hook.result.data[0])).to.equal(Object.prototype);
   });
 
   it('serializes results for get()', async () => {
-    const hook = await callHook(BlogPost, 'get', {title: 'David'});
+    const hook = await callHook(BlogPost, 'get', { title: 'David' });
 
     expect(Object.getPrototypeOf(hook.result)).to.equal(Object.prototype);
   });
 
   ['create', 'update', 'patch'].forEach(method => {
     it(`serializes results for single ${method}()`, async () => {
-      const hook = await callHook(BlogPost, method, {title: 'David'});
+      const hook = await callHook(BlogPost, method, { title: 'David' });
 
       expect(Object.getPrototypeOf(hook.result)).to.equal(Object.prototype);
     });
@@ -73,7 +73,7 @@ describe('Feathers Sequelize Dehydrate Hook', () => {
 
   ['create', 'patch'].forEach(method => {
     it(`serializes results for bulk ${method}()`, async () => {
-      const hook = await callHook(BlogPost, method, [{title: 'David'}]);
+      const hook = await callHook(BlogPost, method, [{ title: 'David' }]);
 
       expect(Object.getPrototypeOf(hook.result[0])).to.equal(Object.prototype);
     });
