@@ -57,10 +57,9 @@
     "lib": "lib"
   },
   "dependencies": {
-    "@feathersjs/commons": "^1.3.0",
-    "@feathersjs/errors": "^3.3.5",
-    "lodash.omit": "^4.5.0",
-    "uberproto": "^2.0.4"
+    "@feathersjs/adapter-commons": "^1.0.5",
+    "@feathersjs/commons": "^4.0.0",
+    "@feathersjs/errors": "^3.3.5"
   },
   "devDependencies": {
     "@feathersjs/express": "^1.3.0",
