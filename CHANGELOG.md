@@ -1,5 +1,31 @@
 # Change Log
 
+## [v4.0.0](https://github.com/feathersjs-ecosystem/feathers-sequelize/tree/v4.0.0) (2018-12-20)
+[Full Changelog](https://github.com/feathersjs-ecosystem/feathers-sequelize/compare/v3.1.3...v4.0.0)
+
+**Implemented enhancements:**
+
+- Use Sequelize Symbol based operators for better security [\#244](https://github.com/feathersjs-ecosystem/feathers-sequelize/issues/244)
+
+**Fixed bugs:**
+
+- Ensure `params` are always passed through to all service calls [\#234](https://github.com/feathersjs-ecosystem/feathers-sequelize/issues/234)
+- Remove error details in production [\#231](https://github.com/feathersjs-ecosystem/feathers-sequelize/issues/231)
+
+**Closed issues:**
+
+- Include as array, no longer working [\#239](https://github.com/feathersjs-ecosystem/feathers-sequelize/issues/239)
+- feathers-sequelize with hook update only selected columns. [\#238](https://github.com/feathersjs-ecosystem/feathers-sequelize/issues/238)
+
+**Merged pull requests:**
+
+- Securely hide original Sequelize error [\#257](https://github.com/feathersjs-ecosystem/feathers-sequelize/pull/257) ([daffl](https://github.com/daffl))
+- Upgrade to @feathersjs/adapter-commons and latest common service features [\#256](https://github.com/feathersjs-ecosystem/feathers-sequelize/pull/256) ([daffl](https://github.com/daffl))
+- Update dependencies [\#255](https://github.com/feathersjs-ecosystem/feathers-sequelize/pull/255) ([daffl](https://github.com/daffl))
+- Migrate tests to async/await [\#254](https://github.com/feathersjs-ecosystem/feathers-sequelize/pull/254) ([daffl](https://github.com/daffl))
+- De-duplicate connection setup [\#253](https://github.com/feathersjs-ecosystem/feathers-sequelize/pull/253) ([daffl](https://github.com/daffl))
+- Fixed issue where params are ignored on update service calls. [\#252](https://github.com/feathersjs-ecosystem/feathers-sequelize/pull/252) ([AndrewJDR](https://github.com/AndrewJDR))
+
 ## [v3.1.3](https://github.com/feathersjs-ecosystem/feathers-sequelize/tree/v3.1.3) (2018-10-29)
 [Full Changelog](https://github.com/feathersjs-ecosystem/feathers-sequelize/compare/v3.1.2...v3.1.3)
 
