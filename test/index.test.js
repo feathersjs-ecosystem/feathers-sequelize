@@ -243,6 +243,20 @@ describe('Feathers Sequelize Service', () => {
         await people.remove(person.id);
       });
 
+      it('still allows querying with Sequelize operators', async () => {
+        const name = 'Age test';
+        const person = await people.create({ name, age: 10 });
+        const { data } = await people.find({ query:
+          { age: { [Sequelize.Op.eq]: 10 } }
+        });
+
+        assert.strictEqual(data.length, 1);
+        assert.strictEqual(data[0].name, name);
+        assert.strictEqual(data[0].age, 10);
+
+        await people.remove(person.id);
+      });
+
       it('hides the Sequelize error in ERROR symbol', async () => {
         try {
           await people.create({
