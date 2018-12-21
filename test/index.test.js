@@ -185,6 +185,10 @@ describe('Feathers Sequelize Service', () => {
         id: 'customid'
       }));
 
+    it('has .Model', () => {
+      assert.ok(app.service('people').Model);
+    });
+
     testSuite(app, errors, 'people', 'id');
     testSuite(app, errors, 'people-customid', 'customid');
   });
