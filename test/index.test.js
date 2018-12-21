@@ -536,4 +536,173 @@ describe('Feathers Sequelize Service', () => {
       });
     });
   });
+
+  describe('ORM functionality with overidden getModel method', () => {
+    const EXPECTED_ATTRIBUTE_VALUE = 42;
+
+    const extraParams = {
+      sequelize: {
+        expectedAttribute: EXPECTED_ATTRIBUTE_VALUE
+      }
+    };
+
+    class ExtendedService extends service.Service {
+      getModel (params) {
+        if (!params.sequelize || params.sequelize.expectedAttribute !== EXPECTED_ATTRIBUTE_VALUE) {
+          throw new Error('Expected custom attribute not found in overridden getModel()!');
+        }
+        return this.Model;
+      }
+    }
+
+    function extendedService (options) {
+      return new ExtendedService(options);
+    }
+
+    const app = feathers();
+    app.use('/raw-people', extendedService({
+      Model,
+      events: [ 'testing' ],
+      multi: true
+    }));
+    const rawPeople = app.service('raw-people');
+
+    describe('Non-raw Service Config', () => {
+      app.use('/people', extendedService({
+        Model,
+        events: [ 'testing' ],
+        multi: true,
+        raw: false // -> this is what we are testing
+      }));
+      const people = app.service('people');
+      let david;
+
+      const RETURNING_FALSE = Object.assign({$returning: false}, extraParams);
+
+      beforeEach(async () => {
+        david = await people.create({ name: 'David' }, extraParams);
+      });
+
+      afterEach(() => people.remove(david.id, extraParams).catch(() => {}));
+
+      it('find() returns model instances', async () => {
+        const results = await people.find(extraParams);
+
+        expect(results[0] instanceof Model);
+      });
+
+      it('get() returns a model instance', async () => {
+        const instance = await people.get(david.id, extraParams);
+
+        expect(instance instanceof Model);
+      });
+
+      it('create() returns a model instance', async () => {
+        const instance = await people.create({ name: 'Sarah' }, extraParams);
+
+        expect(instance instanceof Model);
+
+        await people.remove(instance.id, extraParams);
+      });
+
+      it('bulk create() returns model instances', async () => {
+        const results = await people.create([{ name: 'Sarah' }], extraParams);
+
+        expect(results.length).to.equal(1);
+        expect(results[0] instanceof Model);
+
+        await people.remove(results[0].id, extraParams);
+      });
+
+      it('patch() returns a model instance', async () => {
+        const instance = await people.patch(david.id, { name: 'Sarah' }, extraParams);
+
+        expect(instance instanceof Model);
+      });
+
+      it('patch() with $returning=false returns empty array', async () => {
+        const response = await people.patch(david.id, { name: 'Sarah' }, RETURNING_FALSE);
+
+        expect(response).to.deep.equal([]);
+      });
+
+      it('update() returns a model instance', async () => {
+        const instance = await people.update(david.id, david, extraParams);
+
+        expect(instance instanceof Model);
+      });
+
+      it('remove() returns a model instance', async () => {
+        const instance = await people.remove(david.id, extraParams);
+
+        expect(instance instanceof Model);
+      });
+
+      it('remove() with $returning=false returns empty array', async () => {
+        const response = await people.remove(david.id, RETURNING_FALSE);
+
+        expect(response).to.deep.equal([]);
+      });
+    });
+
+    describe('Non-raw Service Method Calls', () => {
+      let NOT_RAW = Object.assign({}, extraParams);
+      NOT_RAW.sequelize.raw = false;
+
+      let david;
+
+      beforeEach(async () => {
+        david = await rawPeople.create({ name: 'David' }, extraParams);
+      });
+
+      afterEach(() => rawPeople.remove(david.id, extraParams).catch(() => {}));
+
+      it('`raw: false` works for find()', async () => {
+        const results = await rawPeople.find(NOT_RAW);
+
+        expect(results[0] instanceof Model);
+      });
+
+      it('`raw: false` works for get()', async () => {
+        const instance = await rawPeople.get(david.id, NOT_RAW);
+
+        expect(instance instanceof Model);
+      });
+
+      it('`raw: false` works for create()', async () => {
+        const instance = await rawPeople.create({ name: 'Sarah' }, NOT_RAW);
+
+        expect(instance instanceof Model);
+
+        await rawPeople.remove(instance.id);
+      });
+
+      it('`raw: false` works for bulk create()', async () => {
+        const results = await rawPeople.create([{ name: 'Sarah' }], NOT_RAW);
+
+        expect(results.length).to.equal(1);
+        expect(results[0] instanceof Model);
+
+        await rawPeople.remove(results[0].id);
+      });
+
+      it('`raw: false` works for patch()', async () => {
+        const instance = await rawPeople.patch(david.id, { name: 'Sarah' }, NOT_RAW);
+
+        expect(instance instanceof Model);
+      });
+
+      it('`raw: false` works for update()', async () => {
+        const instance = await rawPeople.update(david.id, david, NOT_RAW);
+
+        expect(instance instanceof Model);
+      });
+
+      it('`raw: false` works for remove()', async () => {
+        const instance = await rawPeople.remove(david.id, NOT_RAW);
+
+        expect(instance instanceof Model);
+      });
+    });
+  });
 });
