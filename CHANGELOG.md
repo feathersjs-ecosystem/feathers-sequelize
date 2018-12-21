@@ -1,5 +1,13 @@
 # Change Log
 
+## [v4.0.1](https://github.com/feathersjs-ecosystem/feathers-sequelize/tree/v4.0.1) (2018-12-21)
+[Full Changelog](https://github.com/feathersjs-ecosystem/feathers-sequelize/compare/v4.0.0...v4.0.1)
+
+**Merged pull requests:**
+
+- Add service.Model back [\#259](https://github.com/feathersjs-ecosystem/feathers-sequelize/pull/259) ([daffl](https://github.com/daffl))
+- Convert all Sequelize errors into a safe FeathersError [\#258](https://github.com/feathersjs-ecosystem/feathers-sequelize/pull/258) ([daffl](https://github.com/daffl))
+
 ## [v4.0.0](https://github.com/feathersjs-ecosystem/feathers-sequelize/tree/v4.0.0) (2018-12-20)
 [Full Changelog](https://github.com/feathersjs-ecosystem/feathers-sequelize/compare/v3.1.3...v4.0.0)
 
