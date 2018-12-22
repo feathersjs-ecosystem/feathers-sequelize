@@ -305,6 +305,18 @@ describe('Feathers Sequelize Service', () => {
           assert(error.message.indexOf('No record found') >= 0);
         }
       });
+
+      it('filterQuery does not convert dates and symbols', () => {
+        const mySymbol = Symbol('test');
+        const date = new Date();
+        const query = {
+          test: { sub: date },
+          [mySymbol]: 'hello'
+        };
+        const filtered = app.service('people').filterQuery({ query });
+
+        assert.deepStrictEqual(filtered.query, query);
+      });
     });
 
     describe('Association Tests', () => {
