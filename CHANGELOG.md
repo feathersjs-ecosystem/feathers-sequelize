@@ -1,5 +1,12 @@
 # Change Log
 
+## [v4.0.4](https://github.com/feathersjs-ecosystem/feathers-sequelize/tree/v4.0.4) (2018-12-22)
+[Full Changelog](https://github.com/feathersjs-ecosystem/feathers-sequelize/compare/v4.0.3...v4.0.4)
+
+**Merged pull requests:**
+
+- Only filter plain objects in query [\#264](https://github.com/feathersjs-ecosystem/feathers-sequelize/pull/264) ([daffl](https://github.com/daffl))
+
 ## [v4.0.3](https://github.com/feathersjs-ecosystem/feathers-sequelize/tree/v4.0.3) (2018-12-21)
 [Full Changelog](https://github.com/feathersjs-ecosystem/feathers-sequelize/compare/v4.0.2...v4.0.3)
 
