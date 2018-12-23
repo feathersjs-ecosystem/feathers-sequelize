@@ -541,13 +541,13 @@ describe('Feathers Sequelize Service', () => {
     const EXPECTED_ATTRIBUTE_VALUE = 42;
 
     function getExtraParams (additionalTopLevelParams, additionalSequelizeParams) {
-      additionalTopLevelParams = additionalTopLevelParams ? additionalTopLevelParams : {};
-      additionalSequelizeParams = additionalSequelizeParams ? additionalSequelizeParams : {};
+      additionalTopLevelParams = additionalTopLevelParams || {};
+      additionalSequelizeParams = additionalSequelizeParams || {};
 
       return Object.assign({
         sequelize: Object.assign({
           expectedAttribute: EXPECTED_ATTRIBUTE_VALUE,
-          getModelCalls: { count: 0 },
+          getModelCalls: { count: 0 }
         }, additionalSequelizeParams)
       }, additionalTopLevelParams);
     }
@@ -558,8 +558,7 @@ describe('Feathers Sequelize Service', () => {
           throw new Error('Expected custom attribute not found in overridden getModel()!');
         }
 
-        if (params.sequelize.getModelCalls === undefined)
-        {
+        if (params.sequelize.getModelCalls === undefined) {
           throw new Error('getModelCalls not defined on params.sequelize!');
         }
 
@@ -632,9 +631,9 @@ describe('Feathers Sequelize Service', () => {
 
         expect(instance instanceof Model);
 
-        const params2 = getExtraParams();
-        await people.remove(instance.id, params2);
-        expect(params2.sequelize.getModelCalls.count).to.gte(1);
+        const removeParams = getExtraParams();
+        await people.remove(instance.id, removeParams);
+        expect(removeParams.sequelize.getModelCalls.count).to.gte(1);
       });
 
       it('bulk create() returns model instances', async () => {
@@ -645,9 +644,9 @@ describe('Feathers Sequelize Service', () => {
         expect(results.length).to.equal(1);
         expect(results[0] instanceof Model);
 
-        const params2 = getExtraParams();
-        await people.remove(results[0].id, params2);
-        expect(params2.sequelize.getModelCalls.count).to.gte(1);
+        const removeParams = getExtraParams();
+        await people.remove(results[0].id, removeParams);
+        expect(removeParams.sequelize.getModelCalls.count).to.gte(1);
       });
 
       it('patch() returns a model instance', async () => {
@@ -723,9 +722,9 @@ describe('Feathers Sequelize Service', () => {
 
         expect(instance instanceof Model);
 
-        const params2 = getExtraParams();
-        await rawPeople.remove(instance.id, params2);
-        expect(params2.sequelize.getModelCalls.count).to.gte(1);
+        const removeParams = getExtraParams();
+        await rawPeople.remove(instance.id, removeParams);
+        expect(removeParams.sequelize.getModelCalls.count).to.gte(1);
       });
 
       it('`raw: false` works for bulk create()', async () => {
@@ -736,9 +735,9 @@ describe('Feathers Sequelize Service', () => {
         expect(results.length).to.equal(1);
         expect(results[0] instanceof Model);
 
-        const params2 = getExtraParams();
-        await rawPeople.remove(results[0].id, params2);
-        expect(params2.sequelize.getModelCalls.count).to.gte(1);
+        const removeParams = getExtraParams();
+        await rawPeople.remove(results[0].id, removeParams);
+        expect(removeParams.sequelize.getModelCalls.count).to.gte(1);
       });
 
       it('`raw: false` works for patch()', async () => {
