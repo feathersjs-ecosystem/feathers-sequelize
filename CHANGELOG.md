@@ -1,5 +1,12 @@
 # Change Log
 
+## [v4.0.5](https://github.com/feathersjs-ecosystem/feathers-sequelize/tree/v4.0.5) (2018-12-26)
+[Full Changelog](https://github.com/feathersjs-ecosystem/feathers-sequelize/compare/v4.0.4...v4.0.5)
+
+**Merged pull requests:**
+
+- Added getModel override param passing tests and fixes [\#265](https://github.com/feathersjs-ecosystem/feathers-sequelize/pull/265) ([AndrewJDR](https://github.com/AndrewJDR))
+
 ## [v4.0.4](https://github.com/feathersjs-ecosystem/feathers-sequelize/tree/v4.0.4) (2018-12-22)
 [Full Changelog](https://github.com/feathersjs-ecosystem/feathers-sequelize/compare/v4.0.3...v4.0.4)
 
