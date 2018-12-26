@@ -548,4 +548,233 @@ describe('Feathers Sequelize Service', () => {
       });
     });
   });
+
+  describe('ORM functionality with overidden getModel method', () => {
+    const EXPECTED_ATTRIBUTE_VALUE = 42;
+
+    function getExtraParams (additionalTopLevelParams, additionalSequelizeParams) {
+      additionalTopLevelParams = additionalTopLevelParams || {};
+      additionalSequelizeParams = additionalSequelizeParams || {};
+
+      return Object.assign({
+        sequelize: Object.assign({
+          expectedAttribute: EXPECTED_ATTRIBUTE_VALUE,
+          getModelCalls: { count: 0 }
+        }, additionalSequelizeParams)
+      }, additionalTopLevelParams);
+    }
+
+    class ExtendedService extends service.Service {
+      getModel (params) {
+        if (!params.sequelize || params.sequelize.expectedAttribute !== EXPECTED_ATTRIBUTE_VALUE) {
+          throw new Error('Expected custom attribute not found in overridden getModel()!');
+        }
+
+        if (params.sequelize.getModelCalls === undefined) {
+          throw new Error('getModelCalls not defined on params.sequelize!');
+        }
+
+        params.sequelize.getModelCalls.count++;
+
+        return this.options.Model;
+      }
+
+      get Model () {
+        // Extended service classes that override getModel will often
+        // depend upon having certain params provided from further up
+        // the calstack (e.g. part of the request object to make a decision
+        // on which model/db to return based on the hostname being accessed).
+        // If feathers-sequelize wants access to the model, it should always
+        // call getModel(params).
+        // Returning null here is a way to ensure that a regression isn't
+        // introduced later whereby feathers-sequelize attempts to access a
+        // model obtained via the Model getter rather than via getModel(params).
+        return null;
+      }
+    }
+
+    function extendedService (options) {
+      return new ExtendedService(options);
+    }
+
+    const app = feathers();
+    app.use('/raw-people', extendedService({
+      Model,
+      events: [ 'testing' ],
+      multi: true
+    }));
+    const rawPeople = app.service('raw-people');
+
+    describe('Non-raw Service Config', () => {
+      app.use('/people', extendedService({
+        Model,
+        events: [ 'testing' ],
+        multi: true,
+        raw: false // -> this is what we are testing
+      }));
+      const people = app.service('people');
+      let david;
+
+      beforeEach(async () => {
+        david = await people.create({ name: 'David' }, getExtraParams());
+      });
+
+      afterEach(() => people.remove(david.id, getExtraParams()).catch(() => {}));
+
+      it('find() returns model instances', async () => {
+        const params = getExtraParams();
+        const results = await people.find(params);
+        expect(params.sequelize.getModelCalls.count).to.gte(1);
+
+        expect(results[0] instanceof Model);
+      });
+
+      it('get() returns a model instance', async () => {
+        const params = getExtraParams();
+        const instance = await people.get(david.id, params);
+        expect(params.sequelize.getModelCalls.count).to.gte(1);
+        expect(instance instanceof Model);
+      });
+
+      it('create() returns a model instance', async () => {
+        const params = getExtraParams();
+        const instance = await people.create({ name: 'Sarah' }, params);
+        expect(params.sequelize.getModelCalls.count).to.gte(1);
+
+        expect(instance instanceof Model);
+
+        const removeParams = getExtraParams();
+        await people.remove(instance.id, removeParams);
+        expect(removeParams.sequelize.getModelCalls.count).to.gte(1);
+      });
+
+      it('bulk create() returns model instances', async () => {
+        const params = getExtraParams();
+        const results = await people.create([{ name: 'Sarah' }], params);
+        expect(params.sequelize.getModelCalls.count).to.gte(1);
+
+        expect(results.length).to.equal(1);
+        expect(results[0] instanceof Model);
+
+        const removeParams = getExtraParams();
+        await people.remove(results[0].id, removeParams);
+        expect(removeParams.sequelize.getModelCalls.count).to.gte(1);
+      });
+
+      it('patch() returns a model instance', async () => {
+        const params = getExtraParams();
+        const instance = await people.patch(david.id, { name: 'Sarah' }, params);
+        expect(params.sequelize.getModelCalls.count).to.gte(1);
+        expect(instance instanceof Model);
+      });
+
+      it('patch() with $returning=false returns empty array', async () => {
+        const params = getExtraParams({ $returning: false });
+        const response = await people.patch(david.id, { name: 'Sarah' }, params);
+        expect(params.sequelize.getModelCalls.count).to.gte(1);
+
+        expect(response).to.deep.equal([]);
+      });
+
+      it('update() returns a model instance', async () => {
+        const params = getExtraParams();
+        const instance = await people.update(david.id, david, params);
+        expect(params.sequelize.getModelCalls.count).to.gte(1);
+        expect(instance instanceof Model);
+      });
+
+      it('remove() returns a model instance', async () => {
+        const params = getExtraParams();
+        const instance = await people.remove(david.id, params);
+        expect(params.sequelize.getModelCalls.count).to.gte(1);
+
+        expect(instance instanceof Model);
+      });
+
+      it('remove() with $returning=false returns empty array', async () => {
+        const params = getExtraParams({ $returning: false });
+        const response = await people.remove(david.id, params);
+        expect(params.sequelize.getModelCalls.count).to.gte(1);
+
+        expect(response).to.deep.equal([]);
+      });
+    });
+
+    describe('Non-raw Service Method Calls', () => {
+      const NOT_RAW = { raw: false };
+
+      let david;
+
+      beforeEach(async () => {
+        david = await rawPeople.create({ name: 'David' }, getExtraParams());
+      });
+
+      afterEach(() => rawPeople.remove(david.id, getExtraParams()).catch(() => {}));
+
+      it('`raw: false` works for find()', async () => {
+        const params = getExtraParams({}, NOT_RAW);
+        const results = await rawPeople.find(params);
+        expect(params.sequelize.getModelCalls.count).to.gte(1);
+
+        expect(results[0] instanceof Model);
+      });
+
+      it('`raw: false` works for get()', async () => {
+        const params = getExtraParams({}, NOT_RAW);
+        const instance = await rawPeople.get(david.id, params);
+        expect(params.sequelize.getModelCalls.count).to.gte(1);
+
+        expect(instance instanceof Model);
+      });
+
+      it('`raw: false` works for create()', async () => {
+        const params = getExtraParams({}, NOT_RAW);
+        const instance = await rawPeople.create({ name: 'Sarah' }, params);
+        expect(params.sequelize.getModelCalls.count).to.gte(1);
+
+        expect(instance instanceof Model);
+
+        const removeParams = getExtraParams();
+        await rawPeople.remove(instance.id, removeParams);
+        expect(removeParams.sequelize.getModelCalls.count).to.gte(1);
+      });
+
+      it('`raw: false` works for bulk create()', async () => {
+        const params = getExtraParams({}, NOT_RAW);
+        const results = await rawPeople.create([{ name: 'Sarah' }], params);
+        expect(params.sequelize.getModelCalls.count).to.gte(1);
+
+        expect(results.length).to.equal(1);
+        expect(results[0] instanceof Model);
+
+        const removeParams = getExtraParams();
+        await rawPeople.remove(results[0].id, removeParams);
+        expect(removeParams.sequelize.getModelCalls.count).to.gte(1);
+      });
+
+      it('`raw: false` works for patch()', async () => {
+        const params = getExtraParams({}, NOT_RAW);
+        const instance = await rawPeople.patch(david.id, { name: 'Sarah' }, params);
+        expect(params.sequelize.getModelCalls.count).to.gte(1);
+
+        expect(instance instanceof Model);
+      });
+
+      it('`raw: false` works for update()', async () => {
+        const params = getExtraParams({}, NOT_RAW);
+        const instance = await rawPeople.update(david.id, david, params);
+        expect(params.sequelize.getModelCalls.count).to.gte(1);
+
+        expect(instance instanceof Model);
+      });
+
+      it('`raw: false` works for remove()', async () => {
+        const params = getExtraParams({}, NOT_RAW);
+        const instance = await rawPeople.remove(david.id, params);
+        expect(params.sequelize.getModelCalls.count).to.gte(1);
+
+        expect(instance instanceof Model);
+      });
+    });
+  });
 });
