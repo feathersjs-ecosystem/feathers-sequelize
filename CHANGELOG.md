@@ -1,5 +1,12 @@
 # Change Log
 
+## [v4.0.6](https://github.com/feathersjs-ecosystem/feathers-sequelize/tree/v4.0.6) (2018-12-27)
+[Full Changelog](https://github.com/feathersjs-ecosystem/feathers-sequelize/compare/v4.0.5...v4.0.6)
+
+**Merged pull requests:**
+
+- Use Sequelize directly to access Op [\#266](https://github.com/feathersjs-ecosystem/feathers-sequelize/pull/266) ([honzahommer](https://github.com/honzahommer))
+
 ## [v4.0.5](https://github.com/feathersjs-ecosystem/feathers-sequelize/tree/v4.0.5) (2018-12-26)
 [Full Changelog](https://github.com/feathersjs-ecosystem/feathers-sequelize/compare/v4.0.4...v4.0.5)
 
