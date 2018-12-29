@@ -1,5 +1,12 @@
 # Change Log
 
+## [v4.0.7](https://github.com/feathersjs-ecosystem/feathers-sequelize/tree/v4.0.7) (2018-12-29)
+[Full Changelog](https://github.com/feathersjs-ecosystem/feathers-sequelize/compare/v4.0.6...v4.0.7)
+
+**Merged pull requests:**
+
+- Add default params to hook-less methods [\#268](https://github.com/feathersjs-ecosystem/feathers-sequelize/pull/268) ([daffl](https://github.com/daffl))
+
 ## [v4.0.6](https://github.com/feathersjs-ecosystem/feathers-sequelize/tree/v4.0.6) (2018-12-27)
 [Full Changelog](https://github.com/feathersjs-ecosystem/feathers-sequelize/compare/v4.0.5...v4.0.6)
 
