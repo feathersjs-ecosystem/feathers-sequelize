@@ -66,7 +66,11 @@ const testSuite = adaptertests([
   '.find + paginate',
   '.find + paginate + $limit + $skip',
   '.find + paginate + $limit 0',
-  '.find + paginate + params'
+  '.find + paginate + params',
+  '.remove + id + query id',
+  '.update + id + query id',
+  '.patch + id + query id',
+  '.get + id + query id'
 ]);
 
 // The base tests require the use of Sequelize.BIGINT to avoid 'out of range errors'
