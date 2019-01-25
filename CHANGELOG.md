@@ -1,5 +1,17 @@
 # Change Log
 
+## [v4.1.0](https://github.com/feathersjs-ecosystem/feathers-sequelize/tree/v4.1.0) (2019-01-25)
+[Full Changelog](https://github.com/feathersjs-ecosystem/feathers-sequelize/compare/v4.0.8...v4.1.0)
+
+**Closed issues:**
+
+- Sorted and limited query does not respect the sort first [\#272](https://github.com/feathersjs-ecosystem/feathers-sequelize/issues/272)
+
+**Merged pull requests:**
+
+- Determine primary key name [\#273](https://github.com/feathersjs-ecosystem/feathers-sequelize/pull/273) ([edwardsmarkf](https://github.com/edwardsmarkf))
+- Tighten up some options.Model/Sequelize/getModel related code. [\#267](https://github.com/feathersjs-ecosystem/feathers-sequelize/pull/267) ([AndrewJDR](https://github.com/AndrewJDR))
+
 ## [v4.0.8](https://github.com/feathersjs-ecosystem/feathers-sequelize/tree/v4.0.8) (2019-01-10)
 [Full Changelog](https://github.com/feathersjs-ecosystem/feathers-sequelize/compare/v4.0.7...v4.0.8)
 
