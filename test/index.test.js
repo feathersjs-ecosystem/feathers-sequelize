@@ -5,7 +5,7 @@ const { expect } = require('chai');
 const Sequelize = require('sequelize');
 const errors = require('@feathersjs/errors');
 const feathers = require('@feathersjs/feathers');
-const adaptertests = require('@feathersjs/adapter-commons/tests');
+const adaptertests = require('@feathersjs/adapter-tests');
 
 const service = require('../lib');
 const testSuite = adaptertests([
@@ -66,7 +66,11 @@ const testSuite = adaptertests([
   '.find + paginate',
   '.find + paginate + $limit + $skip',
   '.find + paginate + $limit 0',
-  '.find + paginate + params'
+  '.find + paginate + params',
+  '.remove + id + query id',
+  '.update + id + query id',
+  '.patch + id + query id',
+  '.get + id + query id'
 ]);
 
 // The base tests require the use of Sequelize.BIGINT to avoid 'out of range errors'
@@ -181,8 +185,7 @@ describe('Feathers Sequelize Service', () => {
       }))
       .use('/people-customid', service({
         Model: CustomId,
-        events: [ 'testing' ],
-        id: 'customid'
+        events: [ 'testing' ]
       }));
 
     it('has .Model', () => {
