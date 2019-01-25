@@ -43,8 +43,9 @@ app.use('/messages', service({ Model, id, events, paginate }));
 __Options:__
 
 - `Model` (**required**) - The Sequelize model definition
-- `id` (*optional*, default: `'id'`) - The name of the id field property.
+- `id` (*optional*, default: primary key of the model) - The name of the id field property. Will use the first property with `primaryKey: true` by default.
 - `raw` (*optional*, default: `true`) - Runs queries faster by returning plain objects instead of Sequelize models.
+- `Sequelize` (*optional*, default: `Model.sequelize.Sequelize`) - The Sequelize instance
 - `events` (*optional*) - A list of [custom service events](https://docs.feathersjs.com/api/events.html#custom-events) sent by this service
 - `paginate` (*optional*) - A [pagination object](https://docs.feathersjs.com/api/databases/common.html#pagination) containing a `default` and `max` page size
 - `multi` (*optional*) - Allow `create` with arrays and `update` and `remove` with `id` `null` to change multiple items. Can be `true` for all methods or an array of allowed methods (e.g. `[ 'remove', 'create' ]`)
