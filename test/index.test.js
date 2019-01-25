@@ -184,9 +184,8 @@ describe('Feathers Sequelize Service', () => {
         events: [ 'testing' ]
       }))
       .use('/people-customid', service({
-        Model: CustomId
-        events: [ 'testing' ],
-        id: 'customid'
+        Model: CustomId,
+        events: [ 'testing' ]
       }));
 
     it('has .Model', () => {
