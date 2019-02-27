@@ -1,5 +1,18 @@
 # Change Log
 
+## [v4.1.1](https://github.com/feathersjs-ecosystem/feathers-sequelize/tree/v4.1.1) (2019-02-27)
+[Full Changelog](https://github.com/feathersjs-ecosystem/feathers-sequelize/compare/v4.1.0...v4.1.1)
+
+**Closed issues:**
+
+- Multi Patch fails when used with default pagination [\#279](https://github.com/feathersjs-ecosystem/feathers-sequelize/issues/279)
+- Question: Multiple database connection [\#278](https://github.com/feathersjs-ecosystem/feathers-sequelize/issues/278)
+
+**Merged pull requests:**
+
+- Fix issue with patch when using pagination by default [\#280](https://github.com/feathersjs-ecosystem/feathers-sequelize/pull/280) ([nicholasnelson](https://github.com/nicholasnelson))
+- Update mocha to the latest version 🚀 [\#276](https://github.com/feathersjs-ecosystem/feathers-sequelize/pull/276) ([greenkeeper[bot]](https://github.com/apps/greenkeeper))
+
 ## [v4.1.0](https://github.com/feathersjs-ecosystem/feathers-sequelize/tree/v4.1.0) (2019-01-25)
 [Full Changelog](https://github.com/feathersjs-ecosystem/feathers-sequelize/compare/v4.0.8...v4.1.0)
 
