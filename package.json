@@ -74,7 +74,7 @@
     "pg": "^7.7.1",
     "pg-hstore": "^2.3.2",
     "semistandard": "^13.0.1",
-    "sequelize": "^4.42.0",
+    "sequelize": "^5.1.0",
     "sqlite3": "^4.0.4"
   }
 }
