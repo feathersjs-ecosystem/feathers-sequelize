@@ -98,6 +98,11 @@ describe('Feathers Sequelize Utils', () => {
       let e = new Sequelize.HostNotFoundError();
       expect(utils.errorHandler.bind(null, e)).to.throw(errors.NotFound);
     });
+
+    it('wraps a DatabaseError as a GeneralError', () => {
+      let e = new Sequelize.DatabaseError('');
+      expect(utils.errorHandler.bind(null, e)).to.throw(errors.GeneralError);
+    });
   });
 
   describe('getOrder', () => {
