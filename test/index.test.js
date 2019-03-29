@@ -468,12 +468,18 @@ describe('Feathers Sequelize Service', () => {
       });
 
       it('bulk create() returns model instances', async () => {
-        const results = await people.create([{ name: 'Sarah' }]);
+        const results = await people.create([
+          { name: 'Sarah' },
+          { name: 'Connor' }
+        ]);
 
-        expect(results.length).to.equal(1);
+        expect(results.length).to.equal(2);
         expect(results[0] instanceof Model);
+        assert.ok(results[0].id);
+        assert.ok(results[1].id);
 
         await people.remove(results[0].id);
+        await people.remove(results[1].id);
       });
 
       it('patch() returns a model instance', async () => {
