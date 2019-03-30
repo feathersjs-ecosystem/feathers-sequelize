@@ -1,12 +1,17 @@
 # Change Log
 
-## [Unreleased](https://github.com/feathersjs-ecosystem/feathers-sequelize/tree/HEAD)
+## [v5.0.1](https://github.com/feathersjs-ecosystem/feathers-sequelize/tree/v5.0.1) (2019-03-30)
+[Full Changelog](https://github.com/feathersjs-ecosystem/feathers-sequelize/compare/v5.0.0...v5.0.1)
 
-[Full Changelog](https://github.com/feathersjs-ecosystem/feathers-sequelize/compare/v5.0.0...HEAD)
+**Implemented enhancements:**
+
+- Is there a way to createQuery? [\#228](https://github.com/feathersjs-ecosystem/feathers-sequelize/issues/228)
+- count is slow on large data sets [\#178](https://github.com/feathersjs-ecosystem/feathers-sequelize/issues/178)
 
 **Closed issues:**
 
 - Sequelize V5 [\#283](https://github.com/feathersjs-ecosystem/feathers-sequelize/issues/283)
+- Incorrect Error Type [\#269](https://github.com/feathersjs-ecosystem/feathers-sequelize/issues/269)
 
 ## [v5.0.0](https://github.com/feathersjs-ecosystem/feathers-sequelize/tree/v5.0.0) (2019-03-30)
 [Full Changelog](https://github.com/feathersjs-ecosystem/feathers-sequelize/compare/v4.1.1...v5.0.0)
