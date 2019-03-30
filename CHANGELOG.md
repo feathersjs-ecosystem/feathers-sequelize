@@ -1,5 +1,22 @@
 # Change Log
 
+## [Unreleased](https://github.com/feathersjs-ecosystem/feathers-sequelize/tree/HEAD)
+
+[Full Changelog](https://github.com/feathersjs-ecosystem/feathers-sequelize/compare/v5.0.0...HEAD)
+
+**Closed issues:**
+
+- Sequelize V5 [\#283](https://github.com/feathersjs-ecosystem/feathers-sequelize/issues/283)
+
+## [v5.0.0](https://github.com/feathersjs-ecosystem/feathers-sequelize/tree/v5.0.0) (2019-03-30)
+[Full Changelog](https://github.com/feathersjs-ecosystem/feathers-sequelize/compare/v4.1.1...v5.0.0)
+
+**Merged pull requests:**
+
+- Update tests to verify that id of bulk create is not null [\#282](https://github.com/feathersjs-ecosystem/feathers-sequelize/pull/282) ([daffl](https://github.com/daffl))
+- Update sequelize to the latest version 🚀 [\#281](https://github.com/feathersjs-ecosystem/feathers-sequelize/pull/281) ([greenkeeper[bot]](https://github.com/apps/greenkeeper))
+- Wraps a SequelizeDatabaseError as a GeneralError [\#275](https://github.com/feathersjs-ecosystem/feathers-sequelize/pull/275) ([honzahommer](https://github.com/honzahommer))
+
 ## [v4.1.1](https://github.com/feathersjs-ecosystem/feathers-sequelize/tree/v4.1.1) (2019-02-27)
 [Full Changelog](https://github.com/feathersjs-ecosystem/feathers-sequelize/compare/v4.1.0...v4.1.1)
 
