@@ -1,5 +1,12 @@
 # Change Log
 
+## [v5.1.0](https://github.com/feathersjs-ecosystem/feathers-sequelize/tree/v5.1.0) (2019-04-05)
+[Full Changelog](https://github.com/feathersjs-ecosystem/feathers-sequelize/compare/v5.0.1...v5.1.0)
+
+**Closed issues:**
+
+- include association's association [\#284](https://github.com/feathersjs-ecosystem/feathers-sequelize/issues/284)
+
 ## [v5.0.1](https://github.com/feathersjs-ecosystem/feathers-sequelize/tree/v5.0.1) (2019-03-30)
 [Full Changelog](https://github.com/feathersjs-ecosystem/feathers-sequelize/compare/v5.0.0...v5.0.1)
 
