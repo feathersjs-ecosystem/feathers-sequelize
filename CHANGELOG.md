@@ -1,5 +1,16 @@
 # Change Log
 
+## [v5.1.1](https://github.com/feathersjs-ecosystem/feathers-sequelize/tree/v5.1.1) (2019-04-09)
+[Full Changelog](https://github.com/feathersjs-ecosystem/feathers-sequelize/compare/v5.1.0...v5.1.1)
+
+**Closed issues:**
+
+- belongsToMany Association [\#285](https://github.com/feathersjs-ecosystem/feathers-sequelize/issues/285)
+
+**Merged pull requests:**
+
+- Add returning: true for bulk creates [\#286](https://github.com/feathersjs-ecosystem/feathers-sequelize/pull/286) ([daffl](https://github.com/daffl))
+
 ## [v5.1.0](https://github.com/feathersjs-ecosystem/feathers-sequelize/tree/v5.1.0) (2019-04-05)
 [Full Changelog](https://github.com/feathersjs-ecosystem/feathers-sequelize/compare/v5.0.1...v5.1.0)
 
