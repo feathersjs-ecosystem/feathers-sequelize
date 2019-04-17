@@ -1,5 +1,20 @@
 # Change Log
 
+## [v5.1.2](https://github.com/feathersjs-ecosystem/feathers-sequelize/tree/v5.1.2) (2019-04-17)
+[Full Changelog](https://github.com/feathersjs-ecosystem/feathers-sequelize/compare/v5.1.1...v5.1.2)
+
+**Implemented enhancements:**
+
+- Unflatten results of raw queries [\#149](https://github.com/feathersjs-ecosystem/feathers-sequelize/issues/149)
+
+**Closed issues:**
+
+- How to return man-to-many relationship? [\#288](https://github.com/feathersjs-ecosystem/feathers-sequelize/issues/288)
+
+**Merged pull requests:**
+
+- Fix iLike typo [\#291](https://github.com/feathersjs-ecosystem/feathers-sequelize/pull/291) ([DaddyWarbucks](https://github.com/DaddyWarbucks))
+
 ## [v5.1.1](https://github.com/feathersjs-ecosystem/feathers-sequelize/tree/v5.1.1) (2019-04-09)
 [Full Changelog](https://github.com/feathersjs-ecosystem/feathers-sequelize/compare/v5.1.0...v5.1.1)
 
