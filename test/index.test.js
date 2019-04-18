@@ -405,6 +405,77 @@ describe('Feathers Sequelize Service', () => {
       });
     });
 
+    describe('Operators and Whitelist', () => {
+      it('merges whitelist and default operators', async () => {
+        const app = feathers();
+        const whitelist = ['$something'];
+        app.use('/ops-and-whitelist', service({
+          Model,
+          whitelist
+        }));
+        const ops = app.service('ops-and-whitelist');
+        const newWhitelist = Object
+          .keys(ops.options.operators)
+          .concat(whitelist);
+        expect(newWhitelist).to.deep.equal(ops.options.whitelist);
+      });
+
+      it('fails using operator that IS NOT whitelisted OR default', async () => {
+        const app = feathers();
+        app.use('/ops-and-whitelist', service({
+          Model
+        }));
+        const ops = app.service('ops-and-whitelist');
+        try {
+          await ops.find({ query: { name: { $notWhitelisted: 'Beau' } } });
+          assert.ok(false, 'Should never get here');
+        } catch (error) {
+          assert.strictEqual(error.name, 'BadRequest');
+          assert.strictEqual(error.message, 'Invalid query parameter $notWhitelisted');
+        }
+      });
+
+      it('succeeds using operator that IS whitelisted OR default', async () => {
+        const app = feathers();
+        app.use('/ops-and-whitelist', service({
+          Model,
+          whitelist: ['$between'],
+          operators: { $between: Sequelize.Op.between }
+        }));
+        const ops = app.service('ops-and-whitelist');
+        const result1 = await ops.find({ query: { name: { $like: 'Beau' } } });
+        const result2 = await ops.find({ query: { name: { $between: 'Beau' } } });
+        assert.strictEqual(result1.length, 0);
+        assert.strictEqual(result2.length, 0);
+      });
+
+      it('succeeds using operator that IS whitelisted AND default', async () => {
+        const app = feathers();
+        app.use('/ops-and-whitelist', service({
+          Model,
+          whitelist: ['$like']
+        }));
+        const ops = app.service('ops-and-whitelist');
+        const result = await ops.find({ query: { name: { $like: 'Beau' } } });
+        assert.strictEqual(result.length, 0);
+      });
+
+      it('fails using an invalid operator in the whitelist', async () => {
+        const app = feathers();
+        app.use('/ops-and-whitelist', service({
+          Model,
+          whitelist: ['$invalidOp']
+        }));
+        const ops = app.service('ops-and-whitelist');
+        try {
+          await ops.find({ query: { name: { $invalidOp: 'Beau' } } });
+          assert.ok(false, 'Should never get here');
+        } catch (error) {
+          assert.strictEqual(error.message, "Invalid value { '$invalidOp': 'Beau' }");
+        }
+      });
+    });
+
     it('can set the scope of an operation#130', async () => {
       const people = app.service('people');
       const data = { name: 'Active', status: 'active' };
