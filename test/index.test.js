@@ -415,7 +415,7 @@ describe('Feathers Sequelize Service', () => {
         const ops = app.service('ops-and-whitelist');
         const newWhitelist = Object
           .keys(ops.options.operators)
-          .concat(whitelist)
+          .concat(whitelist);
         expect(newWhitelist).to.deep.equal(ops.options.whitelist);
       });
     });
