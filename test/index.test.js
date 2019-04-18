@@ -408,9 +408,10 @@ describe('Feathers Sequelize Service', () => {
     describe('Operators and Whitelist', () => {
       it('merges whitelist and default operators', async () => {
         const app = feathers();
+        const whitelist = ['$something'];
         app.use('/ops-and-whitelist', service({
           Model,
-          whitelist: ['$something']
+          whitelist
         }));
         const ops = app.service('ops-and-whitelist');
         const newWhitelist = Object
