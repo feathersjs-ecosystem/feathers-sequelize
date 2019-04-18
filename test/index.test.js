@@ -405,6 +405,21 @@ describe('Feathers Sequelize Service', () => {
       });
     });
 
+    describe('Operators and Whitelist', () => {
+      it('merges whitelist and default operators', async () => {
+        const app = feathers();
+        app.use('/ops-and-whitelist', service({
+          Model,
+          whitelist: ['$something']
+        }));
+        const ops = app.service('ops-and-whitelist');
+        const newWhitelist = Object
+          .keys(ops.options.operators)
+          .concat(whitelist)
+        expect(newWhitelist).to.deep.equal(ops.options.whitelist);
+      });
+    });
+
     it('can set the scope of an operation#130', async () => {
       const people = app.service('people');
       const data = { name: 'Active', status: 'active' };
