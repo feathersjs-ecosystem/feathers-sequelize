@@ -1,5 +1,24 @@
 # Change Log
 
+## [Unreleased](https://github.com/feathersjs-ecosystem/feathers-sequelize/tree/HEAD)
+
+[Full Changelog](https://github.com/feathersjs-ecosystem/feathers-sequelize/compare/v5.1.3...HEAD)
+
+**Closed issues:**
+
+- options.whitelist overwrites merged operators and whitelist  [\#292](https://github.com/feathersjs-ecosystem/feathers-sequelize/issues/292)
+
+## [v5.1.3](https://github.com/feathersjs-ecosystem/feathers-sequelize/tree/v5.1.3) (2019-04-18)
+[Full Changelog](https://github.com/feathersjs-ecosystem/feathers-sequelize/compare/v5.1.2...v5.1.3)
+
+**Closed issues:**
+
+- $iLike operator declared incorrectly in default operators [\#290](https://github.com/feathersjs-ecosystem/feathers-sequelize/issues/290)
+
+**Merged pull requests:**
+
+- Solve whitelist merge problem [\#293](https://github.com/feathersjs-ecosystem/feathers-sequelize/pull/293) ([DaddyWarbucks](https://github.com/DaddyWarbucks))
+
 ## [v5.1.2](https://github.com/feathersjs-ecosystem/feathers-sequelize/tree/v5.1.2) (2019-04-17)
 [Full Changelog](https://github.com/feathersjs-ecosystem/feathers-sequelize/compare/v5.1.1...v5.1.2)
 
