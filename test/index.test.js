@@ -175,6 +175,10 @@ describe('Feathers Sequelize Service', () => {
     it('throws an error when missing a Model', () => {
       expect(service.bind(null, { name: 'Test' })).to.throw(/You must provide a Sequelize Model/);
     });
+
+    it('re-exports hooks', () => {
+      assert.ok(service.hooks);
+    });
   });
 
   describe('Common Tests', () => {
