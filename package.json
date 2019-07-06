@@ -4,6 +4,7 @@
   "version": "5.1.3",
   "homepage": "https://github.com/feathersjs-ecosystem/feathers-sequelize",
   "main": "lib/",
+  "types": "types",
   "keywords": [
     "feathers",
     "feathers-plugin",
