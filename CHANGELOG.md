@@ -1,12 +1,23 @@
 # Change Log
 
-## [Unreleased](https://github.com/feathersjs-ecosystem/feathers-sequelize/tree/HEAD)
-
-[Full Changelog](https://github.com/feathersjs-ecosystem/feathers-sequelize/compare/v5.1.3...HEAD)
+## [v6.0.0](https://github.com/feathersjs-ecosystem/feathers-sequelize/tree/v6.0.0) (2019-07-06)
+[Full Changelog](https://github.com/feathersjs-ecosystem/feathers-sequelize/compare/v5.1.3...v6.0.0)
 
 **Closed issues:**
 
+- How to use Sequelize increment method with this adapter [\#303](https://github.com/feathersjs-ecosystem/feathers-sequelize/issues/303)
+- An in-range update of pg is breaking the build 🚨 [\#301](https://github.com/feathersjs-ecosystem/feathers-sequelize/issues/301)
+- Feather-sequelize $or operator not working [\#299](https://github.com/feathersjs-ecosystem/feathers-sequelize/issues/299)
+- An in-range update of sqlite3 is breaking the build 🚨 [\#298](https://github.com/feathersjs-ecosystem/feathers-sequelize/issues/298)
+- An in-range update of body-parser is breaking the build 🚨 [\#296](https://github.com/feathersjs-ecosystem/feathers-sequelize/issues/296)
+- An in-range update of sequelize is breaking the build 🚨 [\#295](https://github.com/feathersjs-ecosystem/feathers-sequelize/issues/295)
 - options.whitelist overwrites merged operators and whitelist  [\#292](https://github.com/feathersjs-ecosystem/feathers-sequelize/issues/292)
+- Underscored foreignKeys failing when upgrading to v5 [\#287](https://github.com/feathersjs-ecosystem/feathers-sequelize/issues/287)
+
+**Merged pull requests:**
+
+- Add TypeScript definitions and upgrade tests to Feathers 4 [\#304](https://github.com/feathersjs-ecosystem/feathers-sequelize/pull/304) ([daffl](https://github.com/daffl))
+- Lock CI to Node 11 for now [\#302](https://github.com/feathersjs-ecosystem/feathers-sequelize/pull/302) ([daffl](https://github.com/daffl))
 
 ## [v5.1.3](https://github.com/feathersjs-ecosystem/feathers-sequelize/tree/v5.1.3) (2019-04-18)
 [Full Changelog](https://github.com/feathersjs-ecosystem/feathers-sequelize/compare/v5.1.2...v5.1.3)
