@@ -1,5 +1,19 @@
 # Change Log
 
+## [v6.0.1](https://github.com/feathersjs-ecosystem/feathers-sequelize/tree/v6.0.1) (2019-07-22)
+[Full Changelog](https://github.com/feathersjs-ecosystem/feathers-sequelize/compare/v6.0.0...v6.0.1)
+
+**Closed issues:**
+
+- UPDATE forces raw false [\#311](https://github.com/feathersjs-ecosystem/feathers-sequelize/issues/311)
+- After hook in service not running when same endpoint called in quick succession [\#308](https://github.com/feathersjs-ecosystem/feathers-sequelize/issues/308)
+- upgrade sequelize to avoid SQL injection vuln [\#306](https://github.com/feathersjs-ecosystem/feathers-sequelize/issues/306)
+
+**Merged pull requests:**
+
+- Use correct raw setting on update [\#312](https://github.com/feathersjs-ecosystem/feathers-sequelize/pull/312) ([daffl](https://github.com/daffl))
+- Update dtslint to the latest version 🚀 [\#307](https://github.com/feathersjs-ecosystem/feathers-sequelize/pull/307) ([greenkeeper[bot]](https://github.com/apps/greenkeeper))
+
 ## [v6.0.0](https://github.com/feathersjs-ecosystem/feathers-sequelize/tree/v6.0.0) (2019-07-06)
 [Full Changelog](https://github.com/feathersjs-ecosystem/feathers-sequelize/compare/v5.1.3...v6.0.0)
 
