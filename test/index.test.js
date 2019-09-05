@@ -185,11 +185,11 @@ describe('Feathers Sequelize Service', () => {
     const app = feathers()
       .use('/people', service({
         Model,
-        events: [ 'testing' ]
+        events: ['testing']
       }))
       .use('/people-customid', service({
         Model: CustomId,
-        events: [ 'testing' ]
+        events: ['testing']
       }));
 
     it('has .Model', () => {
@@ -207,7 +207,7 @@ describe('Feathers Sequelize Service', () => {
         paginate: {
           default: 10
         },
-        events: [ 'testing' ],
+        events: ['testing'],
         multi: true
       }))
       .use('/orders', service({
@@ -216,7 +216,7 @@ describe('Feathers Sequelize Service', () => {
       }))
       .use('/custom-getter-setter', service({
         Model: CustomGetterSetter,
-        events: [ 'testing' ],
+        events: ['testing'],
         multi: true
       }));
 
@@ -253,7 +253,8 @@ describe('Feathers Sequelize Service', () => {
       it('still allows querying with Sequelize operators', async () => {
         const name = 'Age test';
         const person = await people.create({ name, age: 10 });
-        const { data } = await people.find({ query:
+        const { data } = await people.find({
+          query:
           { age: { [Sequelize.Op.eq]: 10 } }
         });
 
@@ -267,7 +268,8 @@ describe('Feathers Sequelize Service', () => {
       it('$like works', async () => {
         const name = 'Like test';
         const person = await people.create({ name, age: 10 });
-        const { data } = await people.find({ query:
+        const { data } = await people.find({
+          query:
           { name: { $like: '%ike%' } }
         });
 
@@ -501,7 +503,7 @@ describe('Feathers Sequelize Service', () => {
     const app = feathers();
     app.use('/raw-people', service({
       Model,
-      events: [ 'testing' ],
+      events: ['testing'],
       multi: true
     }));
     const rawPeople = app.service('raw-people');
@@ -509,7 +511,7 @@ describe('Feathers Sequelize Service', () => {
     describe('Non-raw Service Config', () => {
       app.use('/people', service({
         Model,
-        events: [ 'testing' ],
+        events: ['testing'],
         multi: true,
         raw: false // -> this is what we are testing
       }));
@@ -698,7 +700,7 @@ describe('Feathers Sequelize Service', () => {
     const app = feathers();
     app.use('/raw-people', extendedService({
       Model,
-      events: [ 'testing' ],
+      events: ['testing'],
       multi: true
     }));
     const rawPeople = app.service('raw-people');
@@ -706,7 +708,7 @@ describe('Feathers Sequelize Service', () => {
     describe('Non-raw Service Config', () => {
       app.use('/people', extendedService({
         Model,
-        events: [ 'testing' ],
+        events: ['testing'],
         multi: true,
         raw: false // -> this is what we are testing
       }));
