@@ -8,7 +8,7 @@
 
 A [Feathers](https://feathersjs.com) database adapter for [Sequelize](http://sequelizejs.com), an ORM for Node.js. It supports PostgreSQL, MySQL, MariaDB, SQLite and MSSQL and features transaction support, relations, read replication and more.
 
-> __Very Important:__ Before using this adapter you have to be familiar with both, the [Feathers Basics](https://docs.feathersjs.com/guides/basics/readme.html) and general use of [Sequelize](http://docs.sequelizejs.com/). For associations and relations see the [associations](#associations) section. This adapter may not cover all use cases but they can still be implemented using Sequelize models directly in a [Custom Feathers service](https://docs.feathersjs.com/guides/basics/services.html).
+> __Very Important:__ Before using this adapter you have to be familiar with both, the [Feathers Basics](https://docs.feathersjs.com/guides/basics/setup.html) and general use of [Sequelize](http://docs.sequelizejs.com/). For associations and relations see the [associations](#associations) section. This adapter may not cover all use cases but they can still be implemented using Sequelize models directly in a [Custom Feathers service](https://docs.feathersjs.com/guides/basics/services.html).
 
 ```bash
 npm install --save feathers-sequelize
