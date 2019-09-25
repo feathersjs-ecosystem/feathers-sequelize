@@ -192,17 +192,18 @@ Once you understand how the `include` option works with Sequelize, you will want
 ```js
 // GET /my-service?name=John&include=1
 function (context) {
-   if (context.params.query.include) {
+  const { include, ...query };
+
+   if (include) {
       const AssociatedModel = context.app.services.fooservice.Model;
       context.params.sequelize = {
          include: [{ model: AssociatedModel }]
       };
-      // delete any special query params so they are not used
-      // in the WHERE clause in the db query.
-      delete context.params.query.include;
+      // Update the query to not include `include`
+      context.params.query = query;
    }
 
-   return Promise.resolve(context);
+   return context;
 }
 ```
 
