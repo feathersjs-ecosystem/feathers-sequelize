@@ -1,5 +1,25 @@
 # Change Log
 
+## [v6.0.2](https://github.com/feathersjs-ecosystem/feathers-sequelize/tree/v6.0.2) (2019-09-29)
+[Full Changelog](https://github.com/feathersjs-ecosystem/feathers-sequelize/compare/v6.0.1...v6.0.2)
+
+**Closed issues:**
+
+- FeathersJS Inserts 2 records into MySql from 1 REST call [\#321](https://github.com/feathersjs-ecosystem/feathers-sequelize/issues/321)
+- An in-range update of @feathersjs/express is breaking the build 🚨 [\#318](https://github.com/feathersjs-ecosystem/feathers-sequelize/issues/318)
+- Many to many relation result duplicate objects [\#317](https://github.com/feathersjs-ecosystem/feathers-sequelize/issues/317)
+- An in-range update of dtslint is breaking the build 🚨 [\#315](https://github.com/feathersjs-ecosystem/feathers-sequelize/issues/315)
+- Patch/Remove methods mess up Find method [\#313](https://github.com/feathersjs-ecosystem/feathers-sequelize/issues/313)
+- Warning When Starting Feathers when using Sequelize 5.10.0 with feathers-sequelize 5.1.3 [\#305](https://github.com/feathersjs-ecosystem/feathers-sequelize/issues/305)
+
+**Merged pull requests:**
+
+- Pass entity type to AdapterService\<T\> and update dependencies [\#322](https://github.com/feathersjs-ecosystem/feathers-sequelize/pull/322) ([daffl](https://github.com/daffl))
+- Update README.md [\#320](https://github.com/feathersjs-ecosystem/feathers-sequelize/pull/320) ([jvidalgz](https://github.com/jvidalgz))
+- Update dependencies and lint files [\#319](https://github.com/feathersjs-ecosystem/feathers-sequelize/pull/319) ([daffl](https://github.com/daffl))
+- Update semistandard to the latest version 🚀 [\#316](https://github.com/feathersjs-ecosystem/feathers-sequelize/pull/316) ([greenkeeper[bot]](https://github.com/apps/greenkeeper))
+- Docs: improve instruction for setting the 'dialect' variable [\#309](https://github.com/feathersjs-ecosystem/feathers-sequelize/pull/309) ([bravo-kernel](https://github.com/bravo-kernel))
+
 ## [v6.0.1](https://github.com/feathersjs-ecosystem/feathers-sequelize/tree/v6.0.1) (2019-07-22)
 [Full Changelog](https://github.com/feathersjs-ecosystem/feathers-sequelize/compare/v6.0.0...v6.0.1)
 
