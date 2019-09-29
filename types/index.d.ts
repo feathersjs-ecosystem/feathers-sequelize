@@ -7,7 +7,7 @@ export interface SequelizeServiceOptions extends ServiceOptions {
   raw: boolean;
 }
 
-export class Service<T = any> extends AdapterService implements InternalServiceMethods<T> {
+export class Service<T = any> extends AdapterService<T> implements InternalServiceMethods<T> {
   Model: any;
   options: SequelizeServiceOptions;
 
