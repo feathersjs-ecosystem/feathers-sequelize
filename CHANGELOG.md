@@ -1,5 +1,12 @@
 # Change Log
 
+## [v6.1.0](https://github.com/feathersjs-ecosystem/feathers-sequelize/tree/v6.1.0) (2019-10-07)
+[Full Changelog](https://github.com/feathersjs-ecosystem/feathers-sequelize/compare/v6.0.2...v6.1.0)
+
+**Merged pull requests:**
+
+- Update all dependencies [\#324](https://github.com/feathersjs-ecosystem/feathers-sequelize/pull/324) ([daffl](https://github.com/daffl))
+
 ## [v6.0.2](https://github.com/feathersjs-ecosystem/feathers-sequelize/tree/v6.0.2) (2019-09-29)
 [Full Changelog](https://github.com/feathersjs-ecosystem/feathers-sequelize/compare/v6.0.1...v6.0.2)
 
