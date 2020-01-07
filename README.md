@@ -8,6 +8,40 @@
 
 A [Feathers](https://feathersjs.com) database adapter for [Sequelize](http://sequelizejs.com), an ORM for Node.js. It supports PostgreSQL, MySQL, MariaDB, SQLite and MSSQL and features transaction support, relations, read replication and more.
 
+<!-- TOC -->
+
+- [feathers-sequelize](#feathers-sequelize)
+  - [API](#api)
+    - [`service(options)`](#serviceoptions)
+    - [params.sequelize](#paramssequelize)
+    - [operators](#operators)
+  - [Caveats](#caveats)
+    - [Sequelize `raw` queries](#sequelize-raw-queries)
+    - [Working with MSSQL](#working-with-mssql)
+  - [Example](#example)
+  - [Associations](#associations)
+    - [Embrace the ORM](#embrace-the-orm)
+    - [Setting `params.sequelize.include`](#setting-paramssequelizeinclude)
+  - [Querying](#querying)
+  - [Working with Sequelize Model instances](#working-with-sequelize-model-instances)
+  - [Validation](#validation)
+  - [Testing sequelize queries in isolation](#testing-sequelize-queries-in-isolation)
+    - [1. Build a test file](#1-build-a-test-file)
+    - [2. Integrate the query using a "before" hook](#2-integrate-the-query-using-a-before-hook)
+  - [Migrations](#migrations)
+    - [Initial Setup: one-time tasks](#initial-setup-one-time-tasks)
+    - [Migrations workflow](#migrations-workflow)
+    - [Create a new migration](#create-a-new-migration)
+      - [Add the up/down scripts:](#add-the-updown-scripts)
+      - [Keeping your app code in sync with migrations](#keeping-your-app-code-in-sync-with-migrations)
+    - [Apply a migration](#apply-a-migration)
+    - [Undo the previous migration](#undo-the-previous-migration)
+    - [Reverting your app to a previous state](#reverting-your-app-to-a-previous-state)
+    - [Migrating](#migrating)
+  - [License](#license)
+
+<!-- /TOC -->
+
 > __Very Important:__ Before using this adapter you have to be familiar with both, the [Feathers Basics](https://docs.feathersjs.com/guides/basics/setup.html) and general use of [Sequelize](http://docs.sequelizejs.com/). For associations and relations see the [associations](#associations) section. This adapter may not cover all use cases but they can still be implemented using Sequelize models directly in a [Custom Feathers service](https://docs.feathersjs.com/guides/basics/services.html).
 
 ```bash
@@ -95,7 +129,9 @@ Sequelize deprecated string based operators a while ago for security reasons. St
 '$and'
 ```
 
-## Sequelize `raw` queries
+## Caveats
+
+### Sequelize `raw` queries
 
 By default, all `feathers-sequelize` operations will return `raw` data (using `raw: true` when querying the database). This results in faster execution and allows feathers-sequelize to interoperate with feathers-common hooks and other 3rd party integrations. However, this will bypass some of the "goodness" you get when using Sequelize as an ORM:
 
@@ -105,6 +141,36 @@ By default, all `feathers-sequelize` operations will return `raw` data (using `r
  - ...and several other issues that one might not expect
 
 Don't worry! The solution is easy. Please read the guides about [working with model instances](#working-with-sequelize-model-instances).
+
+### Working with MSSQL
+
+When using MSSQL as the database, a default sort order always has to be applied, otherwise the adapter will throw an `Invalid usage of the option NEXT in the FETCH statement.` error. This can be done in your model with:
+
+```js
+model.beforeFind(model => model.order.push(['id', 'ASC']))
+```
+
+Or in a hook like this:
+
+```js
+module.exports = function (options = {}) {
+  return async context => {
+    const { query = {} } = context.params;
+    // Sort by id field ascending (or any other property you want)
+    // See https://docs.feathersjs.com/api/databases/querying.html#sort
+    const $sort = { id: 1 };
+
+    context.params.query = {
+      $sort: {
+
+      },
+      ...query
+    }
+
+    return context;
+  }
+}
+```
 
 ## Example
 
