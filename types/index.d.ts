@@ -1,4 +1,4 @@
-// TypeScript Version: 3.0
+// TypeScript Version: 3.7
 import { Params, Paginated, Id, NullableId, Query, Hook } from '@feathersjs/feathers';
 import { AdapterService, ServiceOptions, InternalServiceMethods } from '@feathersjs/adapter-commons';
 
