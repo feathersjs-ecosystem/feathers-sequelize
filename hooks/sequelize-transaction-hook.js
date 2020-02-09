@@ -34,7 +34,7 @@ const end = () => {
       // so we dont commit or rollback the transaction in this service
       return hook;
     }
-    const trx = params.sequelize.transacrion || params.transacrion;
+    const trx = params.sequelize.transaction || params.transaction;
     return trx.then(t => t.commit()).then(() => hook);
   };
 };
@@ -51,7 +51,7 @@ const rollback = () => {
       // so we dont commit or rollback the transaction in this service
       return hook;
     }
-    const trx = params.sequelize.transacrion || params.transacrion;
+    const trx = params.sequelize.transaction || params.transaction;
     return trx.then(t => t.rollback()).then(() => hook);
   };
 };
