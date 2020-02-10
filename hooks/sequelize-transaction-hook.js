@@ -1,3 +1,5 @@
+const debug = require("debug")("feathers-sequelize-transaction");
+
 /* eslint-disable require-atomic-updates */
 const start = (options = {}) => {
   return async hook => {
@@ -10,11 +12,11 @@ const start = (options = {}) => {
       return hook;
     }
 
-    const sequelize = await hook.app.get("sequelizeClient");
+    const sequelize = hook.app.get("sequelizeClient");
     const transaction = await sequelize.transaction();
+    transaction.owner = hook.path;
 
     hook.params.transaction = transaction;
-    hook.params.transactionOwner = hook.path;
     hook.params.sequelize = hook.params.sequelize || {};
     hook.params.sequelize.transaction = transaction;
 
@@ -23,36 +25,41 @@ const start = (options = {}) => {
 };
 
 const end = () => {
-  return hook => {
-    const { params } = hook.params;
-    if (
-      !params ||
-      !params.transactionOwner ||
-      params.transactionOwner !== hook.path
-    ) {
+  return async hook => {
+    const trx = hook.params.sequelize.transaction || hook.params.transaction;
+
+    if (!trx || !trx.owner || trx.owner !== hook.path) {
       // transaction probably from diffrent hook or service
       // so we dont commit or rollback the transaction in this service
       return hook;
     }
-    const trx = params.sequelize.transaction || params.transaction;
-    return trx.then(t => t.commit()).then(() => hook);
+    await trx.commit().then(() => {
+      delete hook.params.sequelize.transaction;
+      delete hook.params.transaction;
+    });
+    return hook;
   };
 };
 
 const rollback = () => {
-  return hook => {
-    const { params } = hook.params;
-    if (
-      !params ||
-      !params.transactionOwner ||
-      params.transactionOwner !== hook.path
-    ) {
+  return async hook => {
+    const trx = hook.params.sequelize.transaction || hook.params.transaction;
+
+    if (!trx || !trx.owner || trx.owner !== hook.path) {
       // transaction probably from diffrent hook or service
       // so we dont commit or rollback the transaction in this service
       return hook;
     }
-    const trx = params.sequelize.transaction || params.transaction;
-    return trx.then(t => t.rollback()).then(() => hook);
+
+    try {
+      await trx.rollback();
+      delete hook.params.sequelize.transaction;
+      delete hook.params.transaction;
+    } catch (err) {
+      debug(err);
+    }
+
+    return hook;
   };
 };
 
