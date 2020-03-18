@@ -129,6 +129,21 @@ Sequelize deprecated string based operators a while ago for security reasons. St
 '$and'
 ```
 
+```
+// Find all messages in room 2 or 5
+app.service('users').find({
+  query: {
+    name: {
+      $like: 'Dav%'
+    }
+  }
+});
+```
+
+```
+GET /messages?name[$like]=Dav%
+```
+
 ## Caveats
 
 ### Sequelize `raw` queries
