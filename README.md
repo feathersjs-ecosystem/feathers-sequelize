@@ -141,7 +141,7 @@ app.service('users').find({
 ```
 
 ```
-GET /messages?name[$like]=Dav%
+GET /users?name[$like]=Dav%
 ```
 
 ## Caveats
