@@ -527,19 +527,19 @@ describe('Feathers Sequelize Service', () => {
       it('find() returns model instances', async () => {
         const results = await people.find();
 
-        expect(results[0] instanceof Model);
+        expect(results[0] instanceof Model).to.be.true;
       });
 
       it('get() returns a model instance', async () => {
         const instance = await people.get(david.id);
 
-        expect(instance instanceof Model);
+        expect(instance instanceof Model).to.be.true;
       });
 
       it('create() returns a model instance', async () => {
         const instance = await people.create({ name: 'Sarah' });
 
-        expect(instance instanceof Model);
+        expect(instance instanceof Model).to.be.true;
 
         await people.remove(instance.id);
       });
@@ -551,7 +551,7 @@ describe('Feathers Sequelize Service', () => {
         ]);
 
         expect(results.length).to.equal(2);
-        expect(results[0] instanceof Model);
+        expect(results[0] instanceof Model).to.be.true;
         assert.ok(results[0].id);
         assert.ok(results[1].id);
 
@@ -562,7 +562,7 @@ describe('Feathers Sequelize Service', () => {
       it('patch() returns a model instance', async () => {
         const instance = await people.patch(david.id, { name: 'Sarah' });
 
-        expect(instance instanceof Model);
+        expect(instance instanceof Model).to.be.true;
       });
 
       it('patch() with $returning=false returns empty array', async () => {
@@ -574,13 +574,13 @@ describe('Feathers Sequelize Service', () => {
       it('update() returns a model instance', async () => {
         const instance = await people.update(david.id, david);
 
-        expect(instance instanceof Model);
+        expect(instance instanceof Model).to.be.true;
       });
 
       it('remove() returns a model instance', async () => {
         const instance = await people.remove(david.id);
 
-        expect(instance instanceof Model);
+        expect(instance instanceof Model).to.be.true;
       });
 
       it('remove() with $returning=false returns empty array', async () => {
@@ -603,19 +603,19 @@ describe('Feathers Sequelize Service', () => {
       it('`raw: false` works for find()', async () => {
         const results = await rawPeople.find(NOT_RAW);
 
-        expect(results[0] instanceof Model);
+        expect(results[0] instanceof Model).to.be.true;
       });
 
       it('`raw: false` works for get()', async () => {
         const instance = await rawPeople.get(david.id, NOT_RAW);
 
-        expect(instance instanceof Model);
+        expect(instance instanceof Model).to.be.true;
       });
 
       it('`raw: false` works for create()', async () => {
         const instance = await rawPeople.create({ name: 'Sarah' }, NOT_RAW);
 
-        expect(instance instanceof Model);
+        expect(instance instanceof Model).to.be.true;
 
         await rawPeople.remove(instance.id);
       });
@@ -624,7 +624,7 @@ describe('Feathers Sequelize Service', () => {
         const results = await rawPeople.create([{ name: 'Sarah' }], NOT_RAW);
 
         expect(results.length).to.equal(1);
-        expect(results[0] instanceof Model);
+        expect(results[0] instanceof Model).to.be.true;
 
         await rawPeople.remove(results[0].id);
       });
@@ -632,19 +632,19 @@ describe('Feathers Sequelize Service', () => {
       it('`raw: false` works for patch()', async () => {
         const instance = await rawPeople.patch(david.id, { name: 'Sarah' }, NOT_RAW);
 
-        expect(instance instanceof Model);
+        expect(instance instanceof Model).to.be.true;
       });
 
       it('`raw: false` works for update()', async () => {
         const instance = await rawPeople.update(david.id, david, NOT_RAW);
 
-        expect(instance instanceof Model);
+        expect(instance instanceof Model).to.be.true;
       });
 
       it('`raw: false` works for remove()', async () => {
         const instance = await rawPeople.remove(david.id, NOT_RAW);
 
-        expect(instance instanceof Model);
+        expect(instance instanceof Model).to.be.true;
       });
     });
   });
@@ -726,14 +726,14 @@ describe('Feathers Sequelize Service', () => {
         const results = await people.find(params);
         expect(params.sequelize.getModelCalls.count).to.gte(1);
 
-        expect(results[0] instanceof Model);
+        expect(results[0] instanceof Model).to.be.true;
       });
 
       it('get() returns a model instance', async () => {
         const params = getExtraParams();
         const instance = await people.get(david.id, params);
         expect(params.sequelize.getModelCalls.count).to.gte(1);
-        expect(instance instanceof Model);
+        expect(instance instanceof Model).to.be.true;
       });
 
       it('create() returns a model instance', async () => {
@@ -741,7 +741,7 @@ describe('Feathers Sequelize Service', () => {
         const instance = await people.create({ name: 'Sarah' }, params);
         expect(params.sequelize.getModelCalls.count).to.gte(1);
 
-        expect(instance instanceof Model);
+        expect(instance instanceof Model).to.be.true;
 
         const removeParams = getExtraParams();
         await people.remove(instance.id, removeParams);
@@ -754,7 +754,7 @@ describe('Feathers Sequelize Service', () => {
         expect(params.sequelize.getModelCalls.count).to.gte(1);
 
         expect(results.length).to.equal(1);
-        expect(results[0] instanceof Model);
+        expect(results[0] instanceof Model).to.be.true;
 
         const removeParams = getExtraParams();
         await people.remove(results[0].id, removeParams);
@@ -765,7 +765,7 @@ describe('Feathers Sequelize Service', () => {
         const params = getExtraParams();
         const instance = await people.patch(david.id, { name: 'Sarah' }, params);
         expect(params.sequelize.getModelCalls.count).to.gte(1);
-        expect(instance instanceof Model);
+        expect(instance instanceof Model).to.be.true;
       });
 
       it('patch() with $returning=false returns empty array', async () => {
@@ -780,7 +780,7 @@ describe('Feathers Sequelize Service', () => {
         const params = getExtraParams();
         const instance = await people.update(david.id, david, params);
         expect(params.sequelize.getModelCalls.count).to.gte(1);
-        expect(instance instanceof Model);
+        expect(instance instanceof Model).to.be.true;
       });
 
       it('remove() returns a model instance', async () => {
@@ -788,7 +788,7 @@ describe('Feathers Sequelize Service', () => {
         const instance = await people.remove(david.id, params);
         expect(params.sequelize.getModelCalls.count).to.gte(1);
 
-        expect(instance instanceof Model);
+        expect(instance instanceof Model).to.be.true;
       });
 
       it('remove() with $returning=false returns empty array', async () => {
@@ -816,7 +816,7 @@ describe('Feathers Sequelize Service', () => {
         const results = await rawPeople.find(params);
         expect(params.sequelize.getModelCalls.count).to.gte(1);
 
-        expect(results[0] instanceof Model);
+        expect(results[0] instanceof Model).to.be.true;
       });
 
       it('`raw: false` works for get()', async () => {
@@ -824,7 +824,7 @@ describe('Feathers Sequelize Service', () => {
         const instance = await rawPeople.get(david.id, params);
         expect(params.sequelize.getModelCalls.count).to.gte(1);
 
-        expect(instance instanceof Model);
+        expect(instance instanceof Model).to.be.true;
       });
 
       it('`raw: false` works for create()', async () => {
@@ -832,7 +832,7 @@ describe('Feathers Sequelize Service', () => {
         const instance = await rawPeople.create({ name: 'Sarah' }, params);
         expect(params.sequelize.getModelCalls.count).to.gte(1);
 
-        expect(instance instanceof Model);
+        expect(instance instanceof Model).to.be.true;
 
         const removeParams = getExtraParams();
         await rawPeople.remove(instance.id, removeParams);
@@ -845,7 +845,7 @@ describe('Feathers Sequelize Service', () => {
         expect(params.sequelize.getModelCalls.count).to.gte(1);
 
         expect(results.length).to.equal(1);
-        expect(results[0] instanceof Model);
+        expect(results[0] instanceof Model).to.be.true;
 
         const removeParams = getExtraParams();
         await rawPeople.remove(results[0].id, removeParams);
@@ -857,7 +857,7 @@ describe('Feathers Sequelize Service', () => {
         const instance = await rawPeople.patch(david.id, { name: 'Sarah' }, params);
         expect(params.sequelize.getModelCalls.count).to.gte(1);
 
-        expect(instance instanceof Model);
+        expect(instance instanceof Model).to.be.true;
       });
 
       it('`raw: false` works for update()', async () => {
@@ -865,7 +865,7 @@ describe('Feathers Sequelize Service', () => {
         const instance = await rawPeople.update(david.id, david, params);
         expect(params.sequelize.getModelCalls.count).to.gte(1);
 
-        expect(instance instanceof Model);
+        expect(instance instanceof Model).to.be.true;
       });
 
       it('`raw: false` works for remove()', async () => {
@@ -873,7 +873,7 @@ describe('Feathers Sequelize Service', () => {
         const instance = await rawPeople.remove(david.id, params);
         expect(params.sequelize.getModelCalls.count).to.gte(1);
 
-        expect(instance instanceof Model);
+        expect(instance instanceof Model).to.be.true;
       });
     });
   });
