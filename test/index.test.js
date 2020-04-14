@@ -391,8 +391,7 @@ describe('Feathers Sequelize Service', () => {
         const options = {
           sequelize: {
             include: {
-              model: Order,
-              where: { personId: kirsten.id }
+              model: Order
             },
           }
         };
