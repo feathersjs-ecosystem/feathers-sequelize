@@ -1,3 +1,5 @@
+/* eslint-disable no-unused-expressions */
+
 const pg = require('pg');
 const assert = require('assert');
 const { expect } = require('chai');
@@ -388,12 +390,7 @@ describe('Feathers Sequelize Service', () => {
       });
 
       it('patch() uses instances when include', async () => {
-        const options = {
-          sequelize: {
-            include: {
-              model: Order
-            },
-          }
+        const options = { sequelize: { include: Order } };
         };
 
         const result = await people.patch(kirsten.id, { name: 'Patched' }, options);
