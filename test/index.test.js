@@ -391,9 +391,9 @@ describe('Feathers Sequelize Service', () => {
 
       it('patch() uses instances when include', async () => {
         const options = { sequelize: { include: Order } };
-        };
+        const data = { name: 'Patched' };
 
-        const result = await people.patch(kirsten.id, { name: 'Patched' }, options);
+        const result = await people.patch(kirsten.id, data, options);
 
         expect(result['orders.id']).to.exist;
       });
