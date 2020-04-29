@@ -389,16 +389,6 @@ describe('Feathers Sequelize Service', () => {
         assert.strictEqual(result.total, 2);
       });
 
-      it('patch() uses instances when include', async () => {
-        const options = { sequelize: { include: Order } };
-        const data = { name: 'Patched' };
-
-        const result = await people.patch(kirsten.id, data, options);
-
-        expect(result['orders.id']).to.exist;
-      });
-    });
-
     describe('Custom getters and setters', () => {
       it('calls custom getters and setters (#113)', async () => {
         const value = 0;
