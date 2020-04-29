@@ -397,6 +397,25 @@ describe('Feathers Sequelize Service', () => {
 
         expect(result['orders.id']).to.exist;
       });
+
+      it('update() includes associations', async () => {
+        const params = { sequelize: { include: Order } };
+        const data = { name: 'Updated' };
+
+        const result = await people.update(kirsten.id, data, params);
+
+        expect(result['orders.id']).to.exist;
+      });
+
+      it('remove() includes associations', async () => {
+        const params = { sequelize: { include: Order } };
+
+        const result = await people.remove(kirsten.id, params);
+
+        expect(result['orders.id']).to.exist;
+
+        kirsten = await people.create({ name: 'Kirsten', age: 30 });
+      });
     });
 
     describe('Custom getters and setters', () => {
