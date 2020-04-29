@@ -479,10 +479,11 @@ describe('Feathers Sequelize Service', () => {
           operators: { $between: Sequelize.Op.between }
         }));
         const ops = app.service('ops-and-whitelist');
-        const result1 = await ops.find({ query: { name: { $like: 'Beau' } } });
-        const result2 = await ops.find({ query: { name: { $between: 'Beau' } } });
-        assert.strictEqual(result1.length, 0);
-        assert.strictEqual(result2.length, 0);
+        try {
+          await ops.find({ query: { name: { $like: 'Beau' } } });
+        } catch (error) {
+          assert.ok(false, 'Should never get here');
+        }
       });
 
       it('succeeds using operator that IS whitelisted AND default', async () => {
@@ -492,8 +493,11 @@ describe('Feathers Sequelize Service', () => {
           whitelist: ['$like']
         }));
         const ops = app.service('ops-and-whitelist');
-        const result = await ops.find({ query: { name: { $like: 'Beau' } } });
-        assert.strictEqual(result.length, 0);
+        try {
+          await ops.find({ query: { name: { $like: 'Beau' } } });
+        } catch (error) {
+          assert.ok(false, 'Should never get here');
+        }
       });
 
       it('fails using an invalid operator in the whitelist', async () => {
