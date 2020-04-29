@@ -1,5 +1,34 @@
 # Change Log
 
+## [v6.2.0](https://github.com/feathersjs-ecosystem/feathers-sequelize/tree/v6.2.0) (2020-04-29)
+[Full Changelog](https://github.com/feathersjs-ecosystem/feathers-sequelize/compare/v6.1.0...v6.2.0)
+
+**Closed issues:**
+
+- Model.update\(\) method used by patch\(\) does not support includes. [\#347](https://github.com/feathersjs-ecosystem/feathers-sequelize/issues/347)
+- Patching with query does not return expected results in query property was patched [\#346](https://github.com/feathersjs-ecosystem/feathers-sequelize/issues/346)
+- Incorrect format of DataTypes.BIGINT.UNSIGNED fields into the produced json [\#341](https://github.com/feathersjs-ecosystem/feathers-sequelize/issues/341)
+- How to include $like operator in service.js [\#336](https://github.com/feathersjs-ecosystem/feathers-sequelize/issues/336)
+- An in-range update of @feathersjs/adapter-commons is breaking the build 🚨 [\#335](https://github.com/feathersjs-ecosystem/feathers-sequelize/issues/335)
+- $sort by RAND\(\) [\#330](https://github.com/feathersjs-ecosystem/feathers-sequelize/issues/330)
+- queryWithCurrentUser gives NotFound: No record found for id 'null' [\#329](https://github.com/feathersjs-ecosystem/feathers-sequelize/issues/329)
+- Before HOOK to be able to GET soft deleted item [\#328](https://github.com/feathersjs-ecosystem/feathers-sequelize/issues/328)
+- Eagerly return associations of Create  [\#327](https://github.com/feathersjs-ecosystem/feathers-sequelize/issues/327)
+- An in-range update of @feathersjs/adapter-commons is breaking the build 🚨 [\#325](https://github.com/feathersjs-ecosystem/feathers-sequelize/issues/325)
+
+**Merged pull requests:**
+
+- Include associations in patch and update and return proper values [\#350](https://github.com/feathersjs-ecosystem/feathers-sequelize/pull/350) ([DaddyWarbucks](https://github.com/DaddyWarbucks))
+- Support includes in update and patch [\#349](https://github.com/feathersjs-ecosystem/feathers-sequelize/pull/349) ([DaddyWarbucks](https://github.com/DaddyWarbucks))
+- Update pg to the latest version 🚀 [\#345](https://github.com/feathersjs-ecosystem/feathers-sequelize/pull/345) ([greenkeeper[bot]](https://github.com/apps/greenkeeper))
+- Update dtslint to the latest version 🚀 [\#342](https://github.com/feathersjs-ecosystem/feathers-sequelize/pull/342) ([greenkeeper[bot]](https://github.com/apps/greenkeeper))
+- Update all dependencies and Types version [\#338](https://github.com/feathersjs-ecosystem/feathers-sequelize/pull/338) ([daffl](https://github.com/daffl))
+- Add docs for broken MSSQL [\#337](https://github.com/feathersjs-ecosystem/feathers-sequelize/pull/337) ([daffl](https://github.com/daffl))
+- Update dtslint to the latest version 🚀 [\#334](https://github.com/feathersjs-ecosystem/feathers-sequelize/pull/334) ([greenkeeper[bot]](https://github.com/apps/greenkeeper))
+- Update dtslint to version 1.0.2 [\#333](https://github.com/feathersjs-ecosystem/feathers-sequelize/pull/333) ([daffl](https://github.com/daffl))
+- Update mysql2 to the latest version 🚀 [\#331](https://github.com/feathersjs-ecosystem/feathers-sequelize/pull/331) ([greenkeeper[bot]](https://github.com/apps/greenkeeper))
+- Greenkeeper/@feathersjs/adapter commons 4.3.8 [\#326](https://github.com/feathersjs-ecosystem/feathers-sequelize/pull/326) ([daffl](https://github.com/daffl))
+
 ## [v6.1.0](https://github.com/feathersjs-ecosystem/feathers-sequelize/tree/v6.1.0) (2019-10-07)
 [Full Changelog](https://github.com/feathersjs-ecosystem/feathers-sequelize/compare/v6.0.2...v6.1.0)
 
@@ -234,7 +263,6 @@
 
 - Securely hide original Sequelize error [\#257](https://github.com/feathersjs-ecosystem/feathers-sequelize/pull/257) ([daffl](https://github.com/daffl))
 - Upgrade to @feathersjs/adapter-commons and latest common service features [\#256](https://github.com/feathersjs-ecosystem/feathers-sequelize/pull/256) ([daffl](https://github.com/daffl))
-- Update dependencies [\#255](https://github.com/feathersjs-ecosystem/feathers-sequelize/pull/255) ([daffl](https://github.com/daffl))
 - Migrate tests to async/await [\#254](https://github.com/feathersjs-ecosystem/feathers-sequelize/pull/254) ([daffl](https://github.com/daffl))
 - De-duplicate connection setup [\#253](https://github.com/feathersjs-ecosystem/feathers-sequelize/pull/253) ([daffl](https://github.com/daffl))
 - Fixed issue where params are ignored on update service calls. [\#252](https://github.com/feathersjs-ecosystem/feathers-sequelize/pull/252) ([AndrewJDR](https://github.com/AndrewJDR))
@@ -318,6 +346,7 @@
 
 **Merged pull requests:**
 
+- Update dependencies [\#255](https://github.com/feathersjs-ecosystem/feathers-sequelize/pull/255) ([daffl](https://github.com/daffl))
 - Update sqlite3 to the latest version 🚀 [\#196](https://github.com/feathersjs-ecosystem/feathers-sequelize/pull/196) ([greenkeeper[bot]](https://github.com/apps/greenkeeper))
 - Fix Sequelize dependency [\#194](https://github.com/feathersjs-ecosystem/feathers-sequelize/pull/194) ([daffl](https://github.com/daffl))
 - Update README.md [\#192](https://github.com/feathersjs-ecosystem/feathers-sequelize/pull/192) ([murbanowicz](https://github.com/murbanowicz))
@@ -333,7 +362,7 @@
 
 **Merged pull requests:**
 
-- Add default ES module export for TS compatibility [\#190](https://github.com/feathersjs-ecosystem/feathers-sequelize/pull/190) ([Bubomir](https://github.com/Bubomir))
+- Add default ES module export for TS compatibility [\#190](https://github.com/feathersjs-ecosystem/feathers-sequelize/pull/190) ([LubomirIgonda1](https://github.com/LubomirIgonda1))
 - Update mocha to the latest version 🚀 [\#187](https://github.com/feathersjs-ecosystem/feathers-sequelize/pull/187) ([greenkeeper[bot]](https://github.com/apps/greenkeeper))
 - Update semistandard to the latest version 🚀 [\#185](https://github.com/feathersjs-ecosystem/feathers-sequelize/pull/185) ([greenkeeper[bot]](https://github.com/apps/greenkeeper))
 
