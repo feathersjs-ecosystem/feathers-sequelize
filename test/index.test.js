@@ -388,6 +388,7 @@ describe('Feathers Sequelize Service', () => {
 
         assert.strictEqual(result.total, 2);
       });
+    });
 
     describe('Custom getters and setters', () => {
       it('calls custom getters and setters (#113)', async () => {
