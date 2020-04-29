@@ -389,13 +389,32 @@ describe('Feathers Sequelize Service', () => {
         assert.strictEqual(result.total, 2);
       });
 
-      it('patch() uses instances when include', async () => {
-        const options = { sequelize: { include: Order } };
+      it('patch() includes associations', async () => {
+        const params = { sequelize: { include: Order } };
         const data = { name: 'Patched' };
 
-        const result = await people.patch(kirsten.id, data, options);
+        const result = await people.patch(kirsten.id, data, params);
 
         expect(result['orders.id']).to.exist;
+      });
+
+      it('update() includes associations', async () => {
+        const params = { sequelize: { include: Order } };
+        const data = { name: 'Updated' };
+
+        const result = await people.update(kirsten.id, data, params);
+
+        expect(result['orders.id']).to.exist;
+      });
+
+      it('remove() includes associations', async () => {
+        const params = { sequelize: { include: Order } };
+
+        const result = await people.remove(kirsten.id, params);
+
+        expect(result['orders.id']).to.exist;
+
+        kirsten = await people.create({ name: 'Kirsten', age: 30 });
       });
     });
 
@@ -460,10 +479,7 @@ describe('Feathers Sequelize Service', () => {
           operators: { $between: Sequelize.Op.between }
         }));
         const ops = app.service('ops-and-whitelist');
-        const result1 = await ops.find({ query: { name: { $like: 'Beau' } } });
-        const result2 = await ops.find({ query: { name: { $between: 'Beau' } } });
-        assert.strictEqual(result1.length, 0);
-        assert.strictEqual(result2.length, 0);
+        await ops.find({ query: { name: { $like: 'Beau' } } });
       });
 
       it('succeeds using operator that IS whitelisted AND default', async () => {
@@ -473,8 +489,7 @@ describe('Feathers Sequelize Service', () => {
           whitelist: ['$like']
         }));
         const ops = app.service('ops-and-whitelist');
-        const result = await ops.find({ query: { name: { $like: 'Beau' } } });
-        assert.strictEqual(result.length, 0);
+        await ops.find({ query: { name: { $like: 'Beau' } } });
       });
 
       it('fails using an invalid operator in the whitelist', async () => {
