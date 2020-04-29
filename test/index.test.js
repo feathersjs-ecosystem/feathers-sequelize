@@ -388,6 +388,15 @@ describe('Feathers Sequelize Service', () => {
 
         assert.strictEqual(result.total, 2);
       });
+
+      it('patch() includes associations', async () => {
+        const params = { sequelize: { include: Order } };
+        const data = { name: 'Patched' };
+
+        const result = await people.patch(kirsten.id, data, params);
+
+        expect(result['orders.id']).to.exist;
+      });
     });
 
     describe('Custom getters and setters', () => {
