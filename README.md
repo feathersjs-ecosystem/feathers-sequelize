@@ -273,7 +273,7 @@ Once you understand how the `include` option works with Sequelize, you will want
 ```js
 // GET /my-service?name=John&include=1
 function (context) {
-  const { include, ...query };
+  const { include, ...query } = context.params.query;
 
    if (include) {
       const AssociatedModel = context.app.services.fooservice.Model;
