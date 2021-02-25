@@ -46,9 +46,9 @@
     "test": "npm run lint && npm run dtslint && npm run coverage",
     "test:postgres": "env DB=postgres npm run lint && npm run coverage:postgres",
     "test:mysql": "env DB=mysql npm run lint && npm run coverage:mysql",
-    "coverage": "istanbul cover node_modules/mocha/bin/_mocha -- --opts mocha.opts",
-    "coverage:postgres": "env DB=postgres istanbul cover node_modules/mocha/bin/_mocha -- --opts mocha.opts",
-    "coverage:mysql": "env DB=mysql istanbul cover node_modules/mocha/bin/_mocha -- --opts mocha.opts"
+    "coverage": "istanbul cover node_modules/mocha/bin/_mocha",
+    "coverage:postgres": "env DB=postgres istanbul cover node_modules/mocha/bin/_mocha",
+    "coverage:mysql": "env DB=mysql istanbul cover node_modules/mocha/bin/_mocha"
   },
   "semistandard": {
     "env": [
@@ -59,25 +59,26 @@
     "lib": "lib"
   },
   "dependencies": {
-    "@feathersjs/adapter-commons": "^4.4.3",
-    "@feathersjs/commons": "^4.4.3",
-    "@feathersjs/errors": "^4.4.3"
+    "@feathersjs/adapter-commons": "^4.5.11",
+    "@feathersjs/commons": "^4.5.11",
+    "@feathersjs/errors": "^4.5.11"
   },
   "devDependencies": {
-    "@feathersjs/adapter-tests": "^4.4.3",
-    "@feathersjs/express": "^4.4.3",
-    "@feathersjs/feathers": "^4.4.3",
+    "@feathersjs/adapter-tests": "^4.5.11",
+    "@feathersjs/express": "^4.5.11",
+    "@feathersjs/feathers": "^4.5.11",
     "body-parser": "^1.19.0",
     "chai": "^4.2.0",
-    "dtslint": "^3.0.0",
+    "dtslint": "^4.0.6",
     "feathers-service-tests": "^0.10.2",
     "istanbul": "^1.1.0-alpha.1",
-    "mocha": "^7.0.0",
-    "mysql2": "^2.1.0",
-    "pg": "^8.0.0",
+    "mocha": "^8.2.1",
+    "mysql2": "^2.2.5",
+    "pg": "^8.5.1",
     "pg-hstore": "^2.3.3",
-    "semistandard": "^14.2.0",
-    "sequelize": "^5.21.3",
-    "sqlite3": "^4.1.1"
+    "semistandard": "^16.0.0",
+    "sequelize": "^6.3.5",
+    "sqlite3": "^5.0.0",
+    "typescript": "^4.1.2"
   }
 }
