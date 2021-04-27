@@ -1,6 +1,6 @@
-// TypeScript Version: 3.7
 import { Params, Paginated, Id, NullableId, Query, Hook } from '@feathersjs/feathers';
 import { AdapterService, ServiceOptions, InternalServiceMethods } from '@feathersjs/adapter-commons';
+// TypeScript Version: 4.0
 
 export interface SequelizeServiceOptions extends ServiceOptions {
   Model: any;
