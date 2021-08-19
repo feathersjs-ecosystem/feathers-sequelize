@@ -110,7 +110,7 @@ app.service('messages').hooks({
 
 ### operators
 
-Sequelize deprecated string based operators a while ago for security reasons. Starting at version 4.0.0 `feathers-sequelize` converts queries securely. If you want to support additional Sequelize operators, the `operators` service option can contain a mapping from query parameter name to Sequelize operator. By default supported are:
+Sequelize deprecated string based operators a while ago for security reasons. Starting at version 4.0.0 `feathers-sequelize` converts queries securely, so you can still use string based operators listed below. If you want to support additional Sequelize operators, the `operators` service option can contain a mapping from query parameter name to Sequelize operator. By default supported are:
 
 ```
 '$eq',
