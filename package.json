@@ -59,14 +59,14 @@
     "lib": "lib"
   },
   "dependencies": {
-    "@feathersjs/adapter-commons": "^5.0.0-pre.4",
-    "@feathersjs/commons": "^5.0.0-pre.4",
-    "@feathersjs/errors": "^5.0.0-pre.4"
+    "@feathersjs/adapter-commons": "^5.0.0-pre.9",
+    "@feathersjs/commons": "^5.0.0-pre.9",
+    "@feathersjs/errors": "^5.0.0-pre.9"
   },
   "devDependencies": {
-    "@feathersjs/adapter-tests": "^5.0.0-pre.4",
-    "@feathersjs/express": "^5.0.0-pre.4",
-    "@feathersjs/feathers": "^5.0.0-pre.4",
+    "@feathersjs/adapter-tests": "^5.0.0-pre.9",
+    "@feathersjs/express": "^5.0.0-pre.9",
+    "@feathersjs/feathers": "^5.0.0-pre.9",
     "body-parser": "^1.19.0",
     "chai": "^4.2.0",
     "dtslint": "^4.0.6",
