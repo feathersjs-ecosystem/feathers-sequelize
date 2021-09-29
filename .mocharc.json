@@ -1,5 +1,0 @@
-{
-  "timeout": 10000,
-  "recursive": "test/",
-  "exit": true
-}
