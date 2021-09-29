@@ -82,7 +82,7 @@ __Options:__
 - `paginate` (*optional*) - A [pagination object](https://docs.feathersjs.com/api/databases/common.html#pagination) containing a `default` and `max` page size
 - `multi` (*optional*) - Allow `create` with arrays and `update` and `remove` with `id` `null` to change multiple items. Can be `true` for all methods or an array of allowed methods (e.g. `[ 'remove', 'create' ]`)
 - `operators` (*optional*) - A mapping from query syntax property names to to [Sequelize secure operators](http://docs.sequelizejs.com/manual/tutorial/querying.html)
-- `whitelist` (*optional*) - A list of additional query parameters to allow (e..g `[ '$regex', '$geoNear' ]`). Default is the supported `operators`
+- <span id="options-whitelist">`whitelist`</span> (*optional*) - A list of additional query parameters to allow (e..g `[ '$regex', '$geoNear' ]`). Default is the supported `operators`
 
 ### params.sequelize
 
@@ -106,9 +106,13 @@ app.service('messages').hooks({
 });
 ```
 
+Other options that `params.sequelize` allows you to pass can be found in [Sequelize querying docs](https://sequelize.org/master/manual/model-querying-basics.html).
+Beware that when setting a [top-level `where` property](https://sequelize.org/master/manual/eager-loading.html#complex-where-clauses-at-the-top-level) (usually for querying based on a column on an associated model), the `where` in `params.sequelize` will overwrite your `query`.
+
+
 ### operators
 
-Sequelize deprecated string based operators a while ago for security reasons. Starting at version 4.0.0 `feathers-sequelize` converts queries securely. If you want to support additional Sequelize operators, the `operators` service option can contain a mapping from query parameter name to Sequelize operator. By default supported are:
+Sequelize deprecated string based operators a while ago for security reasons. Starting at version 4.0.0 `feathers-sequelize` converts queries securely, so you can still use string based operators listed below. If you want to support additional Sequelize operators, the `operators` service option can contain a mapping from query parameter name to Sequelize operator. By default supported are:
 
 ```
 '$eq',
@@ -301,6 +305,25 @@ For more information, follow up up in the [Sequelize documentation for associati
 Additionally to the [common querying mechanism](https://docs.feathersjs.com/api/databases/querying.html) this adapter also supports all [Sequelize query operators](http://docs.sequelizejs.com/manual/tutorial/querying.html).
 
 > **Note**: This adapter supports an additional `$returning` parameter for patch and remove queries. By setting `params.$returning = false` it will disable feathers and sequelize from returning what was changed, so mass updates can be done without overwhelming node and/or clients.
+
+### Querying a nested column
+
+To query based on a column in an associated model, you can use Sequelize's [nested column syntax](https://sequelize.org/master/manual/eager-loading.html#complex-where-clauses-at-the-top-level) in a query. The nested column syntax is considered an operator by Feathers, and so each such usage has to be [whitelisted](#options-whitelist).
+
+Example:
+```js
+// Find a user with post.id == 120
+app.service('users').find({
+  query: {
+    '$user.post.id$': 120,
+    include: {
+      model: posts
+    }
+  }
+});
+```
+
+For this case to work, you'll need to add '$user.post.id$' to the service options' ['whitelist' property](#options-whitelist). 
 
 ## Working with Sequelize Model instances
 
