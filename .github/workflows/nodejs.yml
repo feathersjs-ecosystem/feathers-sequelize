@@ -24,8 +24,6 @@ jobs:
         database: ['sqlite', 'postgres']
 
     steps:
-      - env:
-          DB: ${{matrix.database}}
       - run: psql -c 'create database sequelize;' -U postgres
       - uses: actions/checkout@v2
       - name: Use Node.js ${{ matrix.node-version }}
@@ -33,6 +31,6 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
       - run: npm install
-      - run: npm test
+      - run: DB=${{matrix.database}} npm test
         env:
           CI: true

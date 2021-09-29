@@ -1,8 +1,6 @@
 # feathers-sequelize
 
-[![Greenkeeper badge](https://badges.greenkeeper.io/feathersjs-ecosystem/feathers-sequelize.svg)](https://greenkeeper.io/)
-
-[![Build Status](https://travis-ci.org/feathersjs-ecosystem/feathers-sequelize.png?branch=master)](https://travis-ci.org/feathersjs-ecosystem/feathers-sequelize)
+[![CI](https://github.com/feathersjs-ecosystem/feathers-sequelize/workflows/CI/badge.svg)](https://github.com/feathersjs-ecosystem/feathers-sequelize/actions?query=workflow%3ACI)
 [![Dependency Status](https://img.shields.io/david/feathersjs-ecosystem/feathers-sequelize.svg?style=flat-square)](https://david-dm.org/feathersjs-ecosystem/feathers-sequelize)
 [![Download Status](https://img.shields.io/npm/dm/feathers-sequelize.svg?style=flat-square)](https://www.npmjs.com/package/feathers-sequelize)
 
