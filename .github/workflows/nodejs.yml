@@ -1,6 +1,6 @@
 name: CI
 
-on: [push, pull_request]
+on: [push]
 
 jobs:
   build:
@@ -9,14 +9,15 @@ jobs:
 
     services:
       postgres:
-        image: postgres
+        image: postgres:10.8
         env:
-          POSTGRES_PASSWORD: postgres
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: password
+          POSTGRES_DB: sequelize
+        ports:
+          - 5432:5432
+          # needed because the postgres container does not provide a healthcheck
+          options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
 
     strategy:
       matrix:
@@ -24,7 +25,6 @@ jobs:
         database: ['sqlite', 'postgres']
 
     steps:
-      - run: psql -c 'create database sequelize;' -U postgres
       - uses: actions/checkout@v2
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v1

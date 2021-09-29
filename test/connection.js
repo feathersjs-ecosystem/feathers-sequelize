@@ -4,7 +4,7 @@ module.exports = (DB) => {
   const operatorsAliases = false;
 
   if (DB === 'postgres') {
-    return new Sequelize('sequelize', 'postgres', '', {
+    return new Sequelize('sequelize', 'postgres', 'password', {
       host: 'localhost',
       dialect: 'postgres',
       operatorsAliases
