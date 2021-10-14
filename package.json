@@ -45,7 +45,7 @@
   ],
   "scripts": {
     "publish": "git push origin --tags && npm run changelog && git push origin",
-    "changelog": "github_changelog_generator && git add CHANGELOG.md && git commit -am \"Updating changelog\"",
+    "changelog": "github_changelog_generator -u feathersjs-ecosystem -p feathers-sequelize && git add CHANGELOG.md && git commit -am \"Updating changelog\"",
     "update-dependencies": "ncu -u",
     "release:patch": "npm version patch && npm publish",
     "release:minor": "npm version minor && npm publish",
