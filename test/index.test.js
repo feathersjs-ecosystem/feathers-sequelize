@@ -342,6 +342,21 @@ describe('Feathers Sequelize Service', () => {
 
         assert.deepStrictEqual(filtered.query, query);
       });
+
+      it('get works with custom $and', async () => {
+        let johnId;
+        try {
+          const john = await people.create({ name: 'John', age: 30 });
+          johnId = john.id;
+          const foundJohn = await people.get(john.id, { query: { $and: [{ age: 30 }, { status: 'pending' }] } });
+          assert.strictEqual(foundJohn.id, john.id);
+          console.log(foundJohn);
+        } finally {
+          if (johnId) {
+            await people.remove(johnId);
+          }
+        }
+      });
     });
 
     describe('Association Tests', () => {
