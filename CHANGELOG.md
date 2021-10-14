@@ -1,19 +1,8 @@
 # Changelog
 
-## [Unreleased](https://github.com/feathersjs-ecosystem/feathers-sequelize/tree/HEAD)
+## [v6.3.1](https://github.com/feathersjs-ecosystem/feathers-sequelize/tree/v6.3.1) (2021-10-14)
 
-[Full Changelog](https://github.com/feathersjs-ecosystem/feathers-sequelize/compare/v6.3.0...HEAD)
-
-**Merged pull requests:**
-
-- fix: use '$and' in '\_get'-method [\#378](https://github.com/feathersjs-ecosystem/feathers-sequelize/pull/378) ([fratzinger](https://github.com/fratzinger))
-- Remove unnecessary backwards compatibility checks [\#376](https://github.com/feathersjs-ecosystem/feathers-sequelize/pull/376) ([daffl](https://github.com/daffl))
-- Update dependencies and repository infrastructure [\#375](https://github.com/feathersjs-ecosystem/feathers-sequelize/pull/375) ([daffl](https://github.com/daffl))
-- Docs update about top-level where and nested column syntax [\#372](https://github.com/feathersjs-ecosystem/feathers-sequelize/pull/372) ([Artaud](https://github.com/Artaud))
-- Be able to sort nulls before or after not-nulls values [\#370](https://github.com/feathersjs-ecosystem/feathers-sequelize/pull/370) ([MariaCamilaCubides](https://github.com/MariaCamilaCubides))
-- typing: add 'operators' to SequelizeServiceOptions [\#367](https://github.com/feathersjs-ecosystem/feathers-sequelize/pull/367) ([fratzinger](https://github.com/fratzinger))
-- Upgrade dependencies [\#359](https://github.com/feathersjs-ecosystem/feathers-sequelize/pull/359) ([silvestreh](https://github.com/silvestreh))
-- Update README.md [\#353](https://github.com/feathersjs-ecosystem/feathers-sequelize/pull/353) ([mbertinetti](https://github.com/mbertinetti))
+[Full Changelog](https://github.com/feathersjs-ecosystem/feathers-sequelize/compare/v6.3.0...v6.3.1)
 
 ## [v6.3.0](https://github.com/feathersjs-ecosystem/feathers-sequelize/tree/v6.3.0) (2021-10-14)
 
@@ -27,6 +16,17 @@
 - How can I use a limit and a required in an include? [\#369](https://github.com/feathersjs-ecosystem/feathers-sequelize/issues/369)
 - Use attributes exclude [\#361](https://github.com/feathersjs-ecosystem/feathers-sequelize/issues/361)
 - Sequelize v6 [\#358](https://github.com/feathersjs-ecosystem/feathers-sequelize/issues/358)
+
+**Merged pull requests:**
+
+- fix: use '$and' in '\_get'-method [\#378](https://github.com/feathersjs-ecosystem/feathers-sequelize/pull/378) ([fratzinger](https://github.com/fratzinger))
+- Remove unnecessary backwards compatibility checks [\#376](https://github.com/feathersjs-ecosystem/feathers-sequelize/pull/376) ([daffl](https://github.com/daffl))
+- Update dependencies and repository infrastructure [\#375](https://github.com/feathersjs-ecosystem/feathers-sequelize/pull/375) ([daffl](https://github.com/daffl))
+- Docs update about top-level where and nested column syntax [\#372](https://github.com/feathersjs-ecosystem/feathers-sequelize/pull/372) ([Artaud](https://github.com/Artaud))
+- Be able to sort nulls before or after not-nulls values [\#370](https://github.com/feathersjs-ecosystem/feathers-sequelize/pull/370) ([MariaCamilaCubides](https://github.com/MariaCamilaCubides))
+- typing: add 'operators' to SequelizeServiceOptions [\#367](https://github.com/feathersjs-ecosystem/feathers-sequelize/pull/367) ([fratzinger](https://github.com/fratzinger))
+- Upgrade dependencies [\#359](https://github.com/feathersjs-ecosystem/feathers-sequelize/pull/359) ([silvestreh](https://github.com/silvestreh))
+- Update README.md [\#353](https://github.com/feathersjs-ecosystem/feathers-sequelize/pull/353) ([mbertinetti](https://github.com/mbertinetti))
 
 ## [v6.2.0](https://github.com/feathersjs-ecosystem/feathers-sequelize/tree/v6.2.0) (2020-04-29)
 
