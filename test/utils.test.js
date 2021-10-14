@@ -117,5 +117,21 @@ describe('Feathers Sequelize Utils', () => {
 
       expect(order).to.deep.equal([['name', 'ASC'], ['age', 'DESC']]);
     });
+
+    it('returns order properly converted with the position of the nulls', () => {
+      const order = utils.getOrder({
+        name: [1, 1],
+        lastName: [1, -1],
+        age: [-1, 1],
+        phone: [-1, -1]
+      });
+
+      expect(order).to.deep.equal([
+        ['name', 'ASC NULLS FIRST'],
+        ['lastName', 'ASC NULLS LAST'],
+        ['age', 'DESC NULLS FIRST'],
+        ['phone', 'DESC NULLS LAST']
+      ]);
+    });
   });
 });
