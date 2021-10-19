@@ -1,5 +1,9 @@
 # Changelog
 
+## [v6.3.2](https://github.com/feathersjs-ecosystem/feathers-sequelize/tree/v6.3.2) (2021-10-19)
+
+[Full Changelog](https://github.com/feathersjs-ecosystem/feathers-sequelize/compare/v6.3.1...v6.3.2)
+
 ## [v6.3.1](https://github.com/feathersjs-ecosystem/feathers-sequelize/tree/v6.3.1) (2021-10-14)
 
 [Full Changelog](https://github.com/feathersjs-ecosystem/feathers-sequelize/compare/v6.3.0...v6.3.1)
