@@ -39,6 +39,7 @@
     "LICENSE",
     "README.md",
     "lib/**",
+    "hooks/**",
     "types/**",
     "*.d.ts",
     "*.js"
