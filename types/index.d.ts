@@ -4,6 +4,7 @@ import { AdapterService, ServiceOptions, InternalServiceMethods } from '@feather
 
 export interface SequelizeServiceOptions extends ServiceOptions {
   Model: any;
+  operators: any;
   raw: boolean;
 }
 

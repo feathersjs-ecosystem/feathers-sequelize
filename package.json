@@ -1,7 +1,7 @@
 {
   "name": "feathers-sequelize",
   "description": "A service adapter for Sequelize an SQL ORM",
-  "version": "6.2.0",
+  "version": "6.3.2",
   "homepage": "https://github.com/feathersjs-ecosystem/feathers-sequelize",
   "main": "lib/",
   "types": "types",
@@ -32,23 +32,30 @@
     "url": "https://github.com/feathersjs-ecosystem/feathers-sequelize/issues"
   },
   "engines": {
-    "node": ">= 6"
+    "node": ">= 12"
   },
+  "files": [
+    "CHANGELOG.md",
+    "LICENSE",
+    "README.md",
+    "lib/**",
+    "hooks/**",
+    "types/**",
+    "*.d.ts",
+    "*.js"
+  ],
   "scripts": {
     "publish": "git push origin --tags && npm run changelog && git push origin",
-    "changelog": "github_changelog_generator && git add CHANGELOG.md && git commit -am \"Updating changelog\"",
+    "changelog": "github_changelog_generator -u feathersjs-ecosystem -p feathers-sequelize && git add CHANGELOG.md && git commit -am \"Updating changelog\"",
+    "update-dependencies": "ncu -u",
     "release:patch": "npm version patch && npm publish",
     "release:minor": "npm version minor && npm publish",
     "release:major": "npm version major && npm publish",
     "lint": "semistandard --fix",
-    "mocha": "mocha --opts mocha.opts --timeout 5000",
+    "mocha": "mocha --timeout 10000 --recursive test/ --exit",
     "dtslint": "dtslint types",
     "test": "npm run lint && npm run dtslint && npm run coverage",
-    "test:postgres": "env DB=postgres npm run lint && npm run coverage:postgres",
-    "test:mysql": "env DB=mysql npm run lint && npm run coverage:mysql",
-    "coverage": "istanbul cover node_modules/mocha/bin/_mocha",
-    "coverage:postgres": "env DB=postgres istanbul cover node_modules/mocha/bin/_mocha",
-    "coverage:mysql": "env DB=mysql istanbul cover node_modules/mocha/bin/_mocha"
+    "coverage": "nyc npm run mocha"
   },
   "semistandard": {
     "env": [
