@@ -1,8 +1,12 @@
 # Changelog
 
-## [Unreleased](https://github.com/feathersjs-ecosystem/feathers-sequelize/tree/HEAD)
+## [v6.3.3](https://github.com/feathersjs-ecosystem/feathers-sequelize/tree/v6.3.3) (2022-04-13)
 
-[Full Changelog](https://github.com/feathersjs-ecosystem/feathers-sequelize/compare/v6.3.3...HEAD)
+[Full Changelog](https://github.com/feathersjs-ecosystem/feathers-sequelize/compare/v6.3.2...v6.3.3)
+
+**Closed issues:**
+
+- Unable to modify hook result of referenced models [\#365](https://github.com/feathersjs-ecosystem/feathers-sequelize/issues/365)
 
 **Merged pull requests:**
 
@@ -13,14 +17,6 @@
 - chore\(dependencies\): Update all dependencies [\#381](https://github.com/feathersjs-ecosystem/feathers-sequelize/pull/381) ([daffl](https://github.com/daffl))
 - chore\(dependencies\): Update all dependencies [\#380](https://github.com/feathersjs-ecosystem/feathers-sequelize/pull/380) ([daffl](https://github.com/daffl))
 - chore\(dependencies\): Update all dependencies [\#379](https://github.com/feathersjs-ecosystem/feathers-sequelize/pull/379) ([daffl](https://github.com/daffl))
-
-## [v6.3.3](https://github.com/feathersjs-ecosystem/feathers-sequelize/tree/v6.3.3) (2022-04-13)
-
-[Full Changelog](https://github.com/feathersjs-ecosystem/feathers-sequelize/compare/v6.3.2...v6.3.3)
-
-**Closed issues:**
-
-- Unable to modify hook result of referenced models [\#365](https://github.com/feathersjs-ecosystem/feathers-sequelize/issues/365)
 
 ## [v6.3.2](https://github.com/feathersjs-ecosystem/feathers-sequelize/tree/v6.3.2) (2021-10-19)
 
