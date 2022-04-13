@@ -1,7 +1,6 @@
 # feathers-sequelize
 
 [![CI](https://github.com/feathersjs-ecosystem/feathers-sequelize/workflows/CI/badge.svg)](https://github.com/feathersjs-ecosystem/feathers-sequelize/actions?query=workflow%3ACI)
-[![Dependency Status](https://img.shields.io/david/feathersjs-ecosystem/feathers-sequelize.svg?style=flat-square)](https://david-dm.org/feathersjs-ecosystem/feathers-sequelize)
 [![Download Status](https://img.shields.io/npm/dm/feathers-sequelize.svg?style=flat-square)](https://www.npmjs.com/package/feathers-sequelize)
 
 A [Feathers](https://feathersjs.com) database adapter for [Sequelize](http://sequelizejs.com), an ORM for Node.js. It supports PostgreSQL, MySQL, MariaDB, SQLite and MSSQL and features transaction support, relations, read replication and more.
@@ -21,6 +20,7 @@ A [Feathers](https://feathersjs.com) database adapter for [Sequelize](http://seq
     - [Embrace the ORM](#embrace-the-orm)
     - [Setting `params.sequelize.include`](#setting-paramssequelizeinclude)
   - [Querying](#querying)
+    - [Querying a nested column](#querying-a-nested-column)
   - [Working with Sequelize Model instances](#working-with-sequelize-model-instances)
   - [Validation](#validation)
   - [Testing sequelize queries in isolation](#testing-sequelize-queries-in-isolation)
