@@ -252,6 +252,17 @@ describe('Feathers Sequelize Service', () => {
         await people.remove(person.id);
       });
 
+      it('cleans up the query prototype', async () => {
+        const page = await people.find({
+          query: {
+            name: 'Dave',
+            __proto__: []
+          }
+        });
+
+        assert.strictEqual(page.data.length, 0);
+      });
+
       it('still allows querying with Sequelize operators', async () => {
         const name = 'Age test';
         const person = await people.create({ name, age: 10 });
