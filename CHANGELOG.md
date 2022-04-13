@@ -1,5 +1,27 @@
 # Changelog
 
+## [Unreleased](https://github.com/feathersjs-ecosystem/feathers-sequelize/tree/HEAD)
+
+[Full Changelog](https://github.com/feathersjs-ecosystem/feathers-sequelize/compare/v6.3.3...HEAD)
+
+**Merged pull requests:**
+
+- Prevent query prototype polution [\#389](https://github.com/feathersjs-ecosystem/feathers-sequelize/pull/389) ([daffl](https://github.com/daffl))
+- chore\(dependencies\): Update all dependencies [\#388](https://github.com/feathersjs-ecosystem/feathers-sequelize/pull/388) ([daffl](https://github.com/daffl))
+- chore\(dependencies\): Update all dependencies [\#387](https://github.com/feathersjs-ecosystem/feathers-sequelize/pull/387) ([daffl](https://github.com/daffl))
+- chore\(dependencies\): Update all dependencies [\#386](https://github.com/feathersjs-ecosystem/feathers-sequelize/pull/386) ([daffl](https://github.com/daffl))
+- chore\(dependencies\): Update all dependencies [\#381](https://github.com/feathersjs-ecosystem/feathers-sequelize/pull/381) ([daffl](https://github.com/daffl))
+- chore\(dependencies\): Update all dependencies [\#380](https://github.com/feathersjs-ecosystem/feathers-sequelize/pull/380) ([daffl](https://github.com/daffl))
+- chore\(dependencies\): Update all dependencies [\#379](https://github.com/feathersjs-ecosystem/feathers-sequelize/pull/379) ([daffl](https://github.com/daffl))
+
+## [v6.3.3](https://github.com/feathersjs-ecosystem/feathers-sequelize/tree/v6.3.3) (2022-04-13)
+
+[Full Changelog](https://github.com/feathersjs-ecosystem/feathers-sequelize/compare/v6.3.2...v6.3.3)
+
+**Closed issues:**
+
+- Unable to modify hook result of referenced models [\#365](https://github.com/feathersjs-ecosystem/feathers-sequelize/issues/365)
+
 ## [v6.3.2](https://github.com/feathersjs-ecosystem/feathers-sequelize/tree/v6.3.2) (2021-10-19)
 
 [Full Changelog](https://github.com/feathersjs-ecosystem/feathers-sequelize/compare/v6.3.1...v6.3.2)
@@ -30,7 +52,7 @@
 - Be able to sort nulls before or after not-nulls values [\#370](https://github.com/feathersjs-ecosystem/feathers-sequelize/pull/370) ([MariaCamilaCubides](https://github.com/MariaCamilaCubides))
 - typing: add 'operators' to SequelizeServiceOptions [\#367](https://github.com/feathersjs-ecosystem/feathers-sequelize/pull/367) ([fratzinger](https://github.com/fratzinger))
 - Upgrade dependencies [\#359](https://github.com/feathersjs-ecosystem/feathers-sequelize/pull/359) ([silvestreh](https://github.com/silvestreh))
-- Update README.md [\#353](https://github.com/feathersjs-ecosystem/feathers-sequelize/pull/353) ([mbertinetti](https://github.com/mbertinetti))
+- Update README.md [\#353](https://github.com/feathersjs-ecosystem/feathers-sequelize/pull/353) ([eclecticlly](https://github.com/eclecticlly))
 
 ## [v6.2.0](https://github.com/feathersjs-ecosystem/feathers-sequelize/tree/v6.2.0) (2020-04-29)
 
