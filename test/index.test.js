@@ -549,6 +549,69 @@ describe('Feathers Sequelize Service', () => {
 
       await people.remove(person.id);
     });
+
+    describe('utility methods', async () => {
+      const people = app.service('people');
+
+      beforeEach(async () => {
+        await people.create({ name: 'Kirsten', age: 10, time: 100 });
+        await people.create({ name: 'John', age: 15, time: 100 });
+        await people.create({ name: 'Jane', age: 20, time: 100 });
+      });
+
+      afterEach(() => people.remove(null).catch(() => {}));
+
+      it('can use min', async () => {
+        const params = { query: { age: { $gt: 10 } } };
+        const adapterParams = people.paramsToAdapter(null, params);
+        const result = await people.Model.min('age', adapterParams);
+        assert.strictEqual(result, 15);
+      });
+
+      it('can use max', async () => {
+        const params = { query: { age: { $lt: 20 } } };
+        const adapterParams = people.paramsToAdapter(null, params);
+        const result = await people.Model.max('age', adapterParams);
+        assert.strictEqual(result, 15);
+      });
+
+      it('can use sum', async () => {
+        const params = { query: { age: { $lt: 20 } } };
+        const adapterParams = people.paramsToAdapter(null, params);
+        const result = await people.Model.sum('age', adapterParams);
+        assert.strictEqual(result, 25);
+      });
+
+      it('can use increment', async () => {
+        let kirsten = (await people.find({ query: { name: 'Kirsten' } })).data[0];
+
+        assert.strictEqual(kirsten.age, 10);
+        assert.strictEqual(kirsten.time, 100);
+
+        const adapterParams = people.paramsToAdapter(null, { query: { id: kirsten.id } });
+        await people.Model.increment({ age: 5, time: 50 }, adapterParams);
+
+        kirsten = (await people.find({ query: { name: 'Kirsten' } })).data[0];
+
+        assert.strictEqual(kirsten.age, 15);
+        assert.strictEqual(kirsten.time, 150);
+      });
+
+      it('can use decrement', async () => {
+        let kirsten = (await people.find({ query: { name: 'Kirsten' } })).data[0];
+
+        assert.strictEqual(kirsten.age, 10);
+        assert.strictEqual(kirsten.time, 100);
+
+        const adapterParams = people.paramsToAdapter(null, { query: { id: kirsten.id } });
+        await people.Model.decrement({ age: 5, time: 50 }, adapterParams);
+
+        kirsten = (await people.find({ query: { name: 'Kirsten' } })).data[0];
+
+        assert.strictEqual(kirsten.age, 5);
+        assert.strictEqual(kirsten.time, 50);
+      });
+    });
   });
 
   describe('ORM functionality', () => {
