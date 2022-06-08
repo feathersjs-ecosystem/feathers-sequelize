@@ -293,6 +293,12 @@ describe('Feathers Sequelize Service', () => {
         await people.remove(person.id);
       });
 
+      it('does not allow raw attribute $select ', async () => {
+        await assert.rejects(() => people.find({
+          query: { $select: [['(sqlite_version())', 'x']] }
+        }));
+      });
+
       it('hides the Sequelize error in ERROR symbol', async () => {
         try {
           await people.create({
