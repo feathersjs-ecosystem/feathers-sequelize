@@ -1,5 +1,19 @@
 # Changelog
 
+## [Unreleased](https://github.com/feathersjs-ecosystem/feathers-sequelize/tree/HEAD)
+
+[Full Changelog](https://github.com/feathersjs-ecosystem/feathers-sequelize/compare/v6.3.4...HEAD)
+
+**Merged pull requests:**
+
+- Do not allow raw attribute selects [\#393](https://github.com/feathersjs-ecosystem/feathers-sequelize/pull/393) ([daffl](https://github.com/daffl))
+- chore\(dependencies\): Update all dependencies [\#392](https://github.com/feathersjs-ecosystem/feathers-sequelize/pull/392) ([daffl](https://github.com/daffl))
+- chore\(dependencies\): Update all dependencies [\#391](https://github.com/feathersjs-ecosystem/feathers-sequelize/pull/391) ([daffl](https://github.com/daffl))
+
+## [v6.3.4](https://github.com/feathersjs-ecosystem/feathers-sequelize/tree/v6.3.4) (2022-06-08)
+
+[Full Changelog](https://github.com/feathersjs-ecosystem/feathers-sequelize/compare/v6.3.3...v6.3.4)
+
 ## [v6.3.3](https://github.com/feathersjs-ecosystem/feathers-sequelize/tree/v6.3.3) (2022-04-13)
 
 [Full Changelog](https://github.com/feathersjs-ecosystem/feathers-sequelize/compare/v6.3.2...v6.3.3)
