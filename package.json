@@ -79,13 +79,13 @@
     "dtslint": "^4.2.1",
     "mocha": "^10.0.0",
     "mysql2": "^2.3.3",
-    "npm-check-updates": "^13.1.2",
+    "npm-check-updates": "^15.0.1",
     "nyc": "^15.1.0",
     "pg": "^8.7.3",
     "pg-hstore": "^2.3.4",
     "semistandard": "^16.0.1",
-    "sequelize": "^6.20.1",
+    "sequelize": "^6.21.2",
     "sqlite3": "^5.0.8",
-    "typescript": "^4.7.3"
+    "typescript": "^4.7.4"
   }
 }
