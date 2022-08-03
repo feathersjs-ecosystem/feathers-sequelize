@@ -60,16 +60,16 @@ npm install --save tedious // MSSQL
 
 ## API
 
-### `service(options)`
+### `new Service(options)`
 
 Returns a new service instance initialized with the given options.
 
 ```js
 const Model = require('./models/mymodel');
-const service = require('feathers-sequelize');
+const { Service } = require('feathers-sequelize');
 
-app.use('/messages', service({ Model }));
-app.use('/messages', service({ Model, id, events, paginate }));
+app.use('/messages', new Service({ Model }));
+app.use('/messages', new Service({ Model, id, events, paginate }));
 ```
 
 __Options:__
@@ -206,7 +206,7 @@ const express = require('@feathersjs/express');
 const socketio = require('@feathersjs/socketio');
 
 const Sequelize = require('sequelize');
-const service = require('feathers-sequelize');
+const { Service } = require('feathers-sequelize');
 
 const sequelize = new Sequelize('sequelize', '', '', {
   dialect: 'sqlite',
@@ -235,7 +235,7 @@ app.configure(express.rest());
 app.configure(socketio());
 // Create an in-memory Feathers service with a default page size of 2 items
 // and a maximum size of 4
-app.use('/messages', service({
+app.use('/messages', new Service({
   Model: Message,
   paginate: {
     default: 2,
@@ -357,8 +357,7 @@ It is highly recommended to use `raw` queries, which is the default. However, th
 
 > **Important:** When working with Sequelize Instances, most of the feathers-hooks-common will no longer work. If you need to use a common hook or other 3rd party hooks, you should use the "dehydrate" hook to convert data back to a plain object:
 > ```js
-> const hydrate = require('feathers-sequelize/hooks/hydrate');
-> const dehydrate = require('feathers-sequelize/hooks/dehydrate');
+> const { dehydrate, hydrate } = require('feathers-sequelize');
 > const { populate } = require('feathers-hooks-common');
 >
 > hooks.after.find = [hydrate(), doSomethingCustom(), dehydrate(), populate()];
