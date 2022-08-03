@@ -1,0 +1,28 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "node",
+      "resolveSourceMapLocations": [
+        "${workspaceFolder}/**",
+        "!**/node_modules/**"
+      ],
+      "request": "launch",
+      "name": "Mocha Tests",
+      "program": "${workspaceFolder}/node_modules/mocha/bin/mocha",
+      "args": [
+        "--require",
+        "ts-node/register",
+        "--timeout",
+        "10000",
+        "--colors",
+        "--recursive"
+      ],
+      "internalConsoleOptions": "openOnSessionStart",
+      "outputCapture": "std",
+      "skipFiles": [
+        "<node_internals>/**"
+      ]
+    },
+  ]
+}

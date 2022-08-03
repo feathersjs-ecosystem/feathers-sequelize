@@ -1,8 +1,12 @@
-const { expect } = require('chai');
-const Sequelize = require('sequelize');
+import type { HookContext } from '@feathersjs/feathers';
+import { expect } from 'chai';
+import Sequelize from 'sequelize';
 
-const hydrate = require('../lib/hooks/hydrate');
-const sequelize = require('./connection')();
+import hydrate from '../src/hooks/hydrate';
+import makeConnection from './connection'
+const sequelize = makeConnection();
+
+type MethodName = 'find' | 'get' | 'create' | 'update' | 'patch' | 'remove';
 
 const BlogPost = sequelize.define('blogpost', {
   title: {
@@ -23,12 +27,13 @@ const Comment = sequelize.define('comment', {
 BlogPost.hasMany(Comment);
 Comment.belongsTo(BlogPost);
 
-const callHook = (Model, method, result, options) => {
-  return hydrate(options).call({ Model }, {
+const callHook = (Model: any, method: MethodName, result: any, options?: any) => {
+  return hydrate(options)({
+    service: { Model } as any,
     type: 'after',
     method,
     result
-  });
+  } as HookContext);
 };
 
 describe('Feathers Sequelize Hydrate Hook', () => {
@@ -37,7 +42,7 @@ describe('Feathers Sequelize Hydrate Hook', () => {
   );
 
   it('throws if used as a "before" hook', () => {
-    const hook = hydrate().bind(null, { type: 'before' });
+    const hook = hydrate().bind(null, { type: 'before' } as HookContext);
     expect(hook).to.throw(Error);
   });
 
@@ -61,7 +66,7 @@ describe('Feathers Sequelize Hydrate Hook', () => {
     expect(hook.result instanceof BlogPost);
   });
 
-  ['create', 'update', 'patch'].forEach(method => {
+  (['create', 'update', 'patch'] as MethodName[]).forEach(method => {
     it(`hydrates results for single ${method}()`, async () => {
       const hook = await callHook(BlogPost, method, { title: 'David' });
 
@@ -69,7 +74,7 @@ describe('Feathers Sequelize Hydrate Hook', () => {
     });
   });
 
-  ['create', 'patch'].forEach(method => {
+  (['create', 'patch'] as MethodName[]).forEach(method => {
     it(`hydrates results for bulk ${method}()`, async () => {
       const hook = await callHook(BlogPost, method, [{ title: 'David' }]);
 

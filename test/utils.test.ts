@@ -1,9 +1,9 @@
-const { expect } = require('chai');
+import { expect } from 'chai';
 
-const errors = require('@feathersjs/errors');
-const Sequelize = require('sequelize');
+import errors from '@feathersjs/errors';
+import Sequelize from 'sequelize';
 
-const utils = require('../lib/utils');
+import * as utils from '../src/utils';
 
 describe('Feathers Sequelize Utils', () => {
   describe('errorHandler', () => {
@@ -18,51 +18,58 @@ describe('Feathers Sequelize Utils', () => {
     });
 
     it('wraps a ValidationError as a BadRequest', () => {
+      // @ts-ignore
       const e = new Sequelize.ValidationError();
       expect(utils.errorHandler.bind(null, e)).to.throw(errors.BadRequest);
     });
 
     it('preserves a validation error message', () => {
+      // @ts-ignore
       const e = new Sequelize.ValidationError('Invalid Email');
       try {
         utils.errorHandler(e);
-      } catch (error) {
+      } catch (error: any) {
         expect(error.message).to.equal('Invalid Email');
       }
     });
 
     it('preserves a validation errors', () => {
-      const emailError = {
+      const emailError: any = {
         message: 'email cannot be null',
         type: 'notNull Violation',
         path: 'email',
         value: null
       };
 
+      // @ts-ignore
       const e = new Sequelize.ValidationError('Invalid Email', [emailError]);
       try {
         utils.errorHandler(e);
-      } catch (error) {
+      } catch (error: any) {
         expect(error.errors).to.deep.equal([emailError]);
       }
     });
 
     it('wraps a UniqueConstraintError as a BadRequest', () => {
+      // @ts-ignore
       const e = new Sequelize.UniqueConstraintError();
       expect(utils.errorHandler.bind(null, e)).to.throw(errors.BadRequest);
     });
 
     it('wraps a ExclusionConstraintError as a BadRequest', () => {
+      // @ts-ignore
       const e = new Sequelize.ExclusionConstraintError();
       expect(utils.errorHandler.bind(null, e)).to.throw(errors.BadRequest);
     });
 
     it('wraps a ForeignKeyConstraintError as a BadRequest', () => {
+      // @ts-ignore
       const e = new Sequelize.ForeignKeyConstraintError();
       expect(utils.errorHandler.bind(null, e)).to.throw(errors.BadRequest);
     });
 
     it('wraps a InvalidConnectionError as a BadRequest', () => {
+      // @ts-ignore
       const e = new Sequelize.InvalidConnectionError();
       expect(utils.errorHandler.bind(null, e)).to.throw(errors.BadRequest);
     });
@@ -70,36 +77,43 @@ describe('Feathers Sequelize Utils', () => {
     it('wraps a TimeoutError as a Timeout', () => {
       // NOTE (EK): We need to pass something to a time error otherwise
       // Sequelize blows up.
+      // @ts-ignore
       const e = new Sequelize.TimeoutError('');
       expect(utils.errorHandler.bind(null, e)).to.throw(errors.Timeout);
     });
 
     it('wraps a ConnectionTimedOutError as a Timeout', () => {
+      // @ts-ignore
       const e = new Sequelize.ConnectionTimedOutError();
       expect(utils.errorHandler.bind(null, e)).to.throw(errors.Timeout);
     });
 
     it('wraps a ConnectionRefusedError as a Forbidden', () => {
+      // @ts-ignore
       const e = new Sequelize.ConnectionRefusedError();
       expect(utils.errorHandler.bind(null, e)).to.throw(errors.Forbidden);
     });
 
     it('wraps a AccessDeniedError as a Forbidden', () => {
+      // @ts-ignore
       const e = new Sequelize.AccessDeniedError();
       expect(utils.errorHandler.bind(null, e)).to.throw(errors.Forbidden);
     });
 
     it('wraps a HostNotReachableError as a Unavailable', () => {
+      // @ts-ignore
       const e = new Sequelize.HostNotReachableError();
       expect(utils.errorHandler.bind(null, e)).to.throw(errors.Unavailable);
     });
 
     it('wraps a HostNotFoundError as a NotFound', () => {
+      // @ts-ignore
       const e = new Sequelize.HostNotFoundError();
       expect(utils.errorHandler.bind(null, e)).to.throw(errors.NotFound);
     });
 
     it('wraps a DatabaseError as a GeneralError', () => {
+      // @ts-ignore
       const e = new Sequelize.DatabaseError('');
       expect(utils.errorHandler.bind(null, e)).to.throw(errors.GeneralError);
     });
