@@ -4,7 +4,7 @@ import { select, AdapterService } from '@feathersjs/adapter-commons';
 import type { FilteredQuery, SequelizeServiceOptions, SequelizeServiceProvidedOptions } from './types';
 import type { Id, NullableId, Paginated, Params, Query } from '@feathersjs/feathers';
 import { errorHandler, getOrder, isPlainObject } from './utils';
-import type { CreateOptions, Model } from 'sequelize';
+import type { CreateOptions, FindOptions, Model } from 'sequelize';
 
 const defaultOperators = (Op: any) => {
   return {
@@ -126,8 +126,49 @@ export class Service<
     return filtered;
   }
 
+  paramsToAdapter (id: NullableId, params: Params = {}): FindOptions {
+    if (id) {
+      const { query: where } = this.filterQuery(params);
+
+      const { and } = this.Op;
+      // Attach 'where' constraints, if any were used.
+      const q: FindOptions = Object.assign({
+        raw: this.raw,
+        where: Object.assign(where, {
+          [and]: where[and] ? [...where[and], { [this.id]: id }] : { [this.id]: id }
+        })
+      }, params.sequelize);
+
+      return q;
+    } else {
+      const { filters, query: where } = this.filterQuery(params);
+      const order = getOrder(filters.$sort);
+
+      const q: FindOptions = Object.assign({
+        where,
+        order,
+        limit: filters.$limit,
+        offset: filters.$skip,
+        raw: this.raw,
+        distinct: true
+      }, params.sequelize);
+
+      if (filters.$select) {
+        q.attributes = filters.$select.map((select: any) => `${select}`);
+      }
+
+      // Until Sequelize fix all the findAndCount issues, a few 'hacks' are needed to get the total count correct
+
+      // Adding an empty include changes the way the count is done
+      // See: https://github.com/sequelize/sequelize/blob/7e441a6a5ca44749acd3567b59b1d6ceb06ae64b/lib/model.js#L1780-L1782
+      q.include = q.include || [];
+
+      return q;
+    }
+  }
+
   /**
-   * returns either the model instance for an id or all unpaginated
+   * returns either the model instance / jsonified object for an id or all unpaginated
    * items for `params` if id is null
    */
   async _getOrFind (id: Id, params?: Params): Promise<T>
@@ -144,66 +185,32 @@ export class Service<
 
 
   async _find (params: Params = {}): Promise<T[] | Paginated<T>> {
-    const { filters, query: where, paginate } = this.filterQuery(params);
-    const order = getOrder(filters.$sort);
-
-    const q = Object.assign({
-      where,
-      order,
-      limit: filters.$limit,
-      offset: filters.$skip,
-      raw: this.raw,
-      distinct: true
-    }, params.sequelize);
-
-    if (filters.$select) {
-      q.attributes = filters.$select.map((select: string) => `${select}`);
-    }
+    const { paginate } = this.filterQuery(params);
 
     const Model = this.ModelWithScope(params);
+    const q = this.paramsToAdapter(null, params);
 
-    // Until Sequelize fix all the findAndCount issues, a few 'hacks' are needed to get the total count correct
-
-    // Adding an empty include changes the way the count is done
-    // See: https://github.com/sequelize/sequelize/blob/7e441a6a5ca44749acd3567b59b1d6ceb06ae64b/lib/model.js#L1780-L1782
-    q.include = q.include || [];
-
-    // @ts-ignore
-    if (paginate && paginate.default) {
-      try {
+    try {
+      if (paginate && paginate.default) {
         const result = await Model.findAndCountAll(q);
 
         return {
           total: result.count,
-          limit: filters.$limit,
-          skip: filters.$skip || 0,
-          data: result.rows as any as T[]
+          limit: q.limit,
+          skip: q.offset || 0,
+          data: result.rows as T[]
         }
-      } catch (err: any) {
-        errorHandler(err);
       }
-    }
 
-    try {
-      return await Model.findAll(q) as any as T[];
+      return await Model.findAll(q) as T[];
     } catch (err: any) {
       return errorHandler(err);
     }
   }
 
   async _get (id: Id, params: Params = {}): Promise<T> {
-    const { query: where } = this.filterQuery(params);
-
-    const { and } = this.Op;
-    // Attach 'where' constraints, if any were used.
-    const q = Object.assign({
-      raw: this.raw,
-      where: Object.assign(where, {
-        [and]: where[and] ? [...where[and], { [this.id]: id }] : { [this.id]: id }
-      })
-    }, params.sequelize);
-
     const Model = this.ModelWithScope(params);
+    const q = this.paramsToAdapter(id, params);
 
     // findById calls findAll under the hood. We use findAll so that
     // eager loading can be used without a separate code path.
@@ -244,7 +251,7 @@ export class Service<
 
       const sel = select(params, this.id);
       if (options.raw === false) {
-        return result as any;
+        return result as T | T[];
       }
       if (isArray) {
         return (result as M[]).map(item => sel(item.toJSON()));

@@ -298,7 +298,7 @@ describe('Feathers Sequelize Service', () => {
         await people.remove(person.id);
       });
 
-      it('does not allow raw attribute $select ', async () => {
+      it('does not allow raw attribute $select', async () => {
         await assert.rejects(() => people.find({
           query: { $select: [['(sqlite_version())', 'x']] }
         }));
@@ -402,11 +402,9 @@ describe('Feathers Sequelize Service', () => {
         ]);
       });
 
-      afterEach(() =>
-        orders.remove(null, { query: { $limit: 1000 } })
-          .then(() => people.remove(kirsten.id))
-          .then(() => people.remove(ryan.id))
-          .catch(() => {})
+      afterEach(async () =>
+        await orders.remove(null, { query: { $limit: 1000 } })
+          .then(() => people.remove(null, { query: { $limit: 1000 } }))
       );
 
       it('find() returns correct total when using includes for non-raw requests (#137)', async () => {
