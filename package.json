@@ -85,7 +85,6 @@
     "npm-check-updates": "^16.0.5",
     "pg": "^8.7.3",
     "pg-hstore": "^2.3.4",
-    "semistandard": "^16.0.1",
     "sequelize": "^6.21.3",
     "shx": "^0.3.4",
     "sqlite3": "^5.0.11",
