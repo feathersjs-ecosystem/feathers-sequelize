@@ -205,9 +205,10 @@ export class SequelizeAdapter<
   async _getOrFind (id: NullableId, _params: P) {
     const params = _params || {} as P;
     if (id === null) {
-      return await this.$find(Object.assign(params, {
+      return await this.$find({
+        ...params,
         paginate: false
-      }));
+      });
     }
 
     return await this.$get(id, params);
@@ -304,24 +305,18 @@ export class SequelizeAdapter<
 
     // Get a list of ids that match the id/query. Overwrite the
     // $select because only the id is needed for this idList
-    const idQuery = Object.assign({}, params.query, { $select: [this.id] });
-    const idParams = Object.assign({}, params, { query: idQuery });
-
-    const itemOrItems = await this._getOrFind(id, idParams);
+    const itemOrItems = await this._getOrFind(id, {
+      ...params,
+      query: {
+        ...params?.query,
+        $select: [this.id]
+      }
+    })
 
     const items = Array.isArray(itemOrItems) ? itemOrItems : [itemOrItems];
     const ids: Id[] = items.map(item => item[this.id]);
 
     try {
-      // Create a new query that re-queries all ids that
-      // were originally changed
-      const findQuery = Object.assign(
-        { [this.id]: { $in: ids } },
-        this.filterQuery(params).filters
-      );
-
-      const findParams = Object.assign({}, params, { query: findQuery });
-
       const seqOptions = Object.assign(
         { raw: this.raw },
         params.sequelize,
@@ -334,6 +329,16 @@ export class SequelizeAdapter<
         return Promise.resolve([]);
       }
 
+      // Create a new query that re-queries all ids that
+      // were originally changed
+      const findParams = {
+        ...params,
+        query: {
+          [this.id]: { $in: ids },
+          ...(params?.query?.$select ? { $select: params?.query?.$select } : {})
+        }
+      }
+
       const result = await this._getOrFind(id, findParams);
 
       return select(params, this.id)(result);
@@ -344,12 +349,12 @@ export class SequelizeAdapter<
   }
 
   async $update (id: Id, data: D, params: P = {} as P): Promise<T> {
-    const where = Object.assign({}, this.filterQuery(params).query);
+    const query = Object.assign({}, this.filterQuery(params).query);
 
     // Force the {raw: false} option as the instance is needed to properly update
     const seqOptions = Object.assign({}, params.sequelize, { raw: false });
 
-    const instance = await this.$get(id, { sequelize: seqOptions, query: where } as P) as Model
+    const instance = await this.$get(id, { sequelize: seqOptions, query } as P) as Model
 
     const itemToUpdate = Object.keys(instance.toJSON()).reduce((result: Record<string, any>, key) => {
       // @ts-ignore
@@ -379,28 +384,21 @@ export class SequelizeAdapter<
   async $remove (id: Id, params?: P): Promise<T>
   async $remove (id: NullableId, params?: P): Promise<T | T[]>
   async $remove (id: NullableId, params: P = {} as P): Promise<T | T[]> {
-    const opts = Object.assign({ raw: this.raw }, params);
-    const where = Object.assign({}, this.filterQuery(params).query);
-
-    if (id !== null) {
-      where[this.Op.and] = { [this.id]: id };
-    }
-
-    const options = Object.assign({}, { where }, params.sequelize);
-
     const Model = this.ModelWithScope(params);
 
+    const q = this.paramsToAdapter(id, params);
+
     if (params.$returning !== false) {
-      const items = await this._getOrFind(id, opts)
+      const items = await this._getOrFind(id, params)
       try {
-        await Model.destroy(options);
+        await Model.destroy(q);
         return select(params, this.id)(items);
       } catch (err: any) {
         return errorHandler(err);
       }
     } else {
       try {
-        await Model.destroy(options);
+        await Model.destroy(q);
         return [];
       } catch (err: any) {
         return errorHandler(err);
