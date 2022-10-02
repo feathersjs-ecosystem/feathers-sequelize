@@ -7,8 +7,8 @@ const serialize = (item: any) => {
   return item;
 };
 
-export default () => {
-  return function (context: HookContext) {
+export const dehydrate = <H extends HookContext = HookContext>() => {
+  return function (context: H) {
     switch (context.method) {
     case 'find':
       if (context.result.data) {

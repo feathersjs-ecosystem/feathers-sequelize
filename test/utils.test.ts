@@ -1,6 +1,6 @@
 import { expect } from 'chai';
 
-import errors from '@feathersjs/errors';
+import * as errors from '@feathersjs/errors';
 import Sequelize from 'sequelize';
 
 import * as utils from '../src/utils';

@@ -1,25 +1,30 @@
-/* eslint-disable no-unused-expressions */
-
 import pg from 'pg';
 import assert from 'assert';
 import { expect } from 'chai';
 
 import Sequelize from 'sequelize';
 import errors from '@feathersjs/errors';
-import feathers from '@feathersjs/feathers';
+import { feathers } from '@feathersjs/feathers';
 import adaptertests from '@feathersjs/adapter-tests';
 
-import service, { Service, hooks, ERROR } from '../src';
+import type { SequelizeAdapterOptions } from '../src';
+import { SequelizeService, hydrate, dehydrate, ERROR } from '../src';
 import makeConnection from './connection';
 const testSuite = adaptertests([
+  '.$create',
+  '.$find',
+  '.$get',
+  '.$patch',
+  '.$remove',
+  '.$update',
   '.options',
   '.events',
-  '._get',
-  '._find',
   '._create',
-  '._update',
+  '._find',
+  '._get',
   '._patch',
   '._remove',
+  '._update',
   '.get',
   '.get + $select',
   '.get + id + query',
@@ -179,22 +184,26 @@ describe('Feathers Sequelize Service', () => {
 
   describe('Initialization', () => {
     it('throws an error when missing a Model', () => {
-      // @ts-ignore
-      expect(service.bind(null, { name: 'Test' })).to.throw(/You must provide a Sequelize Model/);
+      // @ts-expect-error Model is missing
+      expect(() => new SequelizeService({ name: 'Test' })).to.throw('You must provide a Sequelize Model');
     });
 
     it('re-exports hooks', () => {
-      assert.ok(hooks);
+      assert.ok(hydrate);
+      assert.ok(dehydrate)
     });
   });
 
   describe('Common Tests', () => {
-    const app = feathers()
-      .use('/people', service({
+    const app = feathers<{
+      people: SequelizeService,
+      'people-customid': SequelizeService,
+    }>()
+      .use('people', new SequelizeService({
         Model,
         events: ['testing']
       }))
-      .use('/people-customid', service({
+      .use('people-customid', new SequelizeService({
         Model: CustomId,
         events: ['testing']
       }));
@@ -208,8 +217,12 @@ describe('Feathers Sequelize Service', () => {
   });
 
   describe('Feathers-Sequelize Specific Tests', () => {
-    const app = feathers()
-      .use('/people', service({
+    const app = feathers<{
+      people: SequelizeService,
+      orders: SequelizeService,
+      'custom-getter-setter': SequelizeService,
+    }>()
+      .use('people', new SequelizeService({
         Model,
         paginate: {
           default: 10
@@ -217,11 +230,11 @@ describe('Feathers Sequelize Service', () => {
         events: ['testing'],
         multi: true
       }))
-      .use('/orders', service({
+      .use('orders', new SequelizeService({
         Model: Order,
         multi: true
       }))
-      .use('/custom-getter-setter', service({
+      .use('custom-getter-setter', new SequelizeService({
         Model: CustomGetterSetter,
         events: ['testing'],
         multi: true
@@ -300,6 +313,7 @@ describe('Feathers Sequelize Service', () => {
 
       it('does not allow raw attribute $select', async () => {
         await assert.rejects(() => people.find({
+          // @ts-ignore
           query: { $select: [['(sqlite_version())', 'x']] }
         }));
       });
@@ -477,22 +491,39 @@ describe('Feathers Sequelize Service', () => {
 
     describe('Operators and Whitelist', () => {
       it('merges whitelist and default operators', async () => {
-        const app = feathers();
-        const whitelist = ['$something'];
-        app.use('/ops-and-whitelist', service({
+        const app = feathers<{
+          'ops-and-whitelist': SequelizeService
+        }>();
+        const operators = ['$something'];
+        app.use('ops-and-whitelist', new SequelizeService({
           Model,
-          whitelist
+          operators
         }));
         const ops = app.service('ops-and-whitelist');
-        const newWhitelist = Object
-          .keys(ops.options.operators)
-          .concat(whitelist);
-        expect(newWhitelist).to.deep.equal(ops.options.whitelist);
+        expect(ops.options.operators).to.deep.equal([
+          '$eq',
+          '$ne',
+          '$gte',
+          '$gt',
+          '$lte',
+          '$lt',
+          '$in',
+          '$nin',
+          '$like',
+          '$notLike',
+          '$iLike',
+          '$notILike',
+          '$or',
+          '$and',
+          '$something'
+        ]);
       });
 
       it('fails using operator that IS NOT whitelisted OR default', async () => {
-        const app = feathers();
-        app.use('/ops-and-whitelist', service({
+        const app = feathers<{
+          'ops-and-whitelist': SequelizeService
+        }>();
+        app.use('ops-and-whitelist', new SequelizeService({
           Model
         }));
         const ops = app.service('ops-and-whitelist');
@@ -506,19 +537,23 @@ describe('Feathers Sequelize Service', () => {
       });
 
       it('succeeds using operator that IS whitelisted OR default', async () => {
-        const app = feathers();
-        app.use('/ops-and-whitelist', service({
+        const app = feathers<{
+          'ops-and-whitelist': SequelizeService
+        }>();
+        app.use('ops-and-whitelist', new SequelizeService({
           Model,
           whitelist: ['$between'],
-          operators: { $between: Sequelize.Op.between }
+          operatorMap: { $between: Sequelize.Op.between }
         }));
         const ops = app.service('ops-and-whitelist');
         await ops.find({ query: { name: { $like: 'Beau' } } });
       });
 
       it('succeeds using operator that IS whitelisted AND default', async () => {
-        const app = feathers();
-        app.use('/ops-and-whitelist', service({
+        const app = feathers<{
+          'ops-and-whitelist': SequelizeService
+        }>();
+        app.use('ops-and-whitelist', new SequelizeService({
           Model,
           whitelist: ['$like']
         }));
@@ -527,8 +562,10 @@ describe('Feathers Sequelize Service', () => {
       });
 
       it('fails using an invalid operator in the whitelist', async () => {
-        const app = feathers();
-        app.use('/ops-and-whitelist', service({
+        const app = feathers<{
+          'ops-and-whitelist': SequelizeService
+        }>();
+        app.use('ops-and-whitelist', new SequelizeService({
           Model,
           whitelist: ['$invalidOp']
         }));
@@ -537,7 +574,7 @@ describe('Feathers Sequelize Service', () => {
           await ops.find({ query: { name: { $invalidOp: 'Beau' } } });
           assert.ok(false, 'Should never get here');
         } catch (error: any) {
-          assert.strictEqual(error.message, 'Invalid value { \'$invalidOp\': \'Beau\' }');
+          assert.strictEqual(error.message, 'Invalid query parameter $invalidOp');
         }
       });
     });
@@ -560,8 +597,11 @@ describe('Feathers Sequelize Service', () => {
   });
 
   describe('ORM functionality', () => {
-    const app = feathers();
-    app.use('/raw-people', service({
+    const app = feathers<{
+      'raw-people': SequelizeService
+      people: SequelizeService
+    }>();
+    app.use('raw-people', new SequelizeService({
       Model,
       events: ['testing'],
       multi: true
@@ -569,7 +609,7 @@ describe('Feathers Sequelize Service', () => {
     const rawPeople = app.service('raw-people');
 
     describe('Non-raw Service Config', () => {
-      app.use('/people', service({
+      app.use('people', new SequelizeService({
         Model,
         events: ['testing'],
         multi: true,
@@ -585,7 +625,7 @@ describe('Feathers Sequelize Service', () => {
       afterEach(() => people.remove(david.id).catch(() => {}));
 
       it('find() returns model instances', async () => {
-        const results = await people.find();
+        const results = await people.find() as any as any[];
 
         expect(results[0]).to.be.an.instanceof(Model);
       });
@@ -661,7 +701,7 @@ describe('Feathers Sequelize Service', () => {
       afterEach(() => rawPeople.remove(david.id).catch(() => {}));
 
       it('`raw: false` works for find()', async () => {
-        const results = await rawPeople.find(NOT_RAW);
+        const results = await rawPeople.find(NOT_RAW) as any as any[];
 
         expect(results[0]).to.be.an.instanceof(Model);
       });
@@ -724,7 +764,7 @@ describe('Feathers Sequelize Service', () => {
       }, additionalTopLevelParams);
     }
 
-    class ExtendedService extends Service {
+    class ExtendedService extends SequelizeService {
       getModel (params: any) {
         if (!params.sequelize || params.sequelize.expectedAttribute !== EXPECTED_ATTRIBUTE_VALUE) {
           throw new Error('Expected custom attribute not found in overridden getModel()!');
@@ -753,12 +793,15 @@ describe('Feathers Sequelize Service', () => {
       }
     }
 
-    function extendedService (options: any) {
+    function extendedService (options: SequelizeAdapterOptions) {
       return new ExtendedService(options);
     }
 
-    const app = feathers();
-    app.use('/raw-people', extendedService({
+    const app = feathers<{
+      'raw-people': ExtendedService
+      people: ExtendedService
+    }>();
+    app.use('raw-people', extendedService({
       Model,
       events: ['testing'],
       multi: true
@@ -766,7 +809,7 @@ describe('Feathers Sequelize Service', () => {
     const rawPeople = app.service('raw-people');
 
     describe('Non-raw Service Config', () => {
-      app.use('/people', extendedService({
+      app.use('people', extendedService({
         Model,
         events: ['testing'],
         multi: true,
@@ -783,7 +826,7 @@ describe('Feathers Sequelize Service', () => {
 
       it('find() returns model instances', async () => {
         const params = getExtraParams();
-        const results = await people.find(params);
+        const results = await people.find(params) as any as any[];
         expect(params.sequelize.getModelCalls.count).to.gte(1);
 
         expect(results[0]).to.be.an.instanceof(Model);
@@ -873,7 +916,7 @@ describe('Feathers Sequelize Service', () => {
 
       it('`raw: false` works for find()', async () => {
         const params = getExtraParams({}, NOT_RAW);
-        const results = await rawPeople.find(params);
+        const results = (await rawPeople.find(params)) as any as any[];
         expect(params.sequelize.getModelCalls.count).to.gte(1);
 
         expect(results[0]).to.be.an.instanceof(Model);

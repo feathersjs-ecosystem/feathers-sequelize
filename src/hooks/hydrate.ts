@@ -1,6 +1,6 @@
 import type { HookContext } from '@feathersjs/feathers';
 import type { ModelStatic, Model, Includeable } from 'sequelize';
-import type { HydrateOptions } from '../types';
+import type { HydrateOptions } from '../declarations';
 
 const factory = (Model: ModelStatic<Model>, include?: Includeable | Includeable[]) => {
   return (item: any) => {
@@ -17,10 +17,10 @@ const factory = (Model: ModelStatic<Model>, include?: Includeable | Includeable[
   };
 };
 
-export default (options?: HydrateOptions) => {
+export const hydrate = <H extends HookContext = HookContext>(options?: HydrateOptions) => {
   options = options || {};
 
-  return (context: HookContext) => {
+  return (context: H) => {
     if (context.type !== 'after') {
       throw new Error('feathers-sequelize hydrate() - should only be used as an "after" hook');
     }

@@ -2,7 +2,7 @@ import type { HookContext } from '@feathersjs/feathers';
 import { expect } from 'chai';
 import Sequelize from 'sequelize';
 
-import hydrate from '../src/hooks/hydrate';
+import { hydrate } from '../src/hooks/hydrate';
 import makeConnection from './connection'
 const sequelize = makeConnection();
 
