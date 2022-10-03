@@ -37,7 +37,7 @@ A [Feathers](https://feathersjs.com) database adapter for [Sequelize](http://seq
   - [Reverting your app to a previous state](#reverting-your-app-to-a-previous-state)
   - [Migrating](#migrating)
 - [License](#license)
-- [Migrating to feathers v5](#migrate-to-feathers-v5-dove019)
+- [Migrating to feathers v5](#migrate-to-feathers-v5-dove)
 
 <!-- /TOC -->
 
