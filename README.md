@@ -1,42 +1,43 @@
 # feathers-sequelize
 
 [![CI](https://github.com/feathersjs-ecosystem/feathers-sequelize/workflows/CI/badge.svg)](https://github.com/feathersjs-ecosystem/feathers-sequelize/actions?query=workflow%3ACI)
-[![Download Status](https://img.shields.io/npm/dm/feathers-sequelize.svg?style=flat-square)](https://www.npmjs.com/package/feathers-sequelize)
+[![Download Status](https://img.shields.io/npm/dm/feathers-sequelize.svg)](https://www.npmjs.com/package/feathers-sequelize)
+[![Discord](https://badgen.net/badge/icon/discord?icon=discord&label)](https://discord.gg/qa8kez8QBx)
 
 A [Feathers](https://feathersjs.com) database adapter for [Sequelize](http://sequelizejs.com), an ORM for Node.js. It supports PostgreSQL, MySQL, MariaDB, SQLite and MSSQL and features transaction support, relations, read replication and more.
 
 <!-- TOC -->
 
-- [feathers-sequelize](#feathers-sequelize)
-  - [API](#api)
-    - [`service(options)`](#serviceoptions)
-    - [params.sequelize](#paramssequelize)
-    - [operators](#operators)
-  - [Caveats](#caveats)
-    - [Sequelize `raw` queries](#sequelize-raw-queries)
-    - [Working with MSSQL](#working-with-mssql)
-  - [Example](#example)
-  - [Associations](#associations)
-    - [Embrace the ORM](#embrace-the-orm)
-    - [Setting `params.sequelize.include`](#setting-paramssequelizeinclude)
-  - [Querying](#querying)
-    - [Querying a nested column](#querying-a-nested-column)
-  - [Working with Sequelize Model instances](#working-with-sequelize-model-instances)
-  - [Validation](#validation)
-  - [Testing sequelize queries in isolation](#testing-sequelize-queries-in-isolation)
-    - [1. Build a test file](#1-build-a-test-file)
-    - [2. Integrate the query using a "before" hook](#2-integrate-the-query-using-a-before-hook)
-  - [Migrations](#migrations)
-    - [Initial Setup: one-time tasks](#initial-setup-one-time-tasks)
-    - [Migrations workflow](#migrations-workflow)
-    - [Create a new migration](#create-a-new-migration)
-      - [Add the up/down scripts:](#add-the-updown-scripts)
-      - [Keeping your app code in sync with migrations](#keeping-your-app-code-in-sync-with-migrations)
-    - [Apply a migration](#apply-a-migration)
-    - [Undo the previous migration](#undo-the-previous-migration)
-    - [Reverting your app to a previous state](#reverting-your-app-to-a-previous-state)
-    - [Migrating](#migrating)
-  - [License](#license)
+- [API](#api)
+  - [`service(options)`](#serviceoptions)
+  - [params.sequelize](#paramssequelize)
+  - [operators](#operators)
+- [Caveats](#caveats)
+  - [Sequelize `raw` queries](#sequelize-raw-queries)
+  - [Working with MSSQL](#working-with-mssql)
+- [Example](#example)
+- [Associations](#associations)
+  - [Embrace the ORM](#embrace-the-orm)
+  - [Setting `params.sequelize.include`](#setting-paramssequelizeinclude)
+- [Querying](#querying)
+  - [Querying a nested column](#querying-a-nested-column)
+- [Working with Sequelize Model instances](#working-with-sequelize-model-instances)
+- [Validation](#validation)
+- [Testing sequelize queries in isolation](#testing-sequelize-queries-in-isolation)
+  - [1. Build a test file](#1-build-a-test-file)
+  - [2. Integrate the query using a "before" hook](#2-integrate-the-query-using-a-before-hook)
+- [Migrations](#migrations)
+  - [Initial Setup: one-time tasks](#initial-setup-one-time-tasks)
+  - [Migrations workflow](#migrations-workflow)
+  - [Create a new migration](#create-a-new-migration)
+    - [Add the up/down scripts:](#add-the-updown-scripts)
+    - [Keeping your app code in sync with migrations](#keeping-your-app-code-in-sync-with-migrations)
+  - [Apply a migration](#apply-a-migration)
+  - [Undo the previous migration](#undo-the-previous-migration)
+  - [Reverting your app to a previous state](#reverting-your-app-to-a-previous-state)
+  - [Migrating](#migrating)
+- [License](#license)
+- [Migrating to feathers v5](#migrate-to-feathers-v5-dove019)
 
 <!-- /TOC -->
 
@@ -636,6 +637,63 @@ try {
 
 ## License
 
-Copyright (c) 2019
+Copyright (c) 2022
 
 Licensed under the [MIT license](LICENSE).
+
+## Migrate to Feathers v5 (dove)
+
+There are several breaking changes for feathers-sequelize in Feathers v5. This guide will help you to migrate your existing Feathers v4 application to Feathers v5.
+
+### Named export
+
+The default export of `feathers-sequelize` has been removed. You now have to import the `SequelizeService` class directly:
+```js
+const { SequelizeService } = require('feathers-sequelize');
+
+app.use('/messages', new SequelizeService({ ... }));
+```
+This follows conventions from feathers v5.
+
+### operators / operatorMap
+
+> Feathers v5 introduces a convention for `options.operators` and `options.filters`. The way feathers-sequelize worked in previous version is not compatible with these conventions. Please read https://dove.feathersjs.com/guides/migrating.html#custom-filters-operators first.
+
+The old `options.operators` object is renamed to `options.operatorMap`:
+
+```js
+const { SequelizeService } = require('feathers-sequelize');
+const { Op } = require('sequelize');
+
+app.use('/messages', new SequelizeService({
+  Model,
+  // operators is now operatorMap:
+  operatorMap: {
+    $between: Op.between
+  }
+}));
+```
+
+The new `options.operators` option is an array of allowed operators.
+
+### filters
+
+> Feathers v5 introduces a convention for `options.operators` and `options.filters`. The way feathers-sequelize worked in previous version is not compatible with these conventions. Please read https://dove.feathersjs.com/guides/migrating.html#custom-filters-operators first.
+
+Feathers v5 introduces a new `filters` option. It is an object to verify filters. Here you need to add `$dollar.notation$` operators, if you have some.
+
+```js
+const { SequelizeService } = require('feathers-sequelize');
+
+app.use('/messages', new SequelizeService({
+  Model,
+  filters: {
+    '$and': true,
+    '$person.name$': true
+  }
+}));
+```
+
+### whitelist
+
+> Feathers v5 introduces a convention for `options.operators` and `options.filters`. The way feathers-sequelize worked in previous version is not compatible with these conventions. Please read https://dove.feathersjs.com/guides/migrating.html#custom-filters-operators.
