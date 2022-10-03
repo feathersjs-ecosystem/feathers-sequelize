@@ -237,7 +237,10 @@ describe('Feathers Sequelize Service', () => {
       }))
       .use('orders', new SequelizeService({
         Model: Order,
-        multi: true
+        multi: true,
+        filters: {
+          '$person.name$': true
+        }
       }))
       .use('custom-getter-setter', new SequelizeService({
         Model: CustomGetterSetter,
@@ -245,9 +248,9 @@ describe('Feathers Sequelize Service', () => {
         multi: true
       }));
 
-    before(() => app.service('people')
-      .remove(null, { query: { $limit: 1000 } })
-    );
+    before(() => {
+      return app.service('people').remove(null, { query: { $limit: 1000 } })
+    });
 
     after(() => app.service('people')
       .remove(null, { query: { $limit: 1000 } })
@@ -468,6 +471,27 @@ describe('Feathers Sequelize Service', () => {
         expect(result).to.have.property('orders.id');
 
         kirsten = await people.create({ name: 'Kirsten', age: 30 });
+      });
+
+      it('can use $dollar.notation$', async () => {
+        const result = await orders.find({
+          query: {
+            '$person.name$': 'Kirsten'
+          },
+          sequelize: {
+            include: [{
+              model: Model,
+              as: 'person'
+            }],
+            raw: true
+          }
+        }) as any;
+
+        expect(result.map((x: any) => ({ name: x.name, personId: x.personId }))).to.deep.equal([
+          { name: 'Order 1', personId: kirsten.id },
+          { name: 'Order 2', personId: kirsten.id },
+          { name: 'Order 3', personId: kirsten.id }
+        ]);
       });
     });
 

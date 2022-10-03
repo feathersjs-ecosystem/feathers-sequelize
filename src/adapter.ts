@@ -144,7 +144,7 @@ export class SequelizeAdapter<
 
     const query = this.convertOperators({
       ..._query,
-      ..._.pick(filters, '$and', '$or')
+      ..._.omit(filters, '$select', '$skip', '$limit', '$sort')
     });
 
     return {

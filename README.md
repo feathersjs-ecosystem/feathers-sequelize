@@ -43,7 +43,7 @@ A [Feathers](https://feathersjs.com) database adapter for [Sequelize](http://seq
 > __Very Important:__ Before using this adapter you have to be familiar with both, the [Feathers Basics](https://docs.feathersjs.com/guides/basics/setup.html) and general use of [Sequelize](http://docs.sequelizejs.com/). For associations and relations see the [associations](#associations) section. This adapter may not cover all use cases but they can still be implemented using Sequelize models directly in a [Custom Feathers service](https://docs.feathersjs.com/guides/basics/services.html).
 
 ```bash
-npm install --save feathers-sequelize
+npm install --save feathers-sequelize@pre
 ```
 
 And [one of the following](http://docs.sequelizejs.com/en/latest/docs/getting-started/):
@@ -60,16 +60,16 @@ npm install --save tedious // MSSQL
 
 ## API
 
-### `new Service(options)`
+### `new SequelizeService(options)`
 
 Returns a new service instance initialized with the given options.
 
 ```js
 const Model = require('./models/mymodel');
-const { Service } = require('feathers-sequelize');
+const { SequelizeService } = require('feathers-sequelize');
 
-app.use('/messages', new Service({ Model }));
-app.use('/messages', new Service({ Model, id, events, paginate }));
+app.use('/messages', new SequelizeService({ Model }));
+app.use('/messages', new SequelizeService({ Model, id, events, paginate }));
 ```
 
 __Options:__
@@ -81,8 +81,8 @@ __Options:__
 - `events` (*optional*) - A list of [custom service events](https://docs.feathersjs.com/api/events.html#custom-events) sent by this service
 - `paginate` (*optional*) - A [pagination object](https://docs.feathersjs.com/api/databases/common.html#pagination) containing a `default` and `max` page size
 - `multi` (*optional*) - Allow `create` with arrays and `update` and `remove` with `id` `null` to change multiple items. Can be `true` for all methods or an array of allowed methods (e.g. `[ 'remove', 'create' ]`)
-- `operators` (*optional*) - A mapping from query syntax property names to to [Sequelize secure operators](http://docs.sequelizejs.com/manual/tutorial/querying.html)
-- <span id="options-whitelist">`whitelist`</span> (*optional*) - A list of additional query parameters to allow (e..g `[ '$regex', '$geoNear' ]`). Default is the supported `operators`
+- `operatorMap` (*optional*) - A mapping from query syntax property names to to [Sequelize secure operators](http://docs.sequelizejs.com/manual/tutorial/querying.html)
+- `operators` (*optional*) - A list of additional query parameters to allow (e..g `[ '$regex', '$geoNear' ]`). Default is the supported `operators`
 
 ### params.sequelize
 
@@ -110,9 +110,9 @@ Other options that `params.sequelize` allows you to pass can be found in [Sequel
 Beware that when setting a [top-level `where` property](https://sequelize.org/master/manual/eager-loading.html#complex-where-clauses-at-the-top-level) (usually for querying based on a column on an associated model), the `where` in `params.sequelize` will overwrite your `query`.
 
 
-### operators
+### operatorMap
 
-Sequelize deprecated string based operators a while ago for security reasons. Starting at version 4.0.0 `feathers-sequelize` converts queries securely, so you can still use string based operators listed below. If you want to support additional Sequelize operators, the `operators` service option can contain a mapping from query parameter name to Sequelize operator. By default supported are:
+Sequelize deprecated string based operators a while ago for security reasons. Starting at version 4.0.0 `feathers-sequelize` converts queries securely, so you can still use string based operators listed below. If you want to support additional Sequelize operators, the `operatorMap` service option can contain a mapping from query parameter name to Sequelize operator. By default supported are:
 
 ```
 '$eq',
@@ -199,20 +199,21 @@ $ npm install @feathersjs/feathers @feathersjs/errors @feathersjs/express @feath
 
 In `app.js`:
 
-```js
-const path = require('path');
-const feathers = require('@feathersjs/feathers');
-const express = require('@feathersjs/express');
-const socketio = require('@feathersjs/socketio');
+```ts
+import path from 'path';
+import { feathers } from '@feathersjs/feathers';
+import express from '@feathersjs/express';
+import socketio from '@feathersjs/socketio';
 
-const Sequelize = require('sequelize');
-const { Service } = require('feathers-sequelize');
+import Sequelize from 'sequelize';
+import SequelizeService from 'feathers-sequelize';
 
 const sequelize = new Sequelize('sequelize', '', '', {
   dialect: 'sqlite',
   storage: path.join(__dirname, 'db.sqlite'),
   logging: false
 });
+
 const Message = sequelize.define('message', {
   text: {
     type: Sequelize.STRING,
@@ -235,7 +236,7 @@ app.configure(express.rest());
 app.configure(socketio());
 // Create an in-memory Feathers service with a default page size of 2 items
 // and a maximum size of 4
-app.use('/messages', new Service({
+app.use('/messages', new SequelizeService({
   Model: Message,
   paginate: {
     default: 2,
