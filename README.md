@@ -4,6 +4,8 @@
 [![Download Status](https://img.shields.io/npm/dm/feathers-sequelize.svg)](https://www.npmjs.com/package/feathers-sequelize)
 [![Discord](https://badgen.net/badge/icon/discord?icon=discord&label)](https://discord.gg/qa8kez8QBx)
 
+> **Caution:** When you're using feathers v4 and want to upgrade to feathers v5, please make sure to read the [migration guide](#migrate-to-feathers-v5-dove).
+
 A [Feathers](https://feathersjs.com) database adapter for [Sequelize](http://sequelizejs.com), an ORM for Node.js. It supports PostgreSQL, MySQL, MariaDB, SQLite and MSSQL and features transaction support, relations, read replication and more.
 
 <!-- TOC -->
