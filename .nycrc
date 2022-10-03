@@ -1,18 +1,20 @@
 {
   "verbose": false,
   "tempDirectory": "./coverage/.tmp",
-  "semistandard": {
-    "env": [
-      "mocha"
-    ]
-  },
   "extension": [
     ".ts",
     ".tsx",
     ".js"
   ],
+  "include": [
+    "src/**/*.js",
+    "src/**/*.ts"
+  ],
   "exclude": [
-    "**/test/*"
+    "coverage/**",
+    "node_modules/**",
+    "**/*.d.ts",
+    "**/*.test.ts"
   ],
   "print": "detail",
   "reporter": [

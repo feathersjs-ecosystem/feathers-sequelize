@@ -4,7 +4,7 @@
   "version": "6.3.4",
   "homepage": "https://github.com/feathersjs-ecosystem/feathers-sequelize",
   "main": "lib/",
-  "types": "types",
+  "types": "lib/",
   "keywords": [
     "feathers",
     "feathers-plugin",
@@ -15,7 +15,8 @@
     "mariadb",
     "postgres",
     "pg",
-    "mssql"
+    "mssql",
+    "database"
   ],
   "license": "MIT",
   "repository": {
@@ -32,7 +33,7 @@
     "url": "https://github.com/feathersjs-ecosystem/feathers-sequelize/issues"
   },
   "engines": {
-    "node": ">= 12"
+    "node": ">= 14"
   },
   "files": [
     "CHANGELOG.md",
@@ -45,47 +46,51 @@
     "*.js"
   ],
   "scripts": {
+    "prepublish": "npm run compile",
+    "compile": "shx rm -rf lib/ && tsc",
     "publish": "git push origin --tags && npm run changelog && git push origin",
     "changelog": "github_changelog_generator -u feathersjs-ecosystem -p feathers-sequelize && git add CHANGELOG.md && git commit -am \"Updating changelog\"",
     "update-dependencies": "ncu -u",
+    "release:prerelease": "npm version prerelease --preid pre && npm publish --tag pre",
     "release:patch": "npm version patch && npm publish",
     "release:minor": "npm version minor && npm publish",
     "release:major": "npm version major && npm publish",
-    "lint": "semistandard --fix",
-    "mocha": "mocha --timeout 10000 --recursive test/ --exit",
-    "dtslint": "dtslint types",
-    "test": "npm run lint && npm run dtslint && npm run coverage",
-    "coverage": "nyc npm run mocha"
-  },
-  "semistandard": {
-    "env": [
-      "mocha"
-    ]
+    "lint": "eslint src/**/*.ts test/**/*.ts --fix",
+    "mocha": "mocha --require ts-node/register",
+    "test": "npm run lint && npm run coverage",
+    "coverage": "c8 npm run mocha"
   },
   "directories": {
     "lib": "lib"
   },
   "dependencies": {
-    "@feathersjs/adapter-commons": "^4.5.15",
-    "@feathersjs/commons": "^4.5.15",
-    "@feathersjs/errors": "^4.5.15"
+    "@feathersjs/adapter-commons": "^5.0.0-pre.29",
+    "@feathersjs/commons": "^5.0.0-pre.29",
+    "@feathersjs/errors": "^5.0.0-pre.29"
   },
   "devDependencies": {
-    "@feathersjs/adapter-tests": "^4.5.15",
-    "@feathersjs/express": "^4.5.15",
-    "@feathersjs/feathers": "^4.5.15",
+    "@feathersjs/adapter-tests": "^5.0.0-pre.29",
+    "@feathersjs/express": "^5.0.0-pre.29",
+    "@feathersjs/feathers": "^5.0.0-pre.29",
+    "@types/chai": "^4.3.3",
+    "@types/mocha": "^10.0.0",
+    "@types/node": "^18.7.23",
+    "@types/pg": "^8.6.5",
+    "@typescript-eslint/eslint-plugin": "^5.38.1",
+    "@typescript-eslint/parser": "^5.38.1",
     "body-parser": "^1.20.0",
+    "c8": "^7.12.0",
     "chai": "^4.3.6",
-    "dtslint": "^4.2.1",
+    "eslint": "^8.24.0",
     "mocha": "^10.0.0",
     "mysql2": "^2.3.3",
-    "npm-check-updates": "^16.0.6",
-    "nyc": "^15.1.0",
+    "npm-check-updates": "^16.3.4",
     "pg": "^8.8.0",
     "pg-hstore": "^2.3.4",
-    "semistandard": "^16.0.1",
-    "sequelize": "^6.21.4",
-    "sqlite3": "^5.0.11",
-    "typescript": "^4.8.2"
+    "sequelize": "^6.23.2",
+    "shx": "^0.3.4",
+    "sqlite3": "^5.1.1",
+    "ts-node": "^10.9.1",
+    "typescript": "^4.8.4"
   }
 }

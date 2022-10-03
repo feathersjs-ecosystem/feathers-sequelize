@@ -1,8 +1,12 @@
-const { expect } = require('chai');
-const Sequelize = require('sequelize');
+import type { HookContext } from '@feathersjs/feathers';
+import { expect } from 'chai';
+import Sequelize from 'sequelize';
 
-const dehydrate = require('../lib/hooks/dehydrate');
-const sequelize = require('./connection')();
+import { dehydrate } from '../src/hooks/dehydrate';
+import makeConnection from './connection';
+const sequelize = makeConnection();
+
+type MethodName = 'find' | 'get' | 'create' | 'update' | 'patch' | 'remove';
 
 const BlogPost = sequelize.define('blogpost', {
   title: {
@@ -23,19 +27,20 @@ const Comment = sequelize.define('comment', {
 BlogPost.hasMany(Comment);
 Comment.belongsTo(BlogPost);
 
-const callHook = (Model, method, result, options) => {
+const callHook = (Model: any, method: MethodName, result: any, options?: any) => {
   if (result.data) {
-    result.data = result.data.map(item => Model.build(item, options));
+    result.data = result.data.map((item: any) => Model.build(item, options));
   } else if (Array.isArray(result)) {
     result = result.map(item => Model.build(item, options));
   } else {
     result = Model.build(result, options);
   }
-  return dehydrate().call({ Model }, {
+  return dehydrate()({
+    service: { Model } as any,
     type: 'after',
     method,
     result
-  });
+  } as HookContext);
 };
 
 describe('Feathers Sequelize Dehydrate Hook', () => {
@@ -63,7 +68,7 @@ describe('Feathers Sequelize Dehydrate Hook', () => {
     expect(Object.getPrototypeOf(hook.result)).to.equal(Object.prototype);
   });
 
-  ['create', 'update', 'patch'].forEach(method => {
+  (['create', 'update', 'patch'] as MethodName[]).forEach(method => {
     it(`serializes results for single ${method}()`, async () => {
       const hook = await callHook(BlogPost, method, { title: 'David' });
 
@@ -71,7 +76,7 @@ describe('Feathers Sequelize Dehydrate Hook', () => {
     });
   });
 
-  ['create', 'patch'].forEach(method => {
+  (['create', 'patch'] as MethodName[]).forEach(method => {
     it(`serializes results for bulk ${method}()`, async () => {
       const hook = await callHook(BlogPost, method, [{ title: 'David' }]);
 
@@ -97,7 +102,7 @@ describe('Feathers Sequelize Dehydrate Hook', () => {
       type: 'after',
       method: 'get',
       result
-    });
+    } as HookContext);
 
     expect(hook.result).to.equal(result);
   });
