@@ -50,6 +50,10 @@ export class SequelizeAdapter<
       throw new Error('You must provide a Sequelize Model');
     }
 
+    if (options.operators && !Array.isArray(options.operators)) {
+      throw new Error('The \'operators\' option must be an array. For migration from feathers.js v4 see: https://github.com/feathersjs-ecosystem/feathers-sequelize/tree/dove#migrate-to-feathers-v5-dove');
+    }
+
     const operatorMap = Object.assign(defaultOpMap(), options.operatorMap);
     const operators = Object.keys(operatorMap);
     if (options.operators) {

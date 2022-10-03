@@ -2,7 +2,7 @@ import pg from 'pg';
 import assert from 'assert';
 import { expect } from 'chai';
 
-import Sequelize from 'sequelize';
+import Sequelize, { Op } from 'sequelize';
 import errors from '@feathersjs/errors';
 import { feathers } from '@feathersjs/feathers';
 import adaptertests from '@feathersjs/adapter-tests';
@@ -191,6 +191,21 @@ describe('Feathers Sequelize Service', () => {
     it('throws an error when missing a Model', () => {
       // @ts-expect-error Model is missing
       expect(() => new SequelizeService({ name: 'Test' })).to.throw('You must provide a Sequelize Model');
+    });
+
+    it('throws an error if options.operators is not an array', () => {
+      expect(() => new SequelizeService({
+        Model,
+        operators: {
+          // @ts-expect-error operators is not an array
+          $like: Op.like
+        }
+      })).to.throw(/The 'operators' option must be an array./);
+
+      expect(() => new SequelizeService({
+        Model,
+        operators: []
+      })).to.not.throw();
     });
 
     it('re-exports hooks', () => {
