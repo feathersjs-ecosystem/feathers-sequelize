@@ -39,14 +39,11 @@
     "CHANGELOG.md",
     "LICENSE",
     "README.md",
-    "lib/**",
-    "hooks/**",
-    "types/**",
-    "*.d.ts",
-    "*.js"
+    "src/**",
+    "lib/**"
   ],
   "scripts": {
-    "prepublish": "npm run compile",
+    "prepublishOnly": "npm run compile",
     "compile": "shx rm -rf lib/ && tsc",
     "publish": "git push origin --tags && npm run changelog && git push origin",
     "changelog": "github_changelog_generator -u feathersjs-ecosystem -p feathers-sequelize && git add CHANGELOG.md && git commit -am \"Updating changelog\"",
