@@ -2,17 +2,40 @@
 
 ## [Unreleased](https://github.com/feathersjs-ecosystem/feathers-sequelize/tree/HEAD)
 
-[Full Changelog](https://github.com/feathersjs-ecosystem/feathers-sequelize/compare/v6.3.4...HEAD)
+[Full Changelog](https://github.com/feathersjs-ecosystem/feathers-sequelize/compare/v6.3.6...HEAD)
+
+**Merged pull requests:**
+
+- chore\(dependencies\): Update all dependencies [\#399](https://github.com/feathersjs-ecosystem/feathers-sequelize/pull/399) ([daffl](https://github.com/daffl))
+- chore\(dependencies\): Update all dependencies [\#398](https://github.com/feathersjs-ecosystem/feathers-sequelize/pull/398) ([daffl](https://github.com/daffl))
+- chore\(dependencies\): Update all dependencies [\#395](https://github.com/feathersjs-ecosystem/feathers-sequelize/pull/395) ([daffl](https://github.com/daffl))
+- chore\(dependencies\): Update all dependencies [\#394](https://github.com/feathersjs-ecosystem/feathers-sequelize/pull/394) ([daffl](https://github.com/daffl))
+
+## [v6.3.6](https://github.com/feathersjs-ecosystem/feathers-sequelize/tree/v6.3.6) (2022-10-26)
+
+[Full Changelog](https://github.com/feathersjs-ecosystem/feathers-sequelize/compare/v6.3.5...v6.3.6)
+
+## [v6.3.5](https://github.com/feathersjs-ecosystem/feathers-sequelize/tree/v6.3.5) (2022-10-26)
+
+[Full Changelog](https://github.com/feathersjs-ecosystem/feathers-sequelize/compare/v7.0.0-pre.0...v6.3.5)
+
+## [v7.0.0-pre.0](https://github.com/feathersjs-ecosystem/feathers-sequelize/tree/v7.0.0-pre.0) (2022-10-04)
+
+[Full Changelog](https://github.com/feathersjs-ecosystem/feathers-sequelize/compare/v6.3.4...v7.0.0-pre.0)
+
+**Closed issues:**
+
+- how to set field to NULL on patch request? [\#397](https://github.com/feathersjs-ecosystem/feathers-sequelize/issues/397)
+
+## [v6.3.4](https://github.com/feathersjs-ecosystem/feathers-sequelize/tree/v6.3.4) (2022-06-08)
+
+[Full Changelog](https://github.com/feathersjs-ecosystem/feathers-sequelize/compare/v6.3.3...v6.3.4)
 
 **Merged pull requests:**
 
 - Do not allow raw attribute selects [\#393](https://github.com/feathersjs-ecosystem/feathers-sequelize/pull/393) ([daffl](https://github.com/daffl))
 - chore\(dependencies\): Update all dependencies [\#392](https://github.com/feathersjs-ecosystem/feathers-sequelize/pull/392) ([daffl](https://github.com/daffl))
 - chore\(dependencies\): Update all dependencies [\#391](https://github.com/feathersjs-ecosystem/feathers-sequelize/pull/391) ([daffl](https://github.com/daffl))
-
-## [v6.3.4](https://github.com/feathersjs-ecosystem/feathers-sequelize/tree/v6.3.4) (2022-06-08)
-
-[Full Changelog](https://github.com/feathersjs-ecosystem/feathers-sequelize/compare/v6.3.3...v6.3.4)
 
 ## [v6.3.3](https://github.com/feathersjs-ecosystem/feathers-sequelize/tree/v6.3.3) (2022-04-13)
 
@@ -62,7 +85,7 @@
 - Be able to sort nulls before or after not-nulls values [\#370](https://github.com/feathersjs-ecosystem/feathers-sequelize/pull/370) ([MariaCamilaCubides](https://github.com/MariaCamilaCubides))
 - typing: add 'operators' to SequelizeServiceOptions [\#367](https://github.com/feathersjs-ecosystem/feathers-sequelize/pull/367) ([fratzinger](https://github.com/fratzinger))
 - Upgrade dependencies [\#359](https://github.com/feathersjs-ecosystem/feathers-sequelize/pull/359) ([silvestreh](https://github.com/silvestreh))
-- Update README.md [\#353](https://github.com/feathersjs-ecosystem/feathers-sequelize/pull/353) ([eclecticlly](https://github.com/eclecticlly))
+- Update README.md [\#353](https://github.com/feathersjs-ecosystem/feathers-sequelize/pull/353) ([eclecticlly-indie-game](https://github.com/eclecticlly-indie-game))
 
 ## [v6.2.0](https://github.com/feathersjs-ecosystem/feathers-sequelize/tree/v6.2.0) (2020-04-29)
 
