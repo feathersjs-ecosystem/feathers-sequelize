@@ -390,23 +390,23 @@ export class SequelizeAdapter<
   async $remove (id: NullableId, params: P = {} as P): Promise<T | T[]> {
     const Model = this.ModelWithScope(params);
 
-    const q = this.paramsToAdapter(id, params);
+    const itemOrItems = await this._getOrFind(id, params);
+    const items = Array.isArray(itemOrItems) ? itemOrItems : [itemOrItems];
+    const ids: Id[] = items.map(item => item[this.id]);
+    const seqOptions = Object.assign(
+      { raw: this.raw },
+      params.sequelize,
+      { where: { [this.id]: { [this.Op.in]: ids } } }
+    );
 
-    if (params.$returning !== false) {
-      const items = await this._getOrFind(id, params)
-      try {
-        await Model.destroy(q);
-        return select(params, this.id)(items);
-      } catch (err: any) {
-        return errorHandler(err);
+    try {
+      await Model.destroy(seqOptions);
+      if (params.$returning === false) {
+        return []
       }
-    } else {
-      try {
-        await Model.destroy(q);
-        return [];
-      } catch (err: any) {
-        return errorHandler(err);
-      }
+      return select(params, this.id)(itemOrItems);
+    } catch (err: any) {
+      return errorHandler(err);
     }
   }
 }
