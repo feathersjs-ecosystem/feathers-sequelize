@@ -390,7 +390,20 @@ export class SequelizeAdapter<
   async $remove (id: NullableId, params: P = {} as P): Promise<T | T[]> {
     const Model = this.ModelWithScope(params);
 
-    const itemOrItems = await this._getOrFind(id, params);
+    const findParams = { ...params };
+    if (params.$returning === false) {
+      findParams.query = {
+        ...findParams.query,
+        $select: [this.id]
+      }
+    } else if (params.query?.$select) {
+      findParams.query = {
+        ...findParams.query,
+        $select: [...params.query.$select, this.id]
+      }
+    }
+
+    const itemOrItems = await this._getOrFind(id, findParams);
     const items = Array.isArray(itemOrItems) ? itemOrItems : [itemOrItems];
     const ids: Id[] = items.map(item => item[this.id]);
     const seqOptions = Object.assign(
