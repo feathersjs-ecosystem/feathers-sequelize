@@ -2,14 +2,16 @@
 
 ## [Unreleased](https://github.com/feathersjs-ecosystem/feathers-sequelize/tree/HEAD)
 
-[Full Changelog](https://github.com/feathersjs-ecosystem/feathers-sequelize/compare/v6.3.6...HEAD)
+[Full Changelog](https://github.com/feathersjs-ecosystem/feathers-sequelize/compare/v6.4.0...HEAD)
 
 **Merged pull requests:**
 
-- chore\(dependencies\): Update all dependencies [\#399](https://github.com/feathersjs-ecosystem/feathers-sequelize/pull/399) ([daffl](https://github.com/daffl))
-- chore\(dependencies\): Update all dependencies [\#398](https://github.com/feathersjs-ecosystem/feathers-sequelize/pull/398) ([daffl](https://github.com/daffl))
-- chore\(dependencies\): Update all dependencies [\#395](https://github.com/feathersjs-ecosystem/feathers-sequelize/pull/395) ([daffl](https://github.com/daffl))
-- chore\(dependencies\): Update all dependencies [\#394](https://github.com/feathersjs-ecosystem/feathers-sequelize/pull/394) ([daffl](https://github.com/daffl))
+- Allow join queries on remove [\#403](https://github.com/feathersjs-ecosystem/feathers-sequelize/pull/403) ([DaddyWarbucks](https://github.com/DaddyWarbucks))
+- chore\(dependencies\): Update all dependencies [\#401](https://github.com/feathersjs-ecosystem/feathers-sequelize/pull/401) ([daffl](https://github.com/daffl))
+
+## [v6.4.0](https://github.com/feathersjs-ecosystem/feathers-sequelize/tree/v6.4.0) (2022-11-15)
+
+[Full Changelog](https://github.com/feathersjs-ecosystem/feathers-sequelize/compare/v6.3.6...v6.4.0)
 
 ## [v6.3.6](https://github.com/feathersjs-ecosystem/feathers-sequelize/tree/v6.3.6) (2022-10-26)
 
@@ -18,6 +20,13 @@
 ## [v6.3.5](https://github.com/feathersjs-ecosystem/feathers-sequelize/tree/v6.3.5) (2022-10-26)
 
 [Full Changelog](https://github.com/feathersjs-ecosystem/feathers-sequelize/compare/v7.0.0-pre.0...v6.3.5)
+
+**Merged pull requests:**
+
+- chore\(dependencies\): Update all dependencies [\#399](https://github.com/feathersjs-ecosystem/feathers-sequelize/pull/399) ([daffl](https://github.com/daffl))
+- chore\(dependencies\): Update all dependencies [\#398](https://github.com/feathersjs-ecosystem/feathers-sequelize/pull/398) ([daffl](https://github.com/daffl))
+- chore\(dependencies\): Update all dependencies [\#395](https://github.com/feathersjs-ecosystem/feathers-sequelize/pull/395) ([daffl](https://github.com/daffl))
+- chore\(dependencies\): Update all dependencies [\#394](https://github.com/feathersjs-ecosystem/feathers-sequelize/pull/394) ([daffl](https://github.com/daffl))
 
 ## [v7.0.0-pre.0](https://github.com/feathersjs-ecosystem/feathers-sequelize/tree/v7.0.0-pre.0) (2022-10-04)
 
