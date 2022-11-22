@@ -135,7 +135,7 @@ Sequelize deprecated string based operators a while ago for security reasons. St
 ```
 
 ```
-// Find all messages in room 2 or 5
+// Find all users with name similar to Dav
 app.service('users').find({
   query: {
     name: {
@@ -191,6 +191,9 @@ module.exports = function (options = {}) {
   }
 }
 ```
+
+### Primary keys
+All tables used by a feathers-sequelize service require a primary key. Although it is common practice for many-to-many tables to not have a primary key, this service will break if the table does not have a primary key. This is because most service methods require an ID and because of how feathers maps services to URLs.
 
 ## Example
 
@@ -319,7 +322,7 @@ Example:
 // Find a user with post.id == 120
 app.service('users').find({
   query: {
-    '$user.post.id$': 120,
+    '$post.id$': 120,
     include: {
       model: posts
     }
@@ -327,7 +330,7 @@ app.service('users').find({
 });
 ```
 
-For this case to work, you'll need to add '$user.post.id$' to the service options' ['whitelist' property](#options-whitelist). 
+For this case to work, you'll need to add '$post.id$' to the service options' ['whitelist' property](#options-whitelist).
 
 ## Working with Sequelize Model instances
 
