@@ -1,4 +1,4 @@
-import { BadRequest, NotFound } from '@feathersjs/errors';
+import { BadRequest, MethodNotAllowed, NotFound } from '@feathersjs/errors';
 import { _ } from '@feathersjs/commons';
 import { select, AdapterBase, filterQuery } from '@feathersjs/adapter-commons';
 import type { PaginationOptions } from '@feathersjs/adapter-commons';
@@ -41,10 +41,11 @@ const defaultFilters = () => {
 }
 
 export class SequelizeAdapter<
-  T,
-  D = Partial<T>,
-  P extends SequelizeAdapterParams = SequelizeAdapterParams
-> extends AdapterBase<T, D, P, SequelizeAdapterOptions> {
+  Result,
+  Data = Partial<Result>,
+  ServiceParams extends SequelizeAdapterParams = SequelizeAdapterParams,
+  PatchData = Partial<Data>
+> extends AdapterBase<Result, Data, PatchData, ServiceParams, SequelizeAdapterOptions> {
   constructor (options: SequelizeAdapterOptions) {
     if (!options.Model) {
       throw new Error('You must provide a Sequelize Model');
@@ -88,7 +89,7 @@ export class SequelizeAdapter<
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  getModel (_params?: P) {
+  getModel (_params?: ServiceParams) {
     if (!this.options.Model) {
       throw new Error('getModel was called without a Model present in the constructor options and without overriding getModel! Perhaps you intended to override getModel in a child class?');
     }
@@ -99,7 +100,7 @@ export class SequelizeAdapter<
   /**
    * @deprecated use 'service.ModelWithScope' instead. 'applyScope' will be removed in a future release.
    */
-  applyScope (params?: P) {
+  applyScope (params?: ServiceParams) {
     const Model = this.getModel(params);
     if (params?.sequelize?.scope) {
       return Model.scope(params.sequelize.scope);
@@ -107,7 +108,7 @@ export class SequelizeAdapter<
     return Model;
   }
 
-  ModelWithScope (params: P) {
+  ModelWithScope (params: ServiceParams) {
     return this.applyScope(params);
   }
 
@@ -138,7 +139,7 @@ export class SequelizeAdapter<
     return converted;
   }
 
-  filterQuery (params: P) {
+  filterQuery (params: ServiceParams) {
     const options = this.getOptions(params)
     const { filters, query: _query } = filterQuery(params.query || {}, options)
 
@@ -154,8 +155,8 @@ export class SequelizeAdapter<
     }
   }
 
-  paramsToAdapter (id: NullableId, _params?: P): FindOptions {
-    const params = _params || {} as P;
+  paramsToAdapter (id: NullableId, _params?: ServiceParams): FindOptions {
+    const params = _params || {} as ServiceParams;
     if (id) {
       const { query: where } = this.filterQuery(params);
 
@@ -200,25 +201,25 @@ export class SequelizeAdapter<
    * returns either the model instance / jsonified object for an id or all unpaginated
    * items for `params` if id is null
    */
-  async _getOrFind (id: Id, _params?: P): Promise<T>
-  async _getOrFind (id: null, _params?: P): Promise<T[]>
-  async _getOrFind (id: NullableId, _params: P) {
-    const params = _params || {} as P;
+  async _getOrFind (id: Id, _params?: ServiceParams): Promise<Result>
+  async _getOrFind (id: null, _params?: ServiceParams): Promise<Result[]>
+  async _getOrFind (id: NullableId, _params: ServiceParams) {
+    const params = _params || {} as ServiceParams;
     if (id === null) {
-      return await this.$find({
+      return await this._find({
         ...params,
         paginate: false
       });
     }
 
-    return await this.$get(id, params);
+    return await this._get(id, params);
   }
 
 
-  async $find (params?: P & { paginate?: PaginationOptions }): Promise<Paginated<T>>
-  async $find (params?: P & { paginate: false }): Promise<T[]>
-  async $find (params?: P): Promise<Paginated<T> | T[]>
-  async $find (params: P = {} as P): Promise<Paginated<T> | T[]> {
+  async _find (params?: ServiceParams & { paginate?: PaginationOptions }): Promise<Paginated<Result>>
+  async _find (params?: ServiceParams & { paginate: false }): Promise<Result[]>
+  async _find (params?: ServiceParams): Promise<Paginated<Result> | Result[]>
+  async _find (params: ServiceParams = {} as ServiceParams): Promise<Paginated<Result> | Result[]> {
     const { paginate } = this.filterQuery(params);
 
     const Model = this.ModelWithScope(params);
@@ -232,17 +233,17 @@ export class SequelizeAdapter<
           total: result.count,
           limit: q.limit,
           skip: q.offset || 0,
-          data: result.rows as T[]
+          data: result.rows as Result[]
         }
       }
 
-      return await Model.findAll(q) as T[];
+      return await Model.findAll(q) as Result[];
     } catch (err: any) {
       return errorHandler(err);
     }
   }
 
-  async $get (id: Id, params: P = {} as P): Promise<T> {
+  async _get (id: Id, params: ServiceParams = {} as ServiceParams): Promise<Result> {
     const Model = this.ModelWithScope(params);
     const q = this.paramsToAdapter(id, params);
 
@@ -263,10 +264,14 @@ export class SequelizeAdapter<
     }
   }
 
-  async $create (data: Partial<D>, params?: P): Promise<T>
-  async $create (data: Partial<D>[], params?: P): Promise<T[]>
-  async $create (data: Partial<D> | Partial<D>[], _params?: P): Promise<T | T[]>
-  async $create (data: Partial<D> | Partial<D>[], params: P = {} as P): Promise<T | T[]> {
+  async _create (data: Data, params?: ServiceParams): Promise<Result>
+  async _create (data: Data[], params?: ServiceParams): Promise<Result[]>
+  async _create (data: Data | Data[], params?: ServiceParams): Promise<Result | Result[]>
+  async _create (data: Data | Data[], params: ServiceParams = {} as ServiceParams): Promise<Result | Result[]> {
+    if (Array.isArray(data) && !this.allowsMulti('create', params)) {
+      throw new MethodNotAllowed('Can not create multiple entries')
+    }
+
     const options = Object.assign({ raw: this.raw }, params.sequelize);
     // Model.create's `raw` option is different from other methods.
     // In order to use `raw` consistently to serialize the result,
@@ -286,7 +291,7 @@ export class SequelizeAdapter<
 
       const sel = select(params, this.id);
       if (options.raw === false) {
-        return result as T | T[];
+        return result as Result | Result[];
       }
       if (isArray) {
         return (result as Model[]).map(item => sel(item.toJSON()));
@@ -297,10 +302,13 @@ export class SequelizeAdapter<
     }
   }
 
-  async $patch (id: null, data: Partial<D>, params?: P): Promise<T[]>
-  async $patch (id: Id, data: Partial<D>, params?: P): Promise<T>
-  async $patch (id: NullableId, data: Partial<D>, _params?: P): Promise<T | T[]>
-  async $patch (id: NullableId, data: Partial<D>, params: P = {} as P): Promise<T | T[]> {
+  async _patch (id: null, data: PatchData, params?: ServiceParams): Promise<Result[]>
+  async _patch (id: Id, data: PatchData, params?: ServiceParams): Promise<Result>
+  async _patch (id: NullableId, data: PatchData, params: ServiceParams = {} as ServiceParams): Promise<Result | Result[]> {
+    if (id === null && !this.allowsMulti('patch', params)) {
+      throw new MethodNotAllowed('Can not patch multiple entries')
+    }
+
     const Model = this.ModelWithScope(params);
 
     // Get a list of ids that match the id/query. Overwrite the
@@ -348,13 +356,13 @@ export class SequelizeAdapter<
     }
   }
 
-  async $update (id: Id, data: D, params: P = {} as P): Promise<T> {
+  async _update (id: Id, data: Data, params: ServiceParams = {} as ServiceParams): Promise<Result> {
     const query = Object.assign({}, this.filterQuery(params).query);
 
     // Force the {raw: false} option as the instance is needed to properly update
     const seqOptions = Object.assign({}, params.sequelize, { raw: false });
 
-    const instance = await this.$get(id, { sequelize: seqOptions, query } as P) as Model
+    const instance = await this._get(id, { sequelize: seqOptions, query } as ServiceParams) as Model
 
     const itemToUpdate = Object.keys(instance.toJSON()).reduce((result: Record<string, any>, key) => {
       // @ts-ignore
@@ -366,13 +374,13 @@ export class SequelizeAdapter<
     try {
       await instance.update(itemToUpdate, seqOptions);
 
-      const item = await this.$get(id, {
+      const item = await this._get(id, {
         sequelize: Object.assign({}, seqOptions, {
           raw: typeof params?.sequelize?.raw === 'boolean'
             ? params.sequelize.raw
             : this.raw
         })
-      } as P);
+      } as ServiceParams);
 
       return select(params, this.id)(item);
     } catch (err: any) {
@@ -380,10 +388,13 @@ export class SequelizeAdapter<
     }
   }
 
-  async $remove (id: null, params?: P): Promise<T[]>
-  async $remove (id: Id, params?: P): Promise<T>
-  async $remove (id: NullableId, params?: P): Promise<T | T[]>
-  async $remove (id: NullableId, params: P = {} as P): Promise<T | T[]> {
+  async _remove (id: null, params?: ServiceParams): Promise<Result[]>
+  async _remove (id: Id, params?: ServiceParams): Promise<Result>
+  async _remove (id: NullableId, params: ServiceParams = {} as ServiceParams): Promise<Result | Result[]> {
+    if (id === null && !this.allowsMulti('remove', params)) {
+      throw new MethodNotAllowed('Can not remove multiple entries')
+    }
+
     const Model = this.ModelWithScope(params);
 
     const q = this.paramsToAdapter(id, params);

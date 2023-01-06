@@ -11,12 +11,6 @@ import type { SequelizeAdapterOptions } from '../src';
 import { SequelizeService, hydrate, dehydrate, ERROR } from '../src';
 import makeConnection from './connection';
 const testSuite = adaptertests([
-  '.$create',
-  '.$find',
-  '.$get',
-  '.$patch',
-  '.$remove',
-  '.$update',
   '.options',
   '.events',
   '._create',

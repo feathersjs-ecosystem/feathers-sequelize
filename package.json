@@ -64,33 +64,33 @@
     "lib": "lib"
   },
   "dependencies": {
-    "@feathersjs/adapter-commons": "^5.0.0-pre.29",
-    "@feathersjs/commons": "^5.0.0-pre.29",
-    "@feathersjs/errors": "^5.0.0-pre.29"
+    "@feathersjs/adapter-commons": "^5.0.0-pre.34",
+    "@feathersjs/commons": "^5.0.0-pre.34",
+    "@feathersjs/errors": "^5.0.0-pre.34"
   },
   "devDependencies": {
-    "@feathersjs/adapter-tests": "^5.0.0-pre.29",
-    "@feathersjs/express": "^5.0.0-pre.29",
-    "@feathersjs/feathers": "^5.0.0-pre.29",
-    "@types/chai": "^4.3.3",
-    "@types/mocha": "^10.0.0",
-    "@types/node": "^18.7.23",
-    "@types/pg": "^8.6.5",
-    "@typescript-eslint/eslint-plugin": "^5.38.1",
-    "@typescript-eslint/parser": "^5.38.1",
-    "body-parser": "^1.20.0",
+    "@feathersjs/adapter-tests": "^5.0.0-pre.34",
+    "@feathersjs/express": "^5.0.0-pre.34",
+    "@feathersjs/feathers": "^5.0.0-pre.34",
+    "@types/chai": "^4.3.4",
+    "@types/mocha": "^10.0.1",
+    "@types/node": "^18.11.18",
+    "@types/pg": "^8.6.6",
+    "@typescript-eslint/eslint-plugin": "^5.48.0",
+    "@typescript-eslint/parser": "^5.48.0",
+    "body-parser": "^1.20.1",
     "c8": "^7.12.0",
-    "chai": "^4.3.6",
-    "eslint": "^8.24.0",
-    "mocha": "^10.0.0",
+    "chai": "^4.3.7",
+    "eslint": "^8.31.0",
+    "mocha": "^10.2.0",
     "mysql2": "^2.3.3",
-    "npm-check-updates": "^16.3.4",
+    "npm-check-updates": "^16.6.2",
     "pg": "^8.8.0",
     "pg-hstore": "^2.3.4",
-    "sequelize": "^6.23.2",
+    "sequelize": "^6.28.0",
     "shx": "^0.3.4",
-    "sqlite3": "^5.1.1",
+    "sqlite3": "^5.1.4",
     "ts-node": "^10.9.1",
-    "typescript": "^4.8.4"
+    "typescript": "^4.9.4"
   }
 }
