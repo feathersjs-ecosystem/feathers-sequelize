@@ -75,17 +75,17 @@
     "@feathersjs/express": "^4.5.15",
     "@feathersjs/feathers": "^4.5.15",
     "body-parser": "^1.20.1",
-    "chai": "^4.3.6",
+    "chai": "^4.3.7",
     "dtslint": "^4.2.1",
-    "mocha": "^10.1.0",
-    "mysql2": "^2.3.3",
-    "npm-check-updates": "^16.3.16",
+    "mocha": "^10.2.0",
+    "mysql2": "^3.1.0",
+    "npm-check-updates": "^16.6.3",
     "nyc": "^15.1.0",
-    "pg": "^8.8.0",
+    "pg": "^8.9.0",
     "pg-hstore": "^2.3.4",
     "semistandard": "^16.0.1",
-    "sequelize": "^6.25.3",
-    "sqlite3": "^5.1.2",
-    "typescript": "^4.8.4"
+    "sequelize": "^6.28.0",
+    "sqlite3": "^5.1.4",
+    "typescript": "^4.9.5"
   }
 }
