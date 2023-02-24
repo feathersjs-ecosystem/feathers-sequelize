@@ -1,17 +1,21 @@
 # Changelog
 
-## [Unreleased](https://github.com/feathersjs-ecosystem/feathers-sequelize/tree/HEAD)
+## [v7.0.0-pre.1](https://github.com/feathersjs-ecosystem/feathers-sequelize/tree/v7.0.0-pre.1) (2023-01-06)
 
-[Full Changelog](https://github.com/feathersjs-ecosystem/feathers-sequelize/compare/v6.4.0...HEAD)
+[Full Changelog](https://github.com/feathersjs-ecosystem/feathers-sequelize/compare/v6.4.0...v7.0.0-pre.1)
+
+**Closed issues:**
+
+- Since version 6.4.0 getting "error: GeneralError: column "id" does not exist" [\#406](https://github.com/feathersjs-ecosystem/feathers-sequelize/issues/406)
+
+## [v6.4.0](https://github.com/feathersjs-ecosystem/feathers-sequelize/tree/v6.4.0) (2022-11-15)
+
+[Full Changelog](https://github.com/feathersjs-ecosystem/feathers-sequelize/compare/v6.3.6...v6.4.0)
 
 **Merged pull requests:**
 
 - Allow join queries on remove [\#403](https://github.com/feathersjs-ecosystem/feathers-sequelize/pull/403) ([DaddyWarbucks](https://github.com/DaddyWarbucks))
 - chore\(dependencies\): Update all dependencies [\#401](https://github.com/feathersjs-ecosystem/feathers-sequelize/pull/401) ([daffl](https://github.com/daffl))
-
-## [v6.4.0](https://github.com/feathersjs-ecosystem/feathers-sequelize/tree/v6.4.0) (2022-11-15)
-
-[Full Changelog](https://github.com/feathersjs-ecosystem/feathers-sequelize/compare/v6.3.6...v6.4.0)
 
 ## [v6.3.6](https://github.com/feathersjs-ecosystem/feathers-sequelize/tree/v6.3.6) (2022-10-26)
 
@@ -94,7 +98,7 @@
 - Be able to sort nulls before or after not-nulls values [\#370](https://github.com/feathersjs-ecosystem/feathers-sequelize/pull/370) ([MariaCamilaCubides](https://github.com/MariaCamilaCubides))
 - typing: add 'operators' to SequelizeServiceOptions [\#367](https://github.com/feathersjs-ecosystem/feathers-sequelize/pull/367) ([fratzinger](https://github.com/fratzinger))
 - Upgrade dependencies [\#359](https://github.com/feathersjs-ecosystem/feathers-sequelize/pull/359) ([silvestreh](https://github.com/silvestreh))
-- Update README.md [\#353](https://github.com/feathersjs-ecosystem/feathers-sequelize/pull/353) ([eclecticlly-indie-game](https://github.com/eclecticlly-indie-game))
+- Update README.md [\#353](https://github.com/feathersjs-ecosystem/feathers-sequelize/pull/353) ([max-bertinetti](https://github.com/max-bertinetti))
 
 ## [v6.2.0](https://github.com/feathersjs-ecosystem/feathers-sequelize/tree/v6.2.0) (2020-04-29)
 
