@@ -6,6 +6,8 @@
 
 > **Caution:** When you're using feathers v4 and want to upgrade to feathers v5, please make sure to read the [migration guide](#migrate-to-feathers-v5-dove).
 
+> NOTE: This is the version for Feathers v5. For Feathers v4 use [feathers-sequelize v6](https://github.com/feathersjs-ecosystem/feathers-sequelize/tree/crow)
+
 A [Feathers](https://feathersjs.com) database adapter for [Sequelize](http://sequelizejs.com), an ORM for Node.js. It supports PostgreSQL, MySQL, MariaDB, SQLite and MSSQL and features transaction support, relations, read replication and more.
 
 <!-- TOC -->
