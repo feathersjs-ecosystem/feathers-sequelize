@@ -2,15 +2,23 @@
 
 ## [Unreleased](https://github.com/feathersjs-ecosystem/feathers-sequelize/tree/HEAD)
 
-[Full Changelog](https://github.com/feathersjs-ecosystem/feathers-sequelize/compare/v7.0.0...HEAD)
+[Full Changelog](https://github.com/feathersjs-ecosystem/feathers-sequelize/compare/v7.0.1...HEAD)
 
 **Merged pull requests:**
 
-- Dove [\#412](https://github.com/feathersjs-ecosystem/feathers-sequelize/pull/412) ([fratzinger](https://github.com/fratzinger))
+- chore\(dependencies\): Update all dependencies [\#414](https://github.com/feathersjs-ecosystem/feathers-sequelize/pull/414) ([daffl](https://github.com/daffl))
+
+## [v7.0.1](https://github.com/feathersjs-ecosystem/feathers-sequelize/tree/v7.0.1) (2023-04-03)
+
+[Full Changelog](https://github.com/feathersjs-ecosystem/feathers-sequelize/compare/v7.0.0...v7.0.1)
 
 ## [v7.0.0](https://github.com/feathersjs-ecosystem/feathers-sequelize/tree/v7.0.0) (2023-02-24)
 
 [Full Changelog](https://github.com/feathersjs-ecosystem/feathers-sequelize/compare/v7.0.0-pre.1...v7.0.0)
+
+**Merged pull requests:**
+
+- Dove [\#412](https://github.com/feathersjs-ecosystem/feathers-sequelize/pull/412) ([fratzinger](https://github.com/fratzinger))
 
 ## [v7.0.0-pre.1](https://github.com/feathersjs-ecosystem/feathers-sequelize/tree/v7.0.0-pre.1) (2023-01-06)
 
