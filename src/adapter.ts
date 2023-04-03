@@ -188,6 +188,11 @@ export class SequelizeAdapter<
       }, params.sequelize);
 
       if (filters.$select) {
+        // Add the id to the select if it is not already there
+        if (!filters.$select.includes(this.id)) {
+          filters.$select.push(this.id);
+        }
+
         q.attributes = filters.$select.map((select: any) => `${select}`);
       }
 
