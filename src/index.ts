@@ -2,6 +2,7 @@ import { SequelizeAdapter } from './adapter';
 import type { SequelizeAdapterParams } from './declarations';
 import type { Id, NullableId, Paginated, Params, ServiceMethods } from '@feathersjs/feathers';
 import type { PaginationOptions } from '@feathersjs/adapter-commons';
+import type { PaginatedOrArray } from './internal.types';
 
 export * from './declarations'
 export * from './adapter'
@@ -11,10 +12,7 @@ export class SequelizeService<Result = any, Data = Partial<Result>, ServiceParam
   extends SequelizeAdapter<Result, Data, ServiceParams, PatchData>
   implements ServiceMethods<Result | Paginated<Result>, Data, ServiceParams, PatchData>
 {
-  async find (params?: ServiceParams & { paginate?: PaginationOptions }): Promise<Paginated<Result>>
-  async find (params?: ServiceParams & { paginate: false }): Promise<Result[]>
-  async find (params?: ServiceParams): Promise<Paginated<Result> | Result[]>
-  async find (params?: ServiceParams): Promise<Paginated<Result> | Result[]> {
+  async find <P extends ServiceParams & { paginate?: PaginationOptions | false }> (params?: P): Promise<PaginatedOrArray<Result, P>> {
     return this._find(params) as any
   }
 

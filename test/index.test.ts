@@ -4,6 +4,7 @@ import { expect } from 'chai';
 
 import Sequelize, { Op } from 'sequelize';
 import errors from '@feathersjs/errors';
+import type { Paginated } from '@feathersjs/feathers';
 import { feathers } from '@feathersjs/feathers';
 import adaptertests from '@feathersjs/adapter-tests';
 
@@ -278,7 +279,7 @@ describe('Feathers Sequelize Service', () => {
       it('allows querying for null values (#45)', async () => {
         const name = 'Null test';
         const person = await people.create({ name });
-        const { data } = await people.find({ query: { age: null } });
+        const { data } = await people.find({ query: { age: null } }) as Paginated<any>;
 
         assert.strictEqual(data.length, 1);
         assert.strictEqual(data[0].name, name);
@@ -293,7 +294,7 @@ describe('Feathers Sequelize Service', () => {
             name: 'Dave',
             __proto__: []
           }
-        });
+        }) as Paginated<any>;
 
         assert.strictEqual(page.data.length, 0);
       });
@@ -304,7 +305,7 @@ describe('Feathers Sequelize Service', () => {
         const { data } = await people.find({
           query:
           { age: { [Sequelize.Op.eq]: 10 } }
-        });
+        }) as Paginated<any>;
 
         assert.strictEqual(data.length, 1);
         assert.strictEqual(data[0].name, name);
@@ -319,7 +320,7 @@ describe('Feathers Sequelize Service', () => {
         const { data } = await people.find({
           query:
           { name: { $like: '%ike%' } }
-        });
+        }) as Paginated<any>;
 
         assert.strictEqual(data.length, 1);
         assert.strictEqual(data[0].name, name);
@@ -441,7 +442,7 @@ describe('Feathers Sequelize Service', () => {
       it('find() returns correct total when using includes for non-raw requests (#137)', async () => {
         const options = { sequelize: { raw: false, include: Order } };
 
-        const result = await people.find(options);
+        const result = await people.find(options) as Paginated<any>;
 
         assert.strictEqual(result.total, 2);
       });
@@ -449,7 +450,7 @@ describe('Feathers Sequelize Service', () => {
       it('find() returns correct total when using includes for raw requests', async () => {
         const options = { sequelize: { include: Order } };
 
-        const result = await people.find(options);
+        const result = await people.find(options) as Paginated<any>;
 
         assert.strictEqual(result.total, 2);
       });
@@ -624,10 +625,10 @@ describe('Feathers Sequelize Service', () => {
       const SCOPE_TO_PENDING = { sequelize: { scope: 'pending' } };
       const person = await people.create(data);
 
-      const staPeople = await people.find(SCOPE_TO_ACTIVE);
+      const staPeople = await people.find(SCOPE_TO_ACTIVE) as Paginated<any>;
       assert.strictEqual(staPeople.data.length, 1);
 
-      const stpPeople = await people.find(SCOPE_TO_PENDING);
+      const stpPeople = await people.find(SCOPE_TO_PENDING) as Paginated<any>;
       assert.strictEqual(stpPeople.data.length, 0);
 
       await people.remove(person.id);
