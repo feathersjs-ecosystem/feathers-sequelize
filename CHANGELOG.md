@@ -2,15 +2,27 @@
 
 ## [Unreleased](https://github.com/feathersjs-ecosystem/feathers-sequelize/tree/HEAD)
 
-[Full Changelog](https://github.com/feathersjs-ecosystem/feathers-sequelize/compare/v7.0.1...HEAD)
+[Full Changelog](https://github.com/feathersjs-ecosystem/feathers-sequelize/compare/v7.0.2...HEAD)
 
 **Merged pull requests:**
 
-- chore\(dependencies\): Update all dependencies [\#414](https://github.com/feathersjs-ecosystem/feathers-sequelize/pull/414) ([daffl](https://github.com/daffl))
+- Fix/update dependencies infer paginate params [\#418](https://github.com/feathersjs-ecosystem/feathers-sequelize/pull/418) ([fratzinger](https://github.com/fratzinger))
+
+## [v7.0.2](https://github.com/feathersjs-ecosystem/feathers-sequelize/tree/v7.0.2) (2023-06-21)
+
+[Full Changelog](https://github.com/feathersjs-ecosystem/feathers-sequelize/compare/v7.0.1...v7.0.2)
+
+**Closed issues:**
+
+- Bug: patch:multi only patches 10 items with default pagination [\#363](https://github.com/feathersjs-ecosystem/feathers-sequelize/issues/363)
 
 ## [v7.0.1](https://github.com/feathersjs-ecosystem/feathers-sequelize/tree/v7.0.1) (2023-04-03)
 
 [Full Changelog](https://github.com/feathersjs-ecosystem/feathers-sequelize/compare/v7.0.0...v7.0.1)
+
+**Merged pull requests:**
+
+- chore\(dependencies\): Update all dependencies [\#414](https://github.com/feathersjs-ecosystem/feathers-sequelize/pull/414) ([daffl](https://github.com/daffl))
 
 ## [v7.0.0](https://github.com/feathersjs-ecosystem/feathers-sequelize/tree/v7.0.0) (2023-02-24)
 
@@ -569,8 +581,8 @@
 
 **Merged pull requests:**
 
-- Tests and fixes [\#162](https://github.com/feathersjs-ecosystem/feathers-sequelize/pull/162) ([Ryanthegiantlion](https://github.com/Ryanthegiantlion))
-- Extend test coverage [\#160](https://github.com/feathersjs-ecosystem/feathers-sequelize/pull/160) ([Ryanthegiantlion](https://github.com/Ryanthegiantlion))
+- Tests and fixes [\#162](https://github.com/feathersjs-ecosystem/feathers-sequelize/pull/162) ([ryanthegiantlion](https://github.com/ryanthegiantlion))
+- Extend test coverage [\#160](https://github.com/feathersjs-ecosystem/feathers-sequelize/pull/160) ([ryanthegiantlion](https://github.com/ryanthegiantlion))
 
 ## [v2.3.0](https://github.com/feathersjs-ecosystem/feathers-sequelize/tree/v2.3.0) (2017-08-19)
 
@@ -597,7 +609,7 @@
 
 **Merged pull requests:**
 
-- Patch should default to raw queries [\#147](https://github.com/feathersjs-ecosystem/feathers-sequelize/pull/147) ([Ryanthegiantlion](https://github.com/Ryanthegiantlion))
+- Patch should default to raw queries [\#147](https://github.com/feathersjs-ecosystem/feathers-sequelize/pull/147) ([ryanthegiantlion](https://github.com/ryanthegiantlion))
 - Fixing broken docs links [\#144](https://github.com/feathersjs-ecosystem/feathers-sequelize/pull/144) ([corymsmith](https://github.com/corymsmith))
 
 ## [v2.2.0](https://github.com/feathersjs-ecosystem/feathers-sequelize/tree/v2.2.0) (2017-07-24)
@@ -728,7 +740,7 @@
 **Merged pull requests:**
 
 - Enable eager-loading for GET endpoint [\#91](https://github.com/feathersjs-ecosystem/feathers-sequelize/pull/91) ([eikaramba](https://github.com/eikaramba))
-- Update index.js [\#83](https://github.com/feathersjs-ecosystem/feathers-sequelize/pull/83) ([Ryanthegiantlion](https://github.com/Ryanthegiantlion))
+- Update index.js [\#83](https://github.com/feathersjs-ecosystem/feathers-sequelize/pull/83) ([ryanthegiantlion](https://github.com/ryanthegiantlion))
 - doc: fix README.md comment. [\#82](https://github.com/feathersjs-ecosystem/feathers-sequelize/pull/82) ([omeid](https://github.com/omeid))
 
 ## [v1.4.0](https://github.com/feathersjs-ecosystem/feathers-sequelize/tree/v1.4.0) (2016-11-11)
