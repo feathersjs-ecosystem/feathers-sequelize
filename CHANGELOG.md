@@ -2,11 +2,15 @@
 
 ## [Unreleased](https://github.com/feathersjs-ecosystem/feathers-sequelize/tree/HEAD)
 
-[Full Changelog](https://github.com/feathersjs-ecosystem/feathers-sequelize/compare/v7.0.2...HEAD)
+[Full Changelog](https://github.com/feathersjs-ecosystem/feathers-sequelize/compare/v7.0.3...HEAD)
 
 **Merged pull requests:**
 
-- Fix/update dependencies infer paginate params [\#418](https://github.com/feathersjs-ecosystem/feathers-sequelize/pull/418) ([fratzinger](https://github.com/fratzinger))
+- chore\(dependencies\): Update all dependencies [\#423](https://github.com/feathersjs-ecosystem/feathers-sequelize/pull/423) ([daffl](https://github.com/daffl))
+
+## [v7.0.3](https://github.com/feathersjs-ecosystem/feathers-sequelize/tree/v7.0.3) (2023-11-01)
+
+[Full Changelog](https://github.com/feathersjs-ecosystem/feathers-sequelize/compare/v7.0.2...v7.0.3)
 
 ## [v7.0.2](https://github.com/feathersjs-ecosystem/feathers-sequelize/tree/v7.0.2) (2023-06-21)
 
@@ -15,6 +19,10 @@
 **Closed issues:**
 
 - Bug: patch:multi only patches 10 items with default pagination [\#363](https://github.com/feathersjs-ecosystem/feathers-sequelize/issues/363)
+
+**Merged pull requests:**
+
+- Fix/update dependencies infer paginate params [\#418](https://github.com/feathersjs-ecosystem/feathers-sequelize/pull/418) ([fratzinger](https://github.com/fratzinger))
 
 ## [v7.0.1](https://github.com/feathersjs-ecosystem/feathers-sequelize/tree/v7.0.1) (2023-04-03)
 
@@ -130,7 +138,7 @@
 - Be able to sort nulls before or after not-nulls values [\#370](https://github.com/feathersjs-ecosystem/feathers-sequelize/pull/370) ([MariaCamilaCubides](https://github.com/MariaCamilaCubides))
 - typing: add 'operators' to SequelizeServiceOptions [\#367](https://github.com/feathersjs-ecosystem/feathers-sequelize/pull/367) ([fratzinger](https://github.com/fratzinger))
 - Upgrade dependencies [\#359](https://github.com/feathersjs-ecosystem/feathers-sequelize/pull/359) ([silvestreh](https://github.com/silvestreh))
-- Update README.md [\#353](https://github.com/feathersjs-ecosystem/feathers-sequelize/pull/353) ([max-bertinetti](https://github.com/max-bertinetti))
+- Update README.md [\#353](https://github.com/feathersjs-ecosystem/feathers-sequelize/pull/353) ([max-b-old](https://github.com/max-b-old))
 
 ## [v6.2.0](https://github.com/feathersjs-ecosystem/feathers-sequelize/tree/v6.2.0) (2020-04-29)
 
