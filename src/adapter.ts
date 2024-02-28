@@ -204,6 +204,7 @@ export class SequelizeAdapter<
 
     const q: FindOptions = {
       where,
+      limit: 1,
       raw: this.raw,
       ...params.sequelize
     };
