@@ -25,17 +25,15 @@ const defaultOperatorMap = {
   $and: Op.and
 };
 
-const defaultFilters = () => {
-  return {
-    $returning: (value: any) => {
-      if (value === true || value === false || value === undefined) {
-        return value;
-      }
+const defaultFilters = {
+  $returning: (value: any) => {
+    if (value === true || value === false || value === undefined) {
+      return value;
+    }
 
-      throw new BadRequest('Invalid $returning filter value');
-    },
-    $and: true as const
-  }
+    throw new BadRequest('Invalid $returning filter value');
+  },
+  $and: true as const
 }
 
 export class SequelizeAdapter<
@@ -72,7 +70,7 @@ export class SequelizeAdapter<
       : 'id';
 
     const filters = {
-      ...defaultFilters(),
+      ...defaultFilters,
       ...options.filters
     };
 
