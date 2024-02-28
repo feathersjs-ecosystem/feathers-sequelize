@@ -8,23 +8,21 @@ import { errorHandler, getOrder, isPlainObject } from './utils';
 import { Op } from 'sequelize';
 import type { CreateOptions, FindOptions, Model } from 'sequelize';
 
-const defaultOpMap = () => {
-  return {
-    $eq: Op.eq,
-    $ne: Op.ne,
-    $gte: Op.gte,
-    $gt: Op.gt,
-    $lte: Op.lte,
-    $lt: Op.lt,
-    $in: Op.in,
-    $nin: Op.notIn,
-    $like: Op.like,
-    $notLike: Op.notLike,
-    $iLike: Op.iLike,
-    $notILike: Op.notILike,
-    $or: Op.or,
-    $and: Op.and
-  };
+const defaultOperatorMap = {
+  $eq: Op.eq,
+  $ne: Op.ne,
+  $gte: Op.gte,
+  $gt: Op.gt,
+  $lte: Op.lte,
+  $lt: Op.lt,
+  $in: Op.in,
+  $nin: Op.notIn,
+  $like: Op.like,
+  $notLike: Op.notLike,
+  $iLike: Op.iLike,
+  $notILike: Op.notILike,
+  $or: Op.or,
+  $and: Op.and
 };
 
 const defaultFilters = () => {
@@ -56,7 +54,7 @@ export class SequelizeAdapter<
     }
 
     const operatorMap = {
-      ...defaultOpMap(),
+      ...defaultOperatorMap,
       ...options.operatorMap
     };
     const operators = Object.keys(operatorMap);
