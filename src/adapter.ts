@@ -173,7 +173,7 @@ export class SequelizeAdapter<
 
   paramsToAdapter (id: NullableId, _params?: ServiceParams): FindOptions {
     const params = _params || {} as ServiceParams;
-    if (id) {
+    if (id !== null) {
       let { query: where } = this.filterQuery(params);
 
       // explicitly set id
