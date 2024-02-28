@@ -36,7 +36,7 @@ const defaultFilters = () => {
 
       throw new BadRequest('Invalid $returning filter value');
     },
-    $and: true
+    $and: true as const
   }
 }
 
@@ -55,7 +55,10 @@ export class SequelizeAdapter<
       throw new Error('The \'operators\' option must be an array. For migration from feathers.js v4 see: https://github.com/feathersjs-ecosystem/feathers-sequelize/tree/dove#migrate-to-feathers-v5-dove');
     }
 
-    const operatorMap = Object.assign(defaultOpMap(), options.operatorMap);
+    const operatorMap = {
+      ...defaultOpMap(),
+      ...options.operatorMap
+    };
     const operators = Object.keys(operatorMap);
     if (options.operators) {
       options.operators.forEach(op => {
@@ -70,9 +73,18 @@ export class SequelizeAdapter<
       ? primaryKeyAttributes[0]
       : 'id';
 
-    const filters = Object.assign(defaultFilters(), options.filters);
+    const filters = {
+      ...defaultFilters(),
+      ...options.filters
+    };
 
-    super(Object.assign({ id }, options, { operatorMap, filters, operators }));
+    super({
+      id,
+      ...options,
+      operatorMap,
+      filters,
+      operators
+    });
   }
 
   get raw () {
@@ -162,30 +174,45 @@ export class SequelizeAdapter<
   paramsToAdapter (id: NullableId, _params?: ServiceParams): FindOptions {
     const params = _params || {} as ServiceParams;
     if (id) {
-      const { query: where } = this.filterQuery(params);
+      let { query: where } = this.filterQuery(params);
 
-      const { and } = this.Op;
+      // explicitly set id
+      if (where[this.id] !== id) {
+        // If the id is already in the query, we need to add it to the $and array
+        // to prevent it from being overwritten.
+        if (this.id in where) {
+          const { and } = this.Op;
+          where = {
+            ...where,
+            [and]: where[and] ? [...where[and], { [this.id]: id }] : { [this.id]: id }
+          };
+        } else {
+          // We can safely set the id in the where query
+          where[this.id] = id;
+        }
+      }
+
       // Attach 'where' constraints, if any were used.
-      const q: FindOptions = Object.assign({
+      const q: FindOptions = {
         raw: this.raw,
-        where: Object.assign(where, {
-          [and]: where[and] ? [...where[and], { [this.id]: id }] : { [this.id]: id }
-        })
-      }, params.sequelize);
+        where,
+        ...params.sequelize
+      };
 
       return q;
     } else {
       const { filters, query: where } = this.filterQuery(params);
       const order = getOrder(filters.$sort);
 
-      const q: FindOptions = Object.assign({
+      const q: FindOptions = {
         where,
         order,
         limit: filters.$limit,
         offset: filters.$skip,
         raw: this.raw,
-        distinct: true
-      }, params.sequelize);
+        distinct: true,
+        ...params.sequelize
+      };
 
       if (filters.$select) {
         // Add the id to the select if it is not already there
@@ -281,15 +308,19 @@ export class SequelizeAdapter<
       throw new MethodNotAllowed('Can not create multiple entries')
     }
 
-    const options = Object.assign({ raw: this.raw }, params.sequelize);
+    const options = {
+      raw: this.raw,
+      ...params.sequelize
+    };
     // Model.create's `raw` option is different from other methods.
     // In order to use `raw` consistently to serialize the result,
     // we need to shadow the Model.create use of raw, which we provide
     // access to by specifying `ignoreSetters`.
-    const ignoreSetters = !!options.ignoreSetters;
-    const createOptions = Object.assign({
-      returning: true
-    }, options, { raw: ignoreSetters });
+    const createOptions = {
+      returning: true,
+      ...options,
+      raw: !!options.ignoreSetters
+    };
     const isArray = Array.isArray(data);
     const Model = this.ModelWithScope(params);
 
@@ -330,33 +361,37 @@ export class SequelizeAdapter<
       }
     })
 
+    // '_get' throws a NotFound if no items are found, so 'itemOrItems' is not undefined
     const items = Array.isArray(itemOrItems) ? itemOrItems : [itemOrItems];
     const ids: Id[] = items.map(item => item[this.id]);
 
+    // this is only possible if the id is null
+    if (!ids.length) {
+      return [];
+    }
+
     try {
-      const seqOptions = Object.assign(
-        { raw: this.raw },
-        params.sequelize,
-        { where: { [this.id]: { [this.Op.in]: ids } } }
-      );
+      const seqOptions = {
+        raw: this.raw,
+        ...params.sequelize,
+        where: { [this.id]: ids.length === 1 ? ids[0] : { [this.Op.in]: ids } }
+      };
 
       await Model.update(_.omit(data, this.id), seqOptions);
 
       if (params.$returning === false) {
-        return Promise.resolve([]);
+        return [];
       }
 
       // Create a new query that re-queries all ids that
       // were originally changed
-      const findParams = {
+      const result = await this._getOrFind(id, {
         ...params,
         query: {
-          [this.id]: { $in: ids },
+          [this.id]: ids.length === 1 ? ids[0] : { $in: ids },
           ...(params?.query?.$select ? { $select: params?.query?.$select } : {})
         }
-      }
-
-      const result = await this._getOrFind(id, findParams);
+      });
 
       return select(params, this.id)(result);
 
@@ -366,10 +401,13 @@ export class SequelizeAdapter<
   }
 
   async _update (id: Id, data: Data, params: ServiceParams = {} as ServiceParams): Promise<Result> {
-    const query = Object.assign({}, this.filterQuery(params).query);
+    const query = this.filterQuery(params).query;
 
     // Force the {raw: false} option as the instance is needed to properly update
-    const seqOptions = Object.assign({}, params.sequelize, { raw: false });
+    const seqOptions = {
+      ...params.sequelize,
+      raw: false
+    };
 
     const instance = await this._get(id, { sequelize: seqOptions, query } as ServiceParams) as Model
 
@@ -384,11 +422,12 @@ export class SequelizeAdapter<
       await instance.update(itemToUpdate, seqOptions);
 
       const item = await this._get(id, {
-        sequelize: Object.assign({}, seqOptions, {
-          raw: typeof params?.sequelize?.raw === 'boolean'
+        sequelize: {
+          ...seqOptions,
+          raw: typeof params.sequelize?.raw === 'boolean'
             ? params.sequelize.raw
             : this.raw
-        })
+        }
       } as ServiceParams);
 
       return select(params, this.id)(item);
@@ -406,30 +445,32 @@ export class SequelizeAdapter<
 
     const Model = this.ModelWithScope(params);
 
-    const findParams = { ...params };
-    if (params.$returning === false) {
-      findParams.query = {
-        ...findParams.query,
-        $select: [this.id]
+    const itemOrItems = await this._getOrFind(id, {
+      ...params,
+      query: {
+        ...params.query,
+        ...(params.query?.$select || params.$returning === false
+          ? { $select: params.$returning === false
+            ? [this.id]
+            : params.query?.$select }
+          : {})
       }
-    } else if (params.query?.$select) {
-      findParams.query = {
-        ...findParams.query,
-        $select: [...params.query.$select, this.id]
-      }
-    }
+    } as any);
 
-    const itemOrItems = await this._getOrFind(id, findParams);
     const items = Array.isArray(itemOrItems) ? itemOrItems : [itemOrItems];
     const ids: Id[] = items.map(item => item[this.id]);
-    const seqOptions = Object.assign(
-      { raw: this.raw },
-      params.sequelize,
-      { where: { [this.id]: { [this.Op.in]: ids } } }
-    );
+
+    // this is only possible if the id is null
+    if (!ids.length) {
+      return [];
+    }
 
     try {
-      await Model.destroy(seqOptions);
+      await Model.destroy({
+        raw: this.raw,
+        ...params.sequelize,
+        where: { [this.id]: ids.length === 1 ? ids[0] : { [this.Op.in]: ids } }
+      });
       if (params.$returning === false) {
         return []
       }
