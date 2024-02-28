@@ -169,35 +169,9 @@ export class SequelizeAdapter<
 
   paramsToAdapter (id: NullableId, _params?: ServiceParams): FindOptions {
     const params = _params || {} as ServiceParams;
-    if (id !== null) {
-      let { query: where } = this.filterQuery(params);
+    const { filters, query: where } = this.filterQuery(params);
 
-      // explicitly set id
-      if (where[this.id] !== id) {
-        // If the id is already in the query, we need to add it to the $and array
-        // to prevent it from being overwritten.
-        if (this.id in where) {
-          const { and } = this.Op;
-          where = {
-            ...where,
-            [and]: where[and] ? [...where[and], { [this.id]: id }] : { [this.id]: id }
-          };
-        } else {
-          // We can safely set the id in the where query
-          where[this.id] = id;
-        }
-      }
-
-      // Attach 'where' constraints, if any were used.
-      const q: FindOptions = {
-        raw: this.raw,
-        where,
-        ...params.sequelize
-      };
-
-      return q;
-    } else {
-      const { filters, query: where } = this.filterQuery(params);
+    if (id === null) {
       const order = getOrder(filters.$sort);
 
       const q: FindOptions = {
@@ -227,6 +201,27 @@ export class SequelizeAdapter<
 
       return q;
     }
+
+    const q: FindOptions = {
+      where,
+      raw: this.raw,
+      ...params.sequelize
+    };
+
+    if (where[this.id] === id) {
+      return q;
+    }
+
+    if (this.id in where) {
+      const { and } = this.Op;
+      where[and] = where[and]
+        ? [...where[and], { [this.id]: id }]
+        : { [this.id]: id };
+    } else {
+      where[this.id] = id;
+    }
+
+    return q;
   }
 
   /**
