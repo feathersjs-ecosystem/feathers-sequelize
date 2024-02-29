@@ -160,6 +160,13 @@ export class SequelizeAdapter<
       ..._.omit(filters, '$select', '$skip', '$limit', '$sort')
     });
 
+    if (filters.$select) {
+      if (!filters.$select.includes(this.id)) {
+        filters.$select.push(this.id);
+      }
+      filters.$select = filters.$select.map((select: any) => `${select}`);
+    }
+
     return {
       filters,
       query,
@@ -179,19 +186,12 @@ export class SequelizeAdapter<
         order,
         limit: filters.$limit,
         offset: filters.$skip,
+        attributes: filters.$select,
         raw: this.raw,
         distinct: true,
         ...params.sequelize
       };
 
-      if (filters.$select) {
-        // Add the id to the select if it is not already there
-        if (!filters.$select.includes(this.id)) {
-          filters.$select.push(this.id);
-        }
-
-        q.attributes = filters.$select.map((select: any) => `${select}`);
-      }
 
       // Until Sequelize fix all the findAndCount issues, a few 'hacks' are needed to get the total count correct
 
@@ -205,6 +205,7 @@ export class SequelizeAdapter<
     const q: FindOptions = {
       where,
       limit: 1,
+      attributes: filters.$select,
       raw: this.raw,
       ...params.sequelize
     };
@@ -284,19 +285,12 @@ export class SequelizeAdapter<
   async _get (id: Id, params: ServiceParams = {} as ServiceParams): Promise<Result> {
     const Model = this.ModelWithScope(params);
     const q = this.paramsToAdapter(id, params);
-
-    // findById calls findAll under the hood. We use findAll so that
-    // eager loading can be used without a separate code path.
     try {
       const result = await Model.findAll(q);
-
       if (result.length === 0) {
         throw new NotFound(`No record found for id '${id}'`);
       }
-
-      const item = result[0];
-
-      return select(params, this.id)(item);
+      return result[0];
     } catch (err: any) {
       return errorHandler(err);
     }
@@ -353,59 +347,87 @@ export class SequelizeAdapter<
 
     const Model = this.ModelWithScope(params);
 
-    // Get a list of ids that match the id/query. Overwrite the
-    // $select because only the id is needed for this idList
-    const itemOrItems = await this._getOrFind(id, {
-      ...params,
-      query: {
-        ...params?.query,
-        $select: [this.id]
+    if (id === null) {
+      const items = await this._find({
+        ...params,
+        paginate: false,
+        query: {
+          ...params?.query,
+          $select: [this.id]
+        }
+      })
+
+      if (!items.length) {
+        return []
       }
-    })
 
-    // '_get' throws a NotFound if no items are found, so 'itemOrItems' is not undefined
-    const items = Array.isArray(itemOrItems) ? itemOrItems : [itemOrItems];
-    const ids: Id[] = items.map(item => item[this.id]);
+      const ids: Id[] = items.map((item: any) => item[this.id]);
 
-    // this is only possible if the id is null
-    if (!ids.length) {
-      return [];
-    }
-
-    try {
-      const seqOptions = {
-        raw: this.raw,
-        ...params.sequelize,
-        where: { [this.id]: ids.length === 1 ? ids[0] : { [this.Op.in]: ids } }
-      };
-
-      await Model.update(_.omit(data, this.id), seqOptions);
+      try {
+        await Model.update(_.omit(data, this.id), {
+          raw: this.raw,
+          ...params.sequelize,
+          where: { [this.id]: ids.length === 1 ? ids[0] : { [this.Op.in]: ids } }
+        });
+      } catch (error) {
+        errorHandler(error);
+      }
 
       if (params.$returning === false) {
         return [];
       }
 
-      // Create a new query that re-queries all ids that
-      // were originally changed
-      const result = await this._getOrFind(id, {
+      const result = await this._find({
         ...params,
+        paginate: false,
         query: {
           [this.id]: ids.length === 1 ? ids[0] : { $in: ids },
-          ...(params?.query?.$select ? { $select: params?.query?.$select } : {})
+          $limit: ids.length,
+          $select: params?.query?.$select
         }
       });
 
-      return select(params, this.id)(result);
-
-    } catch (err: any) {
-      return errorHandler(err);
+      return result;
     }
+
+    await this._get(id, {
+      ...params,
+      query: {
+        ...params?.query,
+        $select: [this.id]
+      }
+    });
+
+    try {
+      await Model.update(_.omit(data, this.id), {
+        raw: this.raw,
+        ...params.sequelize,
+        where: { [this.id]: id }
+      });
+    } catch (error){
+      errorHandler(error);
+    }
+
+    if (params.$returning === false) {
+      return [];
+    }
+
+    const result = await this._get(id, {
+      ...params,
+      query: {
+        [this.id]: id,
+        $select: params?.query?.$select
+      }
+    });
+
+    return result
   }
 
   async _update (id: Id, data: Data, params: ServiceParams = {} as ServiceParams): Promise<Result> {
-    const query = this.filterQuery(params).query;
+    const { query, filters } = this.filterQuery(params);
 
-    // Force the {raw: false} option as the instance is needed to properly update
+    // Force the {raw: false} option as the instance
+    // is needed to properly update
     const seqOptions = {
       ...params.sequelize,
       raw: false
@@ -424,15 +446,16 @@ export class SequelizeAdapter<
       await instance.update(itemToUpdate, seqOptions);
 
       const item = await this._get(id, {
+        query: { $select: filters.$select },
         sequelize: {
-          ...seqOptions,
+          ...params.sequelize,
           raw: typeof params.sequelize?.raw === 'boolean'
             ? params.sequelize.raw
             : this.raw
         }
       } as ServiceParams);
 
-      return select(params, this.id)(item);
+      return item;
     } catch (err: any) {
       return errorHandler(err);
     }
@@ -447,38 +470,59 @@ export class SequelizeAdapter<
 
     const Model = this.ModelWithScope(params);
 
-    const itemOrItems = await this._getOrFind(id, {
-      ...params,
-      query: {
-        ...params.query,
-        ...(params.query?.$select || params.$returning === false
-          ? { $select: params.$returning === false
-            ? [this.id]
-            : params.query?.$select }
-          : {})
+    const $select = params.$returning === false
+      ? [this.id]
+      : params?.query?.$select
+
+    if (id === null) {
+      const items = await this._find({
+        ...params,
+        paginate: false,
+        query: { ...params.query, $select }
+      });
+
+      if (!items.length) {
+        return []
       }
-    } as any);
 
-    const items = Array.isArray(itemOrItems) ? itemOrItems : [itemOrItems];
-    const ids: Id[] = items.map(item => item[this.id]);
+      const ids: Id[] = items.map((item: any) => item[this.id]);
 
-    // this is only possible if the id is null
-    if (!ids.length) {
-      return [];
+      try {
+        await Model.destroy({
+          raw: this.raw,
+          ...params.sequelize,
+          where: { [this.id]: ids.length === 1 ? ids[0] : { [this.Op.in]: ids } }
+        });
+      } catch (error) {
+        errorHandler(error);
+      }
+
+      if (params.$returning === false) {
+        return [];
+      }
+
+      return items;
     }
+
+    const item = await this._get(id, {
+      ...params,
+      query: { ...params.query, $select }
+    });
 
     try {
       await Model.destroy({
         raw: this.raw,
         ...params.sequelize,
-        where: { [this.id]: ids.length === 1 ? ids[0] : { [this.Op.in]: ids } }
+        where: { [this.id]: id }
       });
-      if (params.$returning === false) {
-        return []
-      }
-      return select(params, this.id)(itemOrItems);
-    } catch (err: any) {
-      return errorHandler(err);
+    } catch (error) {
+      errorHandler(error);
     }
+
+    if (params.$returning === false) {
+      return [];
+    }
+
+    return item
   }
 }
