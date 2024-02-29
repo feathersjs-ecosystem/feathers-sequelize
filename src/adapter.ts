@@ -179,11 +179,9 @@ export class SequelizeAdapter<
     const { filters, query: where } = this.filterQuery(params);
 
     if (id === null) {
-      const order = getOrder(filters.$sort);
-
       const q: FindOptions = {
         where,
-        order,
+        order: getOrder(filters.$sort),
         limit: filters.$limit,
         offset: filters.$skip,
         attributes: filters.$select,
@@ -204,6 +202,7 @@ export class SequelizeAdapter<
 
     const q: FindOptions = {
       where,
+      order: getOrder(filters.$sort),
       limit: 1,
       attributes: filters.$select,
       raw: this.raw,
@@ -229,6 +228,8 @@ export class SequelizeAdapter<
   /**
    * returns either the model instance / jsonified object for an id or all unpaginated
    * items for `params` if id is null
+   *
+   * @deprecated Use `_get` or `_find` instead. `_getOrFind` will be removed in a future release.
    */
   async _getOrFind (id: Id, _params?: ServiceParams): Promise<Result>
   async _getOrFind (id: null, _params?: ServiceParams): Promise<Result[]>
@@ -385,7 +386,6 @@ export class SequelizeAdapter<
         paginate: false,
         query: {
           [this.id]: ids.length === 1 ? ids[0] : { $in: ids },
-          $limit: ids.length,
           $select: params?.query?.$select
         }
       });
@@ -407,12 +407,8 @@ export class SequelizeAdapter<
         ...params.sequelize,
         where: { [this.id]: id }
       });
-    } catch (error){
+    } catch (error) {
       errorHandler(error);
-    }
-
-    if (params.$returning === false) {
-      return [];
     }
 
     const result = await this._get(id, {
@@ -424,8 +420,6 @@ export class SequelizeAdapter<
   }
 
   async _update (id: Id, data: Data, params: ServiceParams = {} as ServiceParams): Promise<Result> {
-    const { query, filters } = this.filterQuery(params);
-
     // Force the {raw: false} option as the instance
     // is needed to properly update
     const seqOptions = {
@@ -433,7 +427,15 @@ export class SequelizeAdapter<
       raw: false
     };
 
-    const instance = await this._get(id, { sequelize: seqOptions, query } as ServiceParams) as Model
+    const instance = await this._get(id, {
+      ...params,
+      query: {
+        ...params.query,
+        // we need all fields to properly update the instance
+        $select: undefined
+      },
+      sequelize: seqOptions
+    } as ServiceParams) as Model
 
     const itemToUpdate = Object.keys(instance.toJSON()).reduce((result: Record<string, any>, key) => {
       // @ts-ignore
@@ -444,21 +446,16 @@ export class SequelizeAdapter<
 
     try {
       await instance.update(itemToUpdate, seqOptions);
-
-      const item = await this._get(id, {
-        query: { $select: filters.$select },
-        sequelize: {
-          ...params.sequelize,
-          raw: typeof params.sequelize?.raw === 'boolean'
-            ? params.sequelize.raw
-            : this.raw
-        }
-      } as ServiceParams);
-
-      return item;
-    } catch (err: any) {
-      return errorHandler(err);
+    } catch (error) {
+      return errorHandler(error);
     }
+
+    const result = await this._get(id, {
+      ...params,
+      query: { $select: params.query?.$select }
+    });
+
+    return result;
   }
 
   async _remove (id: null, params?: ServiceParams): Promise<Result[]>
@@ -470,11 +467,11 @@ export class SequelizeAdapter<
 
     const Model = this.ModelWithScope(params);
 
-    const $select = params.$returning === false
-      ? [this.id]
-      : params?.query?.$select
-
     if (id === null) {
+      const $select = params.$returning === false
+        ? [this.id]
+        : params?.query?.$select
+
       const items = await this._find({
         ...params,
         paginate: false,
@@ -504,10 +501,7 @@ export class SequelizeAdapter<
       return items;
     }
 
-    const item = await this._get(id, {
-      ...params,
-      query: { ...params.query, $select }
-    });
+    const item = await this._get(id, params);
 
     try {
       await Model.destroy({
@@ -517,10 +511,6 @@ export class SequelizeAdapter<
       });
     } catch (error) {
       errorHandler(error);
-    }
-
-    if (params.$returning === false) {
-      return [];
     }
 
     return item
