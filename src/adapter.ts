@@ -257,7 +257,10 @@ export class SequelizeAdapter<
     try {
       if (paginate && paginate.default) {
         if (q.limit === 0) {
-          const total = await Model.count(q);
+          const total = await Model.count({
+            ...q,
+            attributes: undefined
+          });
           return {
             total,
             limit: q.limit,
