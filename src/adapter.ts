@@ -417,10 +417,7 @@ export class SequelizeAdapter<
 
     const result = await this._get(id, {
       ...params,
-      query: {
-        [this.id]: id,
-        $select: params?.query?.$select
-      }
+      query: { $select: params?.query?.$select  }
     });
 
     return result
