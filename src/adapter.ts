@@ -1,4 +1,4 @@
-import { BadRequest, MethodNotAllowed, NotFound } from '@feathersjs/errors';
+import { MethodNotAllowed, NotFound } from '@feathersjs/errors';
 import { _ } from '@feathersjs/commons';
 import { select, AdapterBase, filterQuery } from '@feathersjs/adapter-commons';
 import type { PaginationOptions } from '@feathersjs/adapter-commons';
@@ -26,13 +26,6 @@ const defaultOperatorMap = {
 };
 
 const defaultFilters = {
-  $returning: (value: any) => {
-    if (value === true || value === false || value === undefined) {
-      return value;
-    }
-
-    throw new BadRequest('Invalid $returning filter value');
-  },
   $and: true as const
 }
 
@@ -178,37 +171,29 @@ export class SequelizeAdapter<
     const params = _params || {} as ServiceParams;
     const { filters, query: where } = this.filterQuery(params);
 
-    if (id === null) {
-      const sequelize: FindOptions = {
-        where,
-        order: getOrder(filters.$sort),
-        limit: filters.$limit,
-        offset: filters.$skip,
-        attributes: filters.$select,
-        raw: this.raw,
-        distinct: true,
-        ...params.sequelize
-      };
-
-      // Until Sequelize fix all the findAndCount issues, a few 'hacks' are needed to get the total count correct
-
-      // Adding an empty include changes the way the count is done
-      // See: https://github.com/sequelize/sequelize/blob/7e441a6a5ca44749acd3567b59b1d6ceb06ae64b/lib/model.js#L1780-L1782
-      sequelize.include = sequelize.include || [];
-
-      return sequelize;
-    }
-
     const sequelize: FindOptions = {
       where,
       order: getOrder(filters.$sort),
-      limit: 1,
+      limit: filters.$limit,
+      offset: filters.$skip,
       attributes: filters.$select,
-      raw: this.raw,
+      distinct: true,
+      returning:  typeof params.sequelize?.returning === 'boolean'
+        ? params.sequelize.returning
+        : true,
+      raw: typeof params.sequelize?.raw === 'boolean'
+        ? params.sequelize.raw
+        : this.raw,
       ...params.sequelize
     };
 
-    if (where[this.id] === id) {
+    // Until Sequelize fix all the findAndCount issues, a few 'hacks' are needed to get the total count correct
+
+    // Adding an empty include changes the way the count is done
+    // See: https://github.com/sequelize/sequelize/blob/7e441a6a5ca44749acd3567b59b1d6ceb06ae64b/lib/model.js#L1780-L1782
+    // sequelize.include = sequelize.include || [];
+
+    if (id === null || where[this.id] === id) {
       return sequelize;
     }
 
@@ -359,6 +344,12 @@ export class SequelizeAdapter<
     }
 
     const Model = this.ModelWithScope(params);
+    const sequelize = this.paramsToAdapter(id, params);
+
+    const values = {
+      ...data,
+      [this.id]: id
+    };
 
     if (id === null) {
       const items = await this._find({
@@ -376,13 +367,14 @@ export class SequelizeAdapter<
 
       const ids: Id[] = items.map((item: any) => item[this.id]);
 
-      await Model.update(_.omit(data, this.id), {
+      await Model.update(_.omit(values, this.id), {
         raw: this.raw,
         ...params.sequelize,
         where: { [this.id]: ids.length === 1 ? ids[0] : { [this.Op.in]: ids } }
       }).catch(errorHandler);
 
-      if (params.$returning === false) {
+      // @ts-ignore
+      if (sequelize.returning === false) {
         return [];
       }
 
@@ -398,26 +390,36 @@ export class SequelizeAdapter<
       return result;
     }
 
-    await this._get(id, {
+    const instance = await this._get(id, {
       ...params,
-      query: {
-        ...params?.query,
-        $select: [this.id]
+      sequelize: { ...params.sequelize, raw: false }
+    }) as Model;
+
+    await instance
+      .update(_.omit(values, this.id), sequelize)
+      .catch(errorHandler);
+
+    if (!isEmpty(sequelize.include)) {
+      return this._get(id, {
+        ...params,
+        query: { $select: params.query?.$select }
+      });
+    }
+
+    if (sequelize.raw) {
+      const result = instance.toJSON();
+      if (isEmpty(sequelize.attributes)) {
+        return result as Result;
       }
-    });
+      return select(params, this.id)(result) as Result;
+    }
 
-    await Model.update(_.omit(data, this.id), {
-      raw: this.raw,
-      ...params.sequelize,
-      where: { [this.id]: id }
-    }).catch(errorHandler);
+    if (isEmpty(sequelize.attributes)) {
+      return instance as Result;
+    }
 
-    const result = await this._get(id, {
-      ...params,
-      query: { $select: params?.query?.$select  }
-    });
-
-    return result
+    const result = select(params, this.id)(instance.toJSON())
+    return Model.build(result, { isNewRecord: false }) as Result;
   }
 
   async _update (id: Id, data: Data, params: ServiceParams = {} as ServiceParams): Promise<Result> {
@@ -425,21 +427,17 @@ export class SequelizeAdapter<
     const sequelize = this.paramsToAdapter(id, params);
 
     const values = Object.values(Model.getAttributes())
-      .reduce((item, attribute: any) => {
+      .reduce((values, attribute: any) => {
         const key = attribute.fieldName as string;
         if (key === this.id) {
           // @ts-ignore
-          item[key] = id;
-          return item
+          values[key] = id;
+          return values
         }
         // @ts-ignore
-        item[key] = key in data ? data[key] : null;
-        return item;
+        values[key] = key in data ? data[key] : null;
+        return values;
       }, {});
-
-    const raw = typeof params.sequelize?.raw === 'boolean'
-      ? params.sequelize.raw
-      : this.raw;
 
     const total = await Model
       .count({ ...sequelize, attributes: undefined })
@@ -451,7 +449,7 @@ export class SequelizeAdapter<
 
     const instance = await Model
       .build(values, { isNewRecord: false })
-      .update(values, sequelize)
+      .update(_.omit(values, this.id), sequelize)
       .catch(errorHandler);
 
     if (!isEmpty(sequelize.include)) {
@@ -463,13 +461,13 @@ export class SequelizeAdapter<
 
     if (!isEmpty(sequelize.attributes)) {
       const values = select(params, this.id)(instance.toJSON())
-      if (raw) {
+      if (sequelize.raw) {
         return values as Result;
       }
       return Model.build(values, { isNewRecord: false }) as Result;
     }
 
-    if (raw) {
+    if (sequelize.raw) {
       return instance.toJSON() as Result;
     }
 
@@ -484,6 +482,7 @@ export class SequelizeAdapter<
     }
 
     const Model = this.ModelWithScope(params);
+    const sequelize = this.paramsToAdapter(id, params);
 
     if (id === null) {
       const $select = params.$returning === false
@@ -497,7 +496,7 @@ export class SequelizeAdapter<
       });
 
       if (!items.length) {
-        return []
+        return [];
       }
 
       const ids: Id[] = items.map((item: any) => item[this.id]);
@@ -515,14 +514,16 @@ export class SequelizeAdapter<
       return items;
     }
 
-    const item = await this._get(id, params);
+    const result = await this._get(id, params);
 
-    await Model.destroy({
-      raw: this.raw,
-      ...params.sequelize,
-      where: { [this.id]: id }
-    }).catch(errorHandler);
+    const values = (result as Model).toJSON
+      ? (result as Model).toJSON()
+      : result;
 
-    return item
+    await Model
+      .build(values as any, { isNewRecord: false })
+      .destroy(sequelize)
+
+    return result as Result;
   }
 }
