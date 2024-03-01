@@ -484,6 +484,14 @@ export class SequelizeAdapter<
     const sequelize = this.paramsToAdapter(id, params);
     const select = selector(params, this.id);
 
+    const total = await Model
+      .count({ ...sequelize, attributes: undefined })
+      .catch(errorHandler);
+
+    if (!total) {
+      throw new NotFound(`No record found for id '${id}'`);
+    }
+
     const values = Object.values(Model.getAttributes())
       .reduce((values, attribute: any) => {
         const key = attribute.fieldName as string;
@@ -496,14 +504,6 @@ export class SequelizeAdapter<
         values[key] = key in data ? data[key] : null;
         return values;
       }, {});
-
-    const total = await Model
-      .count({ ...sequelize, attributes: undefined })
-      .catch(errorHandler);
-
-    if (!total) {
-      throw new NotFound(`No record found for id '${id}'`);
-    }
 
     const instance = await Model
       .build(values, { isNewRecord: false })
@@ -560,7 +560,6 @@ export class SequelizeAdapter<
       const ids: Id[] = current.map((item: any) => item[this.id]);
 
       await Model.destroy({
-        raw: this.raw,
         ...params.sequelize,
         where: { [this.id]: ids.length === 1 ? ids[0] : { [this.Op.in]: ids } }
       }).catch(errorHandler);
