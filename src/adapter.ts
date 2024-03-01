@@ -188,12 +188,8 @@ export class SequelizeAdapter<
       offset: filters.$skip,
       attributes: filters.$select,
       distinct: true,
-      returning:  typeof params.sequelize?.returning === 'boolean'
-        ? params.sequelize.returning
-        : true,
-      raw: typeof params.sequelize?.raw === 'boolean'
-        ? params.sequelize.raw
-        : this.raw,
+      returning: true,
+      raw: this.raw,
       ...params.sequelize
     };
 
