@@ -176,7 +176,6 @@ Order.belongsTo(Model);
 describe('Feathers Sequelize Service', () => {
   before(async () => {
     await Model.sync({ force: true });
-
     await CustomId.sync({ force: true });
     await CustomGetterSetter.sync({ force: true });
     await Order.sync({ force: true });
@@ -255,6 +254,7 @@ describe('Feathers Sequelize Service', () => {
       .use('custom-getter-setter', new SequelizeService({
         Model: CustomGetterSetter,
         events: ['testing'],
+        raw: false,
         multi: true
       }));
 
@@ -506,25 +506,31 @@ describe('Feathers Sequelize Service', () => {
     });
 
     describe('Custom getters and setters', () => {
-      it('calls custom getters and setters (#113)', async () => {
-        const value = 0;
-        const service = app.service('custom-getter-setter');
-        const data = { addsOneOnGet: value, addsOneOnSet: value };
-        const result = await service.create(data);
+      const service = app.service('custom-getter-setter');
+      const value = 0;
+      const data = { addsOneOnGet: value, addsOneOnSet: value };
 
-        assert.strictEqual(result.addsOneOnGet, value + 1);
-        assert.strictEqual(result.addsOneOnSet, value + 1);
+      it('calls custom getters and setters (#113)', async () => {
+        const created = await service.create(data);
+        const updated = await service.update(created.id, data);
+
+        assert.strictEqual(created.addsOneOnGet, value + 1);
+        assert.strictEqual(updated.addsOneOnGet, value + 1);
+
+        assert.strictEqual(created.addsOneOnSet, value + 1);
+        assert.strictEqual(updated.addsOneOnSet, value + 1);
       });
 
       it('can ignore custom getters and setters (#113)', async () => {
-        const value = 0;
-        const service = app.service('custom-getter-setter');
-        const data = { addsOneOnGet: value, addsOneOnSet: value };
-        const IGNORE_SETTERS = { sequelize: { ignoreSetters: true } };
-        const result = await service.create(data, IGNORE_SETTERS);
+        const IGNORE_SETTERS = { sequelize: { raw: true } };
+        const created = await service.create(data, IGNORE_SETTERS);
+        const updated = await service.update(created.id, data, IGNORE_SETTERS);
 
-        assert.strictEqual(result.addsOneOnGet, value + 1);
-        assert.strictEqual(result.addsOneOnSet, value);
+        assert.strictEqual(created.addsOneOnGet, value + 1);
+        assert.strictEqual(updated.addsOneOnGet, value + 1);
+
+        assert.strictEqual(created.addsOneOnSet, value);
+        assert.strictEqual(updated.addsOneOnSet, value);
       });
     });
 

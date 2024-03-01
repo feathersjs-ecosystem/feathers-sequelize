@@ -4,7 +4,7 @@ import { select, AdapterBase, filterQuery } from '@feathersjs/adapter-commons';
 import type { PaginationOptions } from '@feathersjs/adapter-commons';
 import type { SequelizeAdapterOptions, SequelizeAdapterParams } from './declarations';
 import type { Id, NullableId, Paginated, Query } from '@feathersjs/feathers';
-import { errorHandler, getOrder, isPlainObject } from './utils';
+import { errorHandler, getOrder, isPlainObject, isEmpty } from './utils';
 import { Op } from 'sequelize';
 import type { CreateOptions, FindOptions, Model } from 'sequelize';
 
@@ -179,7 +179,7 @@ export class SequelizeAdapter<
     const { filters, query: where } = this.filterQuery(params);
 
     if (id === null) {
-      const q: FindOptions = {
+      const sequelize: FindOptions = {
         where,
         order: getOrder(filters.$sort),
         limit: filters.$limit,
@@ -190,17 +190,16 @@ export class SequelizeAdapter<
         ...params.sequelize
       };
 
-
       // Until Sequelize fix all the findAndCount issues, a few 'hacks' are needed to get the total count correct
 
       // Adding an empty include changes the way the count is done
       // See: https://github.com/sequelize/sequelize/blob/7e441a6a5ca44749acd3567b59b1d6ceb06ae64b/lib/model.js#L1780-L1782
-      q.include = q.include || [];
+      sequelize.include = sequelize.include || [];
 
-      return q;
+      return sequelize;
     }
 
-    const q: FindOptions = {
+    const sequelize: FindOptions = {
       where,
       order: getOrder(filters.$sort),
       limit: 1,
@@ -210,7 +209,7 @@ export class SequelizeAdapter<
     };
 
     if (where[this.id] === id) {
-      return q;
+      return sequelize;
     }
 
     if (this.id in where) {
@@ -222,7 +221,7 @@ export class SequelizeAdapter<
       where[this.id] = id;
     }
 
-    return q;
+    return sequelize;
   }
 
   /**
@@ -250,96 +249,106 @@ export class SequelizeAdapter<
   async _find (params?: ServiceParams & { paginate: false }): Promise<Result[]>
   async _find (params?: ServiceParams): Promise<Paginated<Result> | Result[]>
   async _find (params: ServiceParams = {} as ServiceParams): Promise<Paginated<Result> | Result[]> {
-    const { paginate } = this.filterQuery(params);
-
     const Model = this.ModelWithScope(params);
-    const q = this.paramsToAdapter(null, params);
+    const { paginate } = this.filterQuery(params);
+    const sequelize = this.paramsToAdapter(null, params);
 
-    try {
-      if (paginate && paginate.default) {
-        if (q.limit === 0) {
-          const total = await Model.count({
-            ...q,
-            attributes: undefined
-          });
-          return {
-            total,
-            limit: q.limit,
-            skip: q.offset || 0,
-            data: [] as Result[]
-          }
-        }
+    if (!paginate || !paginate.default) {
+      const result = await Model.findAll(sequelize).catch(errorHandler);
+      return result as Result[];
+    }
 
-        const result = await Model.findAndCountAll(q);
+    if (sequelize.limit === 0) {
+      const total = await Model
+        .count({ ...sequelize, attributes: undefined })
+        .catch(errorHandler);
 
-        return {
-          total: result.count,
-          limit: q.limit,
-          skip: q.offset || 0,
-          data: result.rows as Result[]
-        }
+      return {
+        total,
+        limit: sequelize.limit,
+        skip: sequelize.offset || 0,
+        data: [] as Result[]
       }
+    }
 
-      return await Model.findAll(q) as Result[];
-    } catch (err: any) {
-      return errorHandler(err);
+    const result = await Model.findAndCountAll(sequelize).catch(errorHandler);
+
+    return {
+      total: result.count,
+      limit: sequelize.limit,
+      skip: sequelize.offset || 0,
+      data: result.rows as Result[]
     }
   }
 
   async _get (id: Id, params: ServiceParams = {} as ServiceParams): Promise<Result> {
     const Model = this.ModelWithScope(params);
-    const q = this.paramsToAdapter(id, params);
-    try {
-      const result = await Model.findAll(q);
-      if (result.length === 0) {
-        throw new NotFound(`No record found for id '${id}'`);
-      }
-      return result[0];
-    } catch (err: any) {
-      return errorHandler(err);
+    const sequelize = this.paramsToAdapter(id, params);
+    const result = await Model.findAll(sequelize).catch(errorHandler);
+    if (result.length === 0) {
+      throw new NotFound(`No record found for id '${id}'`);
     }
+    return result[0];
   }
 
   async _create (data: Data, params?: ServiceParams): Promise<Result>
   async _create (data: Data[], params?: ServiceParams): Promise<Result[]>
   async _create (data: Data | Data[], params?: ServiceParams): Promise<Result | Result[]>
   async _create (data: Data | Data[], params: ServiceParams = {} as ServiceParams): Promise<Result | Result[]> {
-    if (Array.isArray(data) && !this.allowsMulti('create', params)) {
+    const isArray = Array.isArray(data);
+
+    if (isArray && !this.allowsMulti('create', params)) {
       throw new MethodNotAllowed('Can not create multiple entries')
     }
 
-    const options = {
-      raw: this.raw,
-      ...params.sequelize
+    if (isArray && data.length === 0) {
+      return []
+    }
+
+    const sequelize = {
+      ...params.sequelize,
+      returning:  typeof params.sequelize?.returning === 'boolean'
+        ? params.sequelize.returning
+        : true,
+      raw: typeof params.sequelize?.raw === 'boolean'
+        ? params.sequelize.raw
+        : this.raw
     };
-    // Model.create's `raw` option is different from other methods.
-    // In order to use `raw` consistently to serialize the result,
-    // we need to shadow the Model.create use of raw, which we provide
-    // access to by specifying `ignoreSetters`.
-    const createOptions = {
-      returning: true,
-      ...options,
-      raw: !!options.ignoreSetters
-    };
-    const isArray = Array.isArray(data);
+
     const Model = this.ModelWithScope(params);
 
-    try {
-      const result = isArray
-        ? await Model.bulkCreate(data as any[], createOptions)
-        : await Model.create(data as any, createOptions as CreateOptions);
+    if (isArray) {
+      const result = await Model
+        .bulkCreate(data as any[], sequelize)
+        .catch(errorHandler);
 
-      const sel = select(params, this.id);
-      if (options.raw === false) {
-        return result as Result | Result[];
+      if (!sequelize.returning) {
+        return [] as Result[];
       }
-      if (isArray) {
-        return (result as Model[]).map(item => sel(item.toJSON()));
+
+      if (sequelize.raw) {
+        return select(params, this.id)((result as Model[]).map(
+          item => item.toJSON()
+        )) as Result[];
       }
-      return sel((result as Model).toJSON());
-    } catch (err: any) {
-      return errorHandler(err);
+
+      return result as Result[];
     }
+
+    const result = await Model
+      .create(data as any, sequelize as CreateOptions)
+      .catch(errorHandler);
+
+    // TODO: Disable returning for single create?
+    if (!sequelize.returning) {
+      return null
+    }
+
+    if (sequelize.raw) {
+      return select(params, this.id)((result as Model).toJSON())
+    }
+
+    return result as Result;
   }
 
   async _patch (id: null, data: PatchData, params?: ServiceParams): Promise<Result[]>
@@ -367,15 +376,11 @@ export class SequelizeAdapter<
 
       const ids: Id[] = items.map((item: any) => item[this.id]);
 
-      try {
-        await Model.update(_.omit(data, this.id), {
-          raw: this.raw,
-          ...params.sequelize,
-          where: { [this.id]: ids.length === 1 ? ids[0] : { [this.Op.in]: ids } }
-        });
-      } catch (error) {
-        errorHandler(error);
-      }
+      await Model.update(_.omit(data, this.id), {
+        raw: this.raw,
+        ...params.sequelize,
+        where: { [this.id]: ids.length === 1 ? ids[0] : { [this.Op.in]: ids } }
+      }).catch(errorHandler);
 
       if (params.$returning === false) {
         return [];
@@ -401,15 +406,11 @@ export class SequelizeAdapter<
       }
     });
 
-    try {
-      await Model.update(_.omit(data, this.id), {
-        raw: this.raw,
-        ...params.sequelize,
-        where: { [this.id]: id }
-      });
-    } catch (error) {
-      errorHandler(error);
-    }
+    await Model.update(_.omit(data, this.id), {
+      raw: this.raw,
+      ...params.sequelize,
+      where: { [this.id]: id }
+    }).catch(errorHandler);
 
     const result = await this._get(id, {
       ...params,
@@ -420,42 +421,59 @@ export class SequelizeAdapter<
   }
 
   async _update (id: Id, data: Data, params: ServiceParams = {} as ServiceParams): Promise<Result> {
-    // Force the {raw: false} option as the instance
-    // is needed to properly update
-    const seqOptions = {
-      ...params.sequelize,
-      raw: false
-    };
+    const Model = this.ModelWithScope(params);
+    const sequelize = this.paramsToAdapter(id, params);
 
-    const instance = await this._get(id, {
-      ...params,
-      query: {
-        ...params.query,
-        // we need all fields to properly update the instance
-        $select: undefined
-      },
-      sequelize: seqOptions
-    } as ServiceParams) as Model
+    const values = Object.values(Model.getAttributes())
+      .reduce((item, attribute: any) => {
+        const key = attribute.fieldName as string;
+        if (key === this.id) {
+          // @ts-ignore
+          item[key] = id;
+          return item
+        }
+        // @ts-ignore
+        item[key] = key in data ? data[key] : null;
+        return item;
+      }, {});
 
-    const itemToUpdate = Object.keys(instance.toJSON()).reduce((result: Record<string, any>, key) => {
-      // @ts-ignore
-      result[key] = key in data ? data[key] : null;
+    const raw = typeof params.sequelize?.raw === 'boolean'
+      ? params.sequelize.raw
+      : this.raw;
 
-      return result;
-    }, {});
+    const total = await Model
+      .count({ ...sequelize, attributes: undefined })
+      .catch(errorHandler);
 
-    try {
-      await instance.update(itemToUpdate, seqOptions);
-    } catch (error) {
-      return errorHandler(error);
+    if (!total) {
+      throw new NotFound(`No record found for id '${id}'`);
     }
 
-    const result = await this._get(id, {
-      ...params,
-      query: { $select: params.query?.$select }
-    });
+    const instance = await Model
+      .build(values, { isNewRecord: false })
+      .update(values, sequelize)
+      .catch(errorHandler);
 
-    return result;
+    if (!isEmpty(sequelize.include)) {
+      return this._get(id, {
+        ...params,
+        query: { $select: params.query?.$select }
+      });
+    }
+
+    if (!isEmpty(sequelize.attributes)) {
+      const values = select(params, this.id)(instance.toJSON())
+      if (raw) {
+        return values as Result;
+      }
+      return Model.build(values, { isNewRecord: false }) as Result;
+    }
+
+    if (raw) {
+      return instance.toJSON() as Result;
+    }
+
+    return instance as Result;
   }
 
   async _remove (id: null, params?: ServiceParams): Promise<Result[]>
@@ -484,15 +502,11 @@ export class SequelizeAdapter<
 
       const ids: Id[] = items.map((item: any) => item[this.id]);
 
-      try {
-        await Model.destroy({
-          raw: this.raw,
-          ...params.sequelize,
-          where: { [this.id]: ids.length === 1 ? ids[0] : { [this.Op.in]: ids } }
-        });
-      } catch (error) {
-        errorHandler(error);
-      }
+      await Model.destroy({
+        raw: this.raw,
+        ...params.sequelize,
+        where: { [this.id]: ids.length === 1 ? ids[0] : { [this.Op.in]: ids } }
+      }).catch(errorHandler);
 
       if (params.$returning === false) {
         return [];
@@ -503,15 +517,11 @@ export class SequelizeAdapter<
 
     const item = await this._get(id, params);
 
-    try {
-      await Model.destroy({
-        raw: this.raw,
-        ...params.sequelize,
-        where: { [this.id]: id }
-      });
-    } catch (error) {
-      errorHandler(error);
-    }
+    await Model.destroy({
+      raw: this.raw,
+      ...params.sequelize,
+      where: { [this.id]: id }
+    }).catch(errorHandler);
 
     return item
   }
