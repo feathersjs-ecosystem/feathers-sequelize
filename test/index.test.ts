@@ -704,16 +704,37 @@ describe('Feathers Sequelize Service', () => {
         await people.remove(results[1].id);
       });
 
+      it('create() with returning=false returns empty array', async () => {
+        const response1 = await people.create({ name: 'delete' }, {
+          sequelize: { returning: false }
+        });
+        const response2 = await people.create([{ name: 'delete' }], {
+          sequelize: { returning: false }
+        });
+
+        expect(response1).to.deep.equal([]);
+        expect(response2).to.deep.equal([]);
+
+        await people.remove(null, { query: { name: 'delete' } });
+      });
+
       it('patch() returns a model instance', async () => {
         const instance = await people.patch(david.id, { name: 'Sarah' });
 
         expect(instance).to.be.an.instanceOf(Model);
       });
 
-      it('patch() with $returning=false returns empty array', async () => {
-        const response = await people.patch(david.id, { name: 'Sarah' }, { $returning: false });
+      it('patch() with returning=false returns empty array', async () => {
+        const response1 = await people.patch(david.id, { name: 'Sarah' }, {
+          sequelize: { returning: false }
+        });
+        const response2 = await people.patch(null, { name: 'Sarah' }, {
+          query: { name: 'Sarah' },
+          sequelize: { returning: false }
+        });
 
-        expect(response).to.deep.equal([]);
+        expect(response1).to.deep.equal([]);
+        expect(response2).to.deep.equal([]);
       });
 
       it('update() returns a model instance', async () => {
@@ -728,10 +749,18 @@ describe('Feathers Sequelize Service', () => {
         expect(instance).to.be.an.instanceOf(Model);
       });
 
-      it('remove() with $returning=false returns empty array', async () => {
-        const response = await people.remove(david.id, { $returning: false });
+      it('remove() with returning=false returns empty array', async () => {
+        const response1 = await people.remove(david.id, {
+          sequelize: { returning: false }
+        });
+        david = await people.create({ name: 'David' });
+        const response2 = await people.remove(null, {
+          query: { name: 'David' },
+          sequelize: { returning: false }
+        });
 
-        expect(response).to.deep.equal([]);
+        expect(response1).to.deep.equal([]);
+        expect(response2).to.deep.equal([]);
       });
     });
 
@@ -916,12 +945,29 @@ describe('Feathers Sequelize Service', () => {
         expect(instance).to.be.an.instanceof(Model);
       });
 
-      it('patch() with $returning=false returns empty array', async () => {
-        const params = getExtraParams({ $returning: false });
-        const response = await people.patch(david.id, { name: 'Sarah' }, params);
-        expect(params.sequelize.getModelCalls.count).to.gte(1);
+      it('create() with returning=false returns empty array', async () => {
+        const params = getExtraParams({}, { returning: false });
+        const response1 = await people.create({ name: 'delete' }, params);
+        const response2 = await people.create([{ name: 'delete' }], params);
 
-        expect(response).to.deep.equal([]);
+        expect(response1).to.deep.equal([]);
+        expect(response2).to.deep.equal([]);
+
+        await people.remove(null, { ...params, query: { name: 'delete' } });
+      });
+
+      it('patch() with returning=false returns empty array', async () => {
+        const params = getExtraParams({}, { returning: false });
+        const response1 = await people.patch(david.id, { name: 'Sarah' },
+          params
+        );
+        const response2 = await people.patch(null, { name: 'Sarah' }, {
+          query: { name: 'Sarah' },
+          sequelize: { ...params.sequelize, returning: false }
+        });
+
+        expect(response1).to.deep.equal([]);
+        expect(response2).to.deep.equal([]);
       });
 
       it('update() returns a model instance', async () => {
@@ -939,12 +985,17 @@ describe('Feathers Sequelize Service', () => {
         expect(instance).to.be.an.instanceof(Model);
       });
 
-      it('remove() with $returning=false returns empty array', async () => {
-        const params = getExtraParams({ $returning: false });
-        const response = await people.remove(david.id, params);
-        expect(params.sequelize.getModelCalls.count).to.gte(1);
+      it('remove() with returning=false returns empty array', async () => {
+        const params = getExtraParams({}, { returning: false });
+        const response1 = await people.remove(david.id, params);
+        david = await people.create({ name: 'David' }, params);
+        const response2 = await people.remove(null, {
+          query: { name: 'David' },
+          sequelize: { ...params.sequelize, returning: false }
+        });
 
-        expect(response).to.deep.equal([]);
+        expect(response1).to.deep.equal([]);
+        expect(response2).to.deep.equal([]);
       });
     });
 

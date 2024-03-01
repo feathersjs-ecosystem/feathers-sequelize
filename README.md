@@ -27,6 +27,7 @@ A [Feathers](https://feathersjs.com) database adapter for [Sequelize](http://seq
   - [Querying a nested column](#querying-a-nested-column)
 - [Working with Sequelize Model instances](#working-with-sequelize-model-instances)
 - [Validation](#validation)
+- [Errors](#errors)
 - [Testing sequelize queries in isolation](#testing-sequelize-queries-in-isolation)
   - [1. Build a test file](#1-build-a-test-file)
   - [2. Integrate the query using a "before" hook](#2-integrate-the-query-using-a-before-hook)
@@ -162,7 +163,7 @@ By default, all `feathers-sequelize` operations will return `raw` data (using `r
  - associated data loads a bit differently
  - ...and several other issues that one might not expect
 
-Don't worry! The solution is easy. Please read the guides about [working with model instances](#working-with-sequelize-model-instances).
+Don't worry! The solution is easy. Please read the guides about [working with model instances](#working-with-sequelize-model-instances). You can also pass `{ raw: true/false}` in `params.sequelize` to change the behavior per service call.
 
 ### Working with MSSQL
 
@@ -313,8 +314,6 @@ For more information, follow up up in the [Sequelize documentation for associati
 
 Additionally to the [common querying mechanism](https://docs.feathersjs.com/api/databases/querying.html) this adapter also supports all [Sequelize query operators](http://docs.sequelizejs.com/manual/tutorial/querying.html).
 
-> **Note**: This adapter supports an additional `$returning` parameter for patch and remove queries. By setting `params.$returning = false` it will disable feathers and sequelize from returning what was changed, so mass updates can be done without overwhelming node and/or clients.
-
 ### Querying a nested column
 
 To query based on a column in an associated model, you can use Sequelize's [nested column syntax](https://sequelize.org/master/manual/eager-loading.html#complex-where-clauses-at-the-top-level) in a query. The nested column syntax is considered an operator by Feathers, and so each such usage has to be [whitelisted](#options-whitelist).
@@ -376,13 +375,29 @@ It is highly recommended to use `raw` queries, which is the default. However, th
 
 Sequelize by default gives you the ability to [add validations at the model level](http://docs.sequelizejs.com/en/latest/docs/models-definition/#validations). Using an error handler like the one that [comes with Feathers](https://github.com/feathersjs/feathers-errors/blob/master/src/error-handler.js) your validation errors will be formatted nicely right out of the box!
 
+## Errors
+
+Errors do not contain Sequelize specific information. The original Sequelize error can be retrieved on the server via:
+
+```js
+const { ERROR } = require('feathers-sequelize');
+
+try {
+  await sequelizeService.doSomethign();
+} catch(error) {
+  // error is a FeathersError
+  // Safely retrieve the Sequelize error
+  const sequelizeError = error[ERROR];
+}
+```
+
 ## Testing sequelize queries in isolation
 
 If you wish to use some of the more advanced features of sequelize, you should first test your queries in isolation (without feathers). Once your query is working, you can integrate it into your feathers app.
 
 ### 1. Build a test file
 
-Creat a temporary file in your project root like this:
+Create a temporary file in your project root like this:
 
 ```js
 // test.js
@@ -615,32 +630,6 @@ In the unfortunate case where you must revert your app to a previous state, it i
 1. Undo your migrations one at a time until the db is in the correct state
 1. Revert your code back to the previous state
 1. Start your app
-
-### Migrating
-
-`feathers-sequelize` 4.0.0 comes with important security and usability updates.
-
-> __Important:__ For general migration information to the new database adapter functionality see [crow.docs.feathersjs.com/migrating.html#database-adapters](https://crow.docs.feathersjs.com/migrating.html#database-adapters).
-
-The following breaking changes have been introduced:
-
-- All methods now take `params.sequelize` into account
-- All methods allow additional query parameters
-- Multiple updates are disabled by default (see the `multi` option)
-- Upgraded to secure Sequelize operators (see the [operators](#operators) option)
-- Errors no longer contain Sequelize specific information. The original Sequelize error can be retrieved on the server via:
-
-```js
-const { ERROR } = require('feathers-sequelize');
-
-try {
-  await sequelizeService.doSomethign();
-} catch(error) {
-  // error is a FeathersError
-  // Safely retrieve the Sequelize error
-  const sequelizeError = error[ERROR];
-}
-```
 
 ## License
 

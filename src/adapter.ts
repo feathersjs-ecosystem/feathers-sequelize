@@ -1,12 +1,21 @@
 import { MethodNotAllowed, NotFound } from '@feathersjs/errors';
 import { _ } from '@feathersjs/commons';
-import { select, AdapterBase, filterQuery } from '@feathersjs/adapter-commons';
+import {
+  select as selector,
+  AdapterBase,
+  filterQuery
+} from '@feathersjs/adapter-commons';
 import type { PaginationOptions } from '@feathersjs/adapter-commons';
 import type { SequelizeAdapterOptions, SequelizeAdapterParams } from './declarations';
 import type { Id, NullableId, Paginated, Query } from '@feathersjs/feathers';
-import { errorHandler, getOrder, isPlainObject, isEmpty } from './utils';
+import { errorHandler, getOrder, isPlainObject, isPresent } from './utils';
 import { Op } from 'sequelize';
-import type { CreateOptions, FindOptions, Model } from 'sequelize';
+import type {
+  CreateOptions,
+  UpdateOptions,
+  FindOptions,
+  Model
+} from 'sequelize';
 
 const defaultOperatorMap = {
   $eq: Op.eq,
@@ -167,7 +176,8 @@ export class SequelizeAdapter<
     }
   }
 
-  paramsToAdapter (id: NullableId, _params?: ServiceParams): FindOptions {
+  // paramsToAdapter (id: NullableId, _params?: ServiceParams): FindOptions {
+  paramsToAdapter (id: NullableId, _params?: ServiceParams): any {
     const params = _params || {} as ServiceParams;
     const { filters, query: where } = this.filterQuery(params);
 
@@ -240,7 +250,7 @@ export class SequelizeAdapter<
 
     if (!paginate || !paginate.default) {
       const result = await Model.findAll(sequelize).catch(errorHandler);
-      return result as Result[];
+      return result;
     }
 
     if (sequelize.limit === 0) {
@@ -249,10 +259,11 @@ export class SequelizeAdapter<
         .catch(errorHandler);
 
       return {
+        // @ts-ignore
         total,
         limit: sequelize.limit,
         skip: sequelize.offset || 0,
-        data: [] as Result[]
+        data: []
       }
     }
 
@@ -262,7 +273,7 @@ export class SequelizeAdapter<
       total: result.count,
       limit: sequelize.limit,
       skip: sequelize.offset || 0,
-      data: result.rows as Result[]
+      data: result.rows
     }
   }
 
@@ -281,6 +292,7 @@ export class SequelizeAdapter<
   async _create (data: Data | Data[], params?: ServiceParams): Promise<Result | Result[]>
   async _create (data: Data | Data[], params: ServiceParams = {} as ServiceParams): Promise<Result | Result[]> {
     const isArray = Array.isArray(data);
+    const select = selector(params, this.id);
 
     if (isArray && !this.allowsMulti('create', params)) {
       throw new MethodNotAllowed('Can not create multiple entries')
@@ -290,50 +302,54 @@ export class SequelizeAdapter<
       return []
     }
 
-    const sequelize = {
-      ...params.sequelize,
-      returning:  typeof params.sequelize?.returning === 'boolean'
-        ? params.sequelize.returning
-        : true,
-      raw: typeof params.sequelize?.raw === 'boolean'
-        ? params.sequelize.raw
-        : this.raw
-    };
-
     const Model = this.ModelWithScope(params);
+    const sequelize = this.paramsToAdapter(null, params);
 
     if (isArray) {
-      const result = await Model
+      const instances = await Model
         .bulkCreate(data as any[], sequelize)
         .catch(errorHandler);
 
       if (!sequelize.returning) {
-        return [] as Result[];
+        return [];
       }
+
+      const selected = isPresent(sequelize.attributes);
 
       if (sequelize.raw) {
-        return select(params, this.id)((result as Model[]).map(
-          item => item.toJSON()
-        )) as Result[];
+        const result = instances.map((instance) => {
+          if (selected) {
+            return select(instance.toJSON());
+          }
+          return instance.toJSON();
+        })
+        return result;
       }
 
-      return result as Result[];
+      if (selected) {
+        const result = instances.map((instance) => {
+          const result = select(instance.toJSON())
+          return Model.build(result, { isNewRecord: false });
+        })
+        return result;
+      }
+
+      return instances;
     }
 
     const result = await Model
       .create(data as any, sequelize as CreateOptions)
       .catch(errorHandler);
 
-    // TODO: Disable returning for single create?
     if (!sequelize.returning) {
-      return null
+      return [];
     }
 
     if (sequelize.raw) {
-      return select(params, this.id)((result as Model).toJSON())
+      return select((result as Model).toJSON())
     }
 
-    return result as Result;
+    return result;
   }
 
   async _patch (id: null, data: PatchData, params?: ServiceParams): Promise<Result[]>
@@ -345,36 +361,75 @@ export class SequelizeAdapter<
 
     const Model = this.ModelWithScope(params);
     const sequelize = this.paramsToAdapter(id, params);
-
-    const values = {
-      ...data,
-      [this.id]: id
-    };
+    const select = selector(params, this.id);
+    const values = _.omit(data, this.id);
+    let ids: Id[] | null = null;
 
     if (id === null) {
-      const items = await this._find({
+      const current = await this._find({
         ...params,
         paginate: false,
         query: {
           ...params?.query,
           $select: [this.id]
         }
-      })
+      });
 
-      if (!items.length) {
+      if (!current.length) {
         return []
       }
 
-      const ids: Id[] = items.map((item: any) => item[this.id]);
+      ids = current.map((item: any) => item[this.id]);
 
-      await Model.update(_.omit(values, this.id), {
-        raw: this.raw,
-        ...params.sequelize,
-        where: { [this.id]: ids.length === 1 ? ids[0] : { [this.Op.in]: ids } }
-      }).catch(errorHandler);
+      sequelize.where = {
+        [this.id]: ids.length === 1 ? ids[0] : { [this.Op.in]: ids }
+      }
 
       // @ts-ignore
-      if (sequelize.returning === false) {
+      let [, instances] = await Model
+        .update(values, sequelize as UpdateOptions)
+        .catch(errorHandler) as [number, Model[]?];
+
+      if (!sequelize.returning) {
+        return []
+      }
+
+      // Returning is only supported in postgres and mssql, and
+      // its a little goofy array order how Sequelize handles it.
+      // https://github.com/sequelize/sequelize/blob/abca55ee52d959f95c98dc7ae8b8162005536d05/packages/core/src/model.js#L3110
+      if (sequelize.returning && typeof instances === 'number') {
+        instances = null;
+      }
+
+      const selected = isPresent(sequelize.attributes);
+
+      // TODO: This doesn't support $sort. The results may be in the
+      // order of the ids array, but its not guaranteed. Its also untested
+      // because we don't have a Postgres test database. Furthermore, I am
+      // not sure if these instances have full or partial data properties.
+      if (instances) {
+        if (sequelize.raw) {
+          const result = instances.map((instance) => {
+            if (selected) {
+              return select(instance.toJSON());
+            }
+            return instance.toJSON();
+          })
+          return result;
+        }
+
+        if (selected) {
+          const result = instances.map((instance) => {
+            const result = select(instance.toJSON())
+            return Model.build(result, { isNewRecord: false });
+          })
+          return result;
+        }
+
+        return instances as Result[];
+      }
+
+      if (!sequelize.returning) {
         return [];
       }
 
@@ -383,23 +438,29 @@ export class SequelizeAdapter<
         paginate: false,
         query: {
           [this.id]: ids.length === 1 ? ids[0] : { $in: ids },
-          $select: params?.query?.$select
+          $select: params?.query?.$select,
+          $sort: params?.query?.$sort
         }
       });
 
       return result;
     }
 
+    /* TODO: This _get is really only needed to get all of the properties that  are not being updated. We can't do similar to _update where we skip the _get (use count instead) and build a fresh instance. With _update we are building ALL the properties and can select/return the right values, with _patch the instance is only partially full. The  instance.update does not return the other properties. So, the returned instance wouldn't contain all properties. We have to get a full instance. This could be optimized to maybe skip this _get given some update props and select circumstances */
     const instance = await this._get(id, {
       ...params,
       sequelize: { ...params.sequelize, raw: false }
     }) as Model;
 
     await instance
-      .update(_.omit(values, this.id), sequelize)
+      .update(values, sequelize)
       .catch(errorHandler);
 
-    if (!isEmpty(sequelize.include)) {
+    if (!sequelize.returning) {
+      return [];
+    }
+
+    if (isPresent(sequelize.include)) {
       return this._get(id, {
         ...params,
         query: { $select: params.query?.$select }
@@ -408,23 +469,24 @@ export class SequelizeAdapter<
 
     if (sequelize.raw) {
       const result = instance.toJSON();
-      if (isEmpty(sequelize.attributes)) {
-        return result as Result;
+      if (isPresent(sequelize.attributes)) {
+        return select(result);
       }
-      return select(params, this.id)(result) as Result;
+      return result;
     }
 
-    if (isEmpty(sequelize.attributes)) {
-      return instance as Result;
+    if (isPresent(sequelize.attributes)) {
+      const result = select(instance.toJSON())
+      return Model.build(result, { isNewRecord: false });
     }
 
-    const result = select(params, this.id)(instance.toJSON())
-    return Model.build(result, { isNewRecord: false }) as Result;
+    return instance as Result;
   }
 
   async _update (id: Id, data: Data, params: ServiceParams = {} as ServiceParams): Promise<Result> {
     const Model = this.ModelWithScope(params);
     const sequelize = this.paramsToAdapter(id, params);
+    const select = selector(params, this.id);
 
     const values = Object.values(Model.getAttributes())
       .reduce((values, attribute: any) => {
@@ -452,26 +514,26 @@ export class SequelizeAdapter<
       .update(_.omit(values, this.id), sequelize)
       .catch(errorHandler);
 
-    if (!isEmpty(sequelize.include)) {
+    if (isPresent(sequelize.include)) {
       return this._get(id, {
         ...params,
         query: { $select: params.query?.$select }
       });
     }
 
-    if (!isEmpty(sequelize.attributes)) {
-      const values = select(params, this.id)(instance.toJSON())
+    if (isPresent(sequelize.attributes)) {
+      const values = select(instance.toJSON())
       if (sequelize.raw) {
-        return values as Result;
+        return values;
       }
-      return Model.build(values, { isNewRecord: false }) as Result;
+      return Model.build(values, { isNewRecord: false });
     }
 
     if (sequelize.raw) {
-      return instance.toJSON() as Result;
+      return instance.toJSON();
     }
 
-    return instance as Result;
+    return instance;
   }
 
   async _remove (id: null, params?: ServiceParams): Promise<Result[]>
@@ -485,21 +547,21 @@ export class SequelizeAdapter<
     const sequelize = this.paramsToAdapter(id, params);
 
     if (id === null) {
-      const $select = params.$returning === false
+      const $select = sequelize.returning === false
         ? [this.id]
         : params?.query?.$select
 
-      const items = await this._find({
+      const current = await this._find({
         ...params,
         paginate: false,
         query: { ...params.query, $select }
       });
 
-      if (!items.length) {
+      if (!current.length) {
         return [];
       }
 
-      const ids: Id[] = items.map((item: any) => item[this.id]);
+      const ids: Id[] = current.map((item: any) => item[this.id]);
 
       await Model.destroy({
         raw: this.raw,
@@ -507,11 +569,11 @@ export class SequelizeAdapter<
         where: { [this.id]: ids.length === 1 ? ids[0] : { [this.Op.in]: ids } }
       }).catch(errorHandler);
 
-      if (params.$returning === false) {
+      if (sequelize.returning === false) {
         return [];
       }
 
-      return items;
+      return current;
     }
 
     const result = await this._get(id, params);
@@ -522,8 +584,12 @@ export class SequelizeAdapter<
 
     await Model
       .build(values as any, { isNewRecord: false })
-      .destroy(sequelize)
+      .destroy(sequelize);
 
-    return result as Result;
+    if (!sequelize.returning) {
+      return [];
+    }
+
+    return result;
   }
 }

@@ -51,12 +51,12 @@ export const isPlainObject = (obj: any) => {
   return obj && obj.constructor === {}.constructor;
 };
 
-export const isEmpty = (obj: any) => {
+export const isPresent = (obj: any) => {
   if (Array.isArray(obj)) {
-    return obj.length === 0;
+    return obj.length > 0;
   }
   if (isPlainObject(obj)) {
-    return Object.keys(obj).length === 0;
+    return Object.keys(obj).length > 0;
   }
-  return !obj;
+  return !!obj;
 };
