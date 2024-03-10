@@ -306,7 +306,7 @@ export class SequelizeAdapter<
         .bulkCreate(data as any[], sequelize)
         .catch(errorHandler);
 
-      if (!sequelize.returning) {
+      if (sequelize.returning === false) {
         return [];
       }
 
@@ -336,10 +336,6 @@ export class SequelizeAdapter<
     const result = await Model
       .create(data as any, sequelize as CreateOptions)
       .catch(errorHandler);
-
-    if (!sequelize.returning) {
-      return [];
-    }
 
     if (sequelize.raw) {
       return select((result as Model).toJSON())
@@ -377,33 +373,44 @@ export class SequelizeAdapter<
 
       ids = current.map((item: any) => item[this.id]);
 
-      sequelize.where = {
-        [this.id]: ids.length === 1 ? ids[0] : { [this.Op.in]: ids }
-      }
-
       // @ts-ignore
       let [, instances] = await Model
-        .update(values, sequelize as UpdateOptions)
+        .update(values, {
+          ...sequelize,
+          where: { [this.id]: ids.length === 1 ? ids[0] : { [this.Op.in]: ids } }
+        } as UpdateOptions)
         .catch(errorHandler) as [number, Model[]?];
 
-      if (!sequelize.returning) {
+      if (sequelize.returning === false) {
         return []
       }
 
       // Returning is only supported in postgres and mssql, and
       // its a little goofy array order how Sequelize handles it.
       // https://github.com/sequelize/sequelize/blob/abca55ee52d959f95c98dc7ae8b8162005536d05/packages/core/src/model.js#L3110
-      if (sequelize.returning && typeof instances === 'number') {
+      if (!instances || typeof instances === 'number') {
         instances = null;
       }
 
       const selected = isPresent(sequelize.attributes);
 
-      // TODO: This doesn't support $sort. The results may be in the
-      // order of the ids array, but its not guaranteed. Its also untested
-      // because we don't have a Postgres test database. Furthermore, I am
-      // not sure if these instances have full or partial data properties.
       if (instances) {
+        const sortedInstances: Model[] = [];
+        const unsortedInstances: Model[] = [];
+
+        current.forEach((item: any) => {
+          const id = item[this.id];
+          // @ts-ignore
+          const instance = instances.find(instance => instance[this.id] === id);
+          if (instance) {
+            sortedInstances.push(instance);
+          } else {
+            unsortedInstances.push(item);
+          }
+        });
+
+        instances = [...sortedInstances, ...unsortedInstances];
+
         if (sequelize.raw) {
           const result = instances.map((instance) => {
             if (selected) {
@@ -425,10 +432,6 @@ export class SequelizeAdapter<
         return instances as Result[];
       }
 
-      if (!sequelize.returning) {
-        return [];
-      }
-
       const result = await this._find({
         ...params,
         paginate: false,
@@ -442,7 +445,7 @@ export class SequelizeAdapter<
       return result;
     }
 
-    /* TODO: This _get is really only needed to get all of the properties that  are not being updated. We can't do similar to _update where we skip the _get (use count instead) and build a fresh instance. With _update we are building ALL the properties and can select/return the right values, with _patch the instance is only partially full. The  instance.update does not return the other properties. So, the returned instance wouldn't contain all properties. We have to get a full instance. This could be optimized to maybe skip this _get given some update props and select circumstances */
+    /* TODO: This _get is really only needed to get all of the properties that are not being updated. We can't do similar to _update where we skip the _get (use count instead) and build a fresh instance. With _update we are building ALL the properties and can select/return the right values, with _patch the instance is only partially full. The  instance.update does not return the other properties. So, the returned instance wouldn't contain all properties. We have to get a full instance. This could be optimized to maybe skip this _get given some update props and select circumstances */
     const instance = await this._get(id, {
       ...params,
       sequelize: { ...params.sequelize, raw: false }
@@ -452,15 +455,8 @@ export class SequelizeAdapter<
       .update(values, sequelize)
       .catch(errorHandler);
 
-    if (!sequelize.returning) {
-      return [];
-    }
-
     if (isPresent(sequelize.include)) {
-      return this._get(id, {
-        ...params,
-        query: { $select: params.query?.$select }
-      });
+      return await this._get(id, params);
     }
 
     if (sequelize.raw) {
@@ -511,10 +507,7 @@ export class SequelizeAdapter<
       .catch(errorHandler);
 
     if (isPresent(sequelize.include)) {
-      return this._get(id, {
-        ...params,
-        query: { $select: params.query?.$select }
-      });
+      return await this._get(id, params);
     }
 
     if (isPresent(sequelize.attributes)) {
@@ -529,7 +522,7 @@ export class SequelizeAdapter<
       return instance.toJSON();
     }
 
-    return instance;
+    return instance as Result;
   }
 
   async _remove (id: null, params?: ServiceParams): Promise<Result[]>
@@ -573,17 +566,9 @@ export class SequelizeAdapter<
 
     const result = await this._get(id, params);
 
-    const values = (result as Model).toJSON
-      ? (result as Model).toJSON()
-      : result;
+    const instance = result instanceof Model ? result : Model.build(result as any, { isNewRecord: false });
 
-    await Model
-      .build(values as any, { isNewRecord: false })
-      .destroy(sequelize);
-
-    if (!sequelize.returning) {
-      return [];
-    }
+    await instance.destroy(sequelize);
 
     return result;
   }
