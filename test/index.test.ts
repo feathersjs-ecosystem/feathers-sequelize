@@ -275,8 +275,6 @@ describe('Feathers Sequelize Service', () => {
         await people.create({ name });
         const { data } = await people.find({ query: { age: null } }) as Paginated<any>;
 
-        console.log(data);
-
         assert.strictEqual(data.length, 1);
         assert.strictEqual(data[0].name, name);
         assert.strictEqual(data[0].age, null);
@@ -474,6 +472,26 @@ describe('Feathers Sequelize Service', () => {
         expect(result).to.have.property('orders.id');
       });
 
+      it('patch() includes associations and query', async () => {
+        const params = { sequelize: { include: Order } };
+        const data = { name: 'Patched' };
+
+        const current = await people.get(kirsten.id, params);
+
+        const result = await people.patch(kirsten.id, data, {
+          query: { name: current.name },
+          ...params
+        });
+
+        delete current.updatedAt;
+        // @ts-ignore
+        delete result.updatedAt
+
+        console.log(result, { ...current, ...data })
+
+        assert.deepStrictEqual(result, { ...current, ...data });
+      });
+
       it('update() includes associations', async () => {
         const params = { sequelize: { include: Order } };
         const data = { name: 'Updated' };
@@ -481,6 +499,26 @@ describe('Feathers Sequelize Service', () => {
         const result = await people.update(kirsten.id, data, params);
 
         expect(result).to.have.property('orders.id');
+      });
+
+      it('update() includes associations and query', async () => {
+        const params = { sequelize: { include: Order } };
+        const data = { name: 'Updated' };
+
+        const current = await people.get(kirsten.id, params);
+
+        const result = await people.update(kirsten.id, {
+          ...current,
+          ...data
+        }, {
+          query: { name: current.name },
+          ...params
+        });
+
+        delete current.updatedAt;
+        delete result.updatedAt
+
+        assert.deepStrictEqual(result, { ...current, ...data });
       });
 
       it('remove() includes associations', async () => {

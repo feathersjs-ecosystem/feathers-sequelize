@@ -226,13 +226,13 @@ export class SequelizeAdapter<
   async _getOrFind (id: NullableId, _params: ServiceParams) {
     const params = _params || {} as ServiceParams;
     if (id === null) {
-      return await this._find({
+      return this._find({
         ...params,
         paginate: false
       });
     }
 
-    return await this._get(id, params);
+    return this._get(id, params);
   }
 
 
@@ -456,7 +456,10 @@ export class SequelizeAdapter<
       .catch(errorHandler);
 
     if (isPresent(sequelize.include)) {
-      return await this._get(id, params);
+      return this._get(id, {
+        ...params,
+        query: { $select: params.query?.$select }
+      });
     }
 
     if (sequelize.raw) {
@@ -507,7 +510,10 @@ export class SequelizeAdapter<
       .catch(errorHandler);
 
     if (isPresent(sequelize.include)) {
-      return await this._get(id, params);
+      return this._get(id, {
+        ...params,
+        query: { $select: params.query?.$select }
+      });
     }
 
     if (isPresent(sequelize.attributes)) {
