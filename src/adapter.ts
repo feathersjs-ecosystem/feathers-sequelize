@@ -395,21 +395,23 @@ export class SequelizeAdapter<
       const selected = isPresent(sequelize.attributes);
 
       if (instances) {
-        const sortedInstances: Model[] = [];
-        const unsortedInstances: Model[] = [];
+        if (isPresent(params?.query?.$sort)) {
+          const sortedInstances: Model[] = [];
+          const unsortedInstances: Model[] = [];
 
-        current.forEach((item: any) => {
-          const id = item[this.id];
-          // @ts-ignore
-          const instance = instances.find(instance => instance[this.id] === id);
-          if (instance) {
-            sortedInstances.push(instance);
-          } else {
-            unsortedInstances.push(item);
-          }
-        });
+          current.forEach((item: any) => {
+            const id = item[this.id];
+            // @ts-ignore
+            const instance = instances.find(instance => instance[this.id] === id);
+            if (instance) {
+              sortedInstances.push(instance);
+            } else {
+              unsortedInstances.push(item);
+            }
+          });
 
-        instances = [...sortedInstances, ...unsortedInstances];
+          instances = [...sortedInstances, ...unsortedInstances];
+        }
 
         if (sequelize.raw) {
           const result = instances.map((instance) => {

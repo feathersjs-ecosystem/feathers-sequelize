@@ -487,8 +487,6 @@ describe('Feathers Sequelize Service', () => {
         // @ts-ignore
         delete result.updatedAt
 
-        console.log(result, { ...current, ...data })
-
         assert.deepStrictEqual(result, { ...current, ...data });
       });
 
