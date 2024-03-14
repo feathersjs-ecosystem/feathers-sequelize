@@ -395,7 +395,7 @@ export class SequelizeAdapter<
       const selected = isPresent(sequelize.attributes);
 
       if (instances) {
-        if (isPresent(params?.query?.$sort)) {
+        if (isPresent(params.query?.$sort)) {
           const sortedInstances: Model[] = [];
           const unsortedInstances: Model[] = [];
 
@@ -453,8 +453,12 @@ export class SequelizeAdapter<
       sequelize: { ...params.sequelize, raw: false }
     }) as Model;
 
+    Object.keys(values).forEach(key => {
+      instance.set(key, values[key]);
+    });
+
     await instance
-      .update(values, sequelize)
+      .save(sequelize)
       .catch(errorHandler);
 
     if (isPresent(sequelize.include)) {
