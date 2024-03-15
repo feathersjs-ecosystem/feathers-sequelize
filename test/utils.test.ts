@@ -148,4 +148,39 @@ describe('Feathers Sequelize Utils', () => {
       ]);
     });
   });
+
+  describe('isPlainObject', () => {
+    it('returns true for plain objects', () => {
+      expect(utils.isPlainObject({})).to.equal(true);
+      expect(utils.isPlainObject({ a: 1 })).to.equal(true);
+    });
+
+    it('returns false for non-plain objects', () => {
+      expect(utils.isPlainObject([])).to.equal(false);
+      expect(utils.isPlainObject(new Date())).to.equal(false);
+      expect(utils.isPlainObject(null)).to.equal(false);
+      expect(utils.isPlainObject(undefined)).to.equal(false);
+      expect(utils.isPlainObject('')).to.equal(false);
+      expect(utils.isPlainObject(1)).to.equal(false);
+      expect(utils.isPlainObject(true)).to.equal(false);
+    });
+  });
+
+  describe('isPresent', () => {
+    it('returns true for present objects', () => {
+      expect(utils.isPresent({ a: 1 })).to.equal(true);
+      expect(utils.isPresent([1])).to.equal(true);
+      expect(utils.isPresent('a')).to.equal(true);
+      expect(utils.isPresent(1)).to.equal(true);
+      expect(utils.isPresent(true)).to.equal(true);
+    });
+
+    it('returns false for non-present objects', () => {
+      expect(utils.isPresent({})).to.equal(false);
+      expect(utils.isPresent([])).to.equal(false);
+      expect(utils.isPresent('')).to.equal(false);
+      expect(utils.isPresent(null)).to.equal(false);
+      expect(utils.isPresent(undefined)).to.equal(false);
+    });
+  });
 });

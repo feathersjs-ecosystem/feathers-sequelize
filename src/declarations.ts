@@ -9,7 +9,6 @@ export interface SequelizeAdapterOptions extends AdapterServiceOptions {
 
 export interface SequelizeAdapterParams<Q = AdapterQuery> extends AdapterParams<Q, Partial<SequelizeAdapterOptions>> {
   sequelize?: any // FindOptions | CreateOptions | BulkCreateOptions
-  $returning?: boolean
 }
 
 export type HydrateOptions = {
