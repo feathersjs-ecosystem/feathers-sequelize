@@ -2,6 +2,8 @@ import pg from 'pg';
 import assert from 'assert';
 import { expect } from 'chai';
 
+console.log('DATABASE_URL', process.env.DB);
+
 import Sequelize, { Op } from 'sequelize';
 import errors from '@feathersjs/errors';
 import type { Paginated } from '@feathersjs/feathers';
@@ -85,7 +87,7 @@ const testSuite = adaptertests([
 ]);
 
 // The base tests require the use of Sequelize.BIGINT to avoid 'out of range errors'
-// Unfortunetly BIGINT's are serialized as Strings:
+// Unfortunately BIGINT's are serialized as Strings:
 // https://github.com/sequelize/sequelize/issues/1774
 pg.defaults.parseInt8 = true;
 
