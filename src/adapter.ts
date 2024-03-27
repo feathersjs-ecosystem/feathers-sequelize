@@ -111,19 +111,12 @@ export class SequelizeAdapter<
     return this.options.Model;
   }
 
-  /**
-   * @deprecated use 'service.ModelWithScope' instead. 'applyScope' will be removed in a future release.
-   */
-  applyScope (params?: ServiceParams) {
+  ModelWithScope (params: ServiceParams) {
     const Model = this.getModel(params);
     if (params?.sequelize?.scope) {
       return Model.scope(params.sequelize.scope);
     }
     return Model;
-  }
-
-  ModelWithScope (params: ServiceParams) {
-    return this.applyScope(params);
   }
 
   convertOperators (q: any): Query {
@@ -181,25 +174,36 @@ export class SequelizeAdapter<
     const params = _params || {} as ServiceParams;
     const { filters, query: where } = this.filterQuery(params);
 
-    const sequelize: FindOptions = {
-      where,
-      order: getOrder(filters.$sort),
-      limit: filters.$limit,
-      offset: filters.$skip,
-      attributes: filters.$select,
-      distinct: true,
-      returning: true,
-      raw: this.raw,
-      ...params.sequelize
-    };
-
     // Until Sequelize fix all the findAndCount issues, a few 'hacks' are needed to get the total count correct
 
     // Adding an empty include changes the way the count is done
     // See: https://github.com/sequelize/sequelize/blob/7e441a6a5ca44749acd3567b59b1d6ceb06ae64b/lib/model.js#L1780-L1782
     // sequelize.include = sequelize.include || [];
 
-    if (id === null || where[this.id] === id) {
+    const defaults = {
+      where,
+      attributes: filters.$select,
+      distinct: true,
+      returning: true,
+      raw: this.raw,
+      ...params.sequelize
+    }
+
+    if (id === null) {
+      return {
+        order: getOrder(filters.$sort),
+        limit: filters.$limit,
+        offset: filters.$skip,
+        ...defaults
+      } as FindOptions
+    }
+
+    const sequelize: FindOptions = {
+      limit: 1,
+      ...defaults
+    };
+
+    if (where[this.id] === id) {
       return sequelize;
     }
 
@@ -447,15 +451,13 @@ export class SequelizeAdapter<
       return result;
     }
 
-    /* TODO: This _get is really only needed to get all of the properties that are not being updated. We can't do similar to _update where we skip the _get (use count instead) and build a fresh instance. With _update we are building ALL the properties and can select/return the right values, with _patch the instance is only partially full. The  instance.update does not return the other properties. So, the returned instance wouldn't contain all properties. We have to get a full instance. This could be optimized to maybe skip this _get given some update props and select circumstances */
+
     const instance = await this._get(id, {
       ...params,
       sequelize: { ...params.sequelize, raw: false }
     }) as Model;
 
-    Object.keys(values).forEach(key => {
-      instance.set(key, values[key]);
-    });
+    instance.set(values)
 
     await instance
       .save(sequelize)

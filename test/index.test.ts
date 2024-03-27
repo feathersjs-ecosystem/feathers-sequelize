@@ -403,6 +403,12 @@ describe('Feathers Sequelize Service', () => {
         assert.strictEqual(updatedPerson.name, updateName);
       });
 
+      it('does not use $skip in get()', async () => {
+        const result = await people.get(kirsten.id, { query: { $skip: 10 } });
+
+        assert.strictEqual(result.id, kirsten.id);
+      })
+
       it('filterQuery does not convert dates and symbols', () => {
         const mySymbol = Symbol('test');
         const date = new Date();
@@ -449,7 +455,7 @@ describe('Feathers Sequelize Service', () => {
           .then(() => people.remove(null, { query: {} }))
       );
 
-      it('find() returns correct total when using includes for non-raw requests (#137)', async () => {
+      it('find() returns correct total when using includes for non-raw requests #137', async () => {
         const options = { sequelize: { raw: false, include: Order } };
 
         const result = await people.find(options) as Paginated<any>;
@@ -670,7 +676,7 @@ describe('Feathers Sequelize Service', () => {
       });
     });
 
-    it('can set the scope of an operation#130', async () => {
+    it('can set the scope of an operation #130', async () => {
       const people = app.service('people');
       const data = { name: 'Active', status: 'active' };
       const SCOPE_TO_ACTIVE = { sequelize: { scope: 'active' } };
