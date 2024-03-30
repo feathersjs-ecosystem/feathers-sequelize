@@ -293,11 +293,9 @@ export class SequelizeAdapter<
         return [];
       }
 
-      const selected = isPresent(sequelize.attributes);
-
       if (sequelize.raw) {
         const result = instances.map((instance) => {
-          if (selected) {
+          if (isPresent(sequelize.attributes)) {
             return select(instance.toJSON());
           }
           return instance.toJSON();
@@ -305,7 +303,7 @@ export class SequelizeAdapter<
         return result;
       }
 
-      if (selected) {
+      if (isPresent(sequelize.attributes)) {
         const result = instances.map((instance) => {
           const result = select(instance.toJSON())
           return Model.build(result, { isNewRecord: false });
@@ -469,20 +467,15 @@ export class SequelizeAdapter<
     const sequelize = this.paramsToAdapter(id, params);
     const select = selector(params, this.id);
 
-    const total = await Model
-      .count({ ...sequelize, attributes: undefined })
-      .catch(errorHandler);
-
-    if (!total) {
-      throw new NotFound(`No record found for id '${id}'`);
-    }
+    const instance = await this._get(id, {
+      ...params,
+      sequelize: { ...params.sequelize, raw: false }
+    }) as Model;
 
     const values = Object.values(Model.getAttributes())
       .reduce((values, attribute: any) => {
         const key = attribute.fieldName as string;
         if (key === this.id) {
-          // @ts-ignore
-          values[key] = id;
           return values
         }
         // @ts-ignore
@@ -490,9 +483,9 @@ export class SequelizeAdapter<
         return values;
       }, {});
 
-    const instance = await Model
-      .build(values, { isNewRecord: false })
-      .update(_.omit(values, this.id), sequelize)
+    await instance
+      .set(values)
+      .update(values, sequelize)
       .catch(errorHandler);
 
     if (isPresent(sequelize.include)) {
