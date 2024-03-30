@@ -2,8 +2,6 @@ import pg from 'pg';
 import assert from 'assert';
 import { expect } from 'chai';
 
-console.log('DATABASE_URL', process.env.DB);
-
 import Sequelize, { Op } from 'sequelize';
 import errors from '@feathersjs/errors';
 import type { Paginated } from '@feathersjs/feathers';
@@ -560,29 +558,52 @@ describe('Feathers Sequelize Service', () => {
     describe('Custom getters and setters', () => {
       const service = app.service('custom-getter-setter');
       const value = 0;
+      const updatedValue = value + 1;
       const data = { addsOneOnGet: value, addsOneOnSet: value };
 
       it('calls custom getters and setters (#113)', async () => {
         const created = await service.create(data);
+        const createdArray = await service.create([data]) as any;
         const updated = await service.update(created.id, data);
+        const patched = await service.patch(created.id, data) as any;
+        const patchedArray = await service.patch(null, data) as any;
+        const removed = await service.remove(created.id) as any;
+        await service.create(data);
+        const removedArray = await service.remove(null)
 
-        assert.strictEqual(created.addsOneOnGet, value + 1);
-        assert.strictEqual(updated.addsOneOnGet, value + 1);
+        assert.strictEqual(created.addsOneOnGet, updatedValue);
+        assert.strictEqual(createdArray[0].addsOneOnGet, updatedValue);
+        assert.strictEqual(updated.addsOneOnGet, updatedValue);
+        assert.strictEqual(patched.addsOneOnGet, updatedValue);
+        assert.strictEqual(patchedArray[0].addsOneOnGet, updatedValue);
+        assert.strictEqual(removed.addsOneOnGet, updatedValue);
+        assert.strictEqual(removedArray[0].addsOneOnGet, updatedValue);
 
-        assert.strictEqual(created.addsOneOnSet, value + 1);
-        assert.strictEqual(updated.addsOneOnSet, value + 1);
+        assert.strictEqual(created.addsOneOnSet, updatedValue);
+        assert.strictEqual(createdArray[0].addsOneOnSet, updatedValue);
+        assert.strictEqual(updated.addsOneOnSet, updatedValue);
+        assert.strictEqual(patched.addsOneOnSet, updatedValue);
+        assert.strictEqual(patchedArray[0].addsOneOnSet, updatedValue);
       });
 
       it('can ignore custom getters and setters (#113)', async () => {
+        // Getters cannot be ignored
+        // https://sequelize.org/api/v7/interfaces/_sequelize_core.index.createoptions#raw
+        // Note it says that it ignores "field and virtual setters"
+        // bulkCreate/bulkUpdate also do not support raw for getters/setters
         const IGNORE_SETTERS = { sequelize: { raw: true } };
         const created = await service.create(data, IGNORE_SETTERS);
         const updated = await service.update(created.id, data, IGNORE_SETTERS);
+        const patched = await service.patch(created.id, data, IGNORE_SETTERS) as any;
 
-        assert.strictEqual(created.addsOneOnGet, value + 1);
-        assert.strictEqual(updated.addsOneOnGet, value + 1);
+        // This code demonstrates that the raw option does not ignore getters
+        // assert.strictEqual(created.addsOneOnGet, updatedValue);
+        // assert.strictEqual(updated.addsOneOnGet, updatedValue);
+        // assert.strictEqual(patched.addsOneOnGet, updatedValue);
 
         assert.strictEqual(created.addsOneOnSet, value);
         assert.strictEqual(updated.addsOneOnSet, value);
+        assert.strictEqual(patched.addsOneOnSet, value);
       });
     });
 

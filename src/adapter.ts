@@ -436,10 +436,9 @@ export class SequelizeAdapter<
       sequelize: { ...params.sequelize, raw: false }
     }) as Model;
 
-    instance.set(values)
-
     await instance
-      .save(sequelize)
+      .set(values)
+      .update(values, sequelize)
       .catch(errorHandler);
 
     if (isPresent(sequelize.include)) {
@@ -493,7 +492,7 @@ export class SequelizeAdapter<
 
     const instance = await Model
       .build(values, { isNewRecord: false })
-      .update(_.omit(values, this.id), sequelize)
+      .update(values, sequelize)
       .catch(errorHandler);
 
     if (isPresent(sequelize.include)) {
