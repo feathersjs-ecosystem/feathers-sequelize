@@ -503,16 +503,17 @@ export class SequelizeAdapter<
       });
     }
 
-    if (isPresent(sequelize.attributes)) {
-      const values = select(instance.toJSON())
-      if (sequelize.raw) {
-        return values;
+    if (sequelize.raw) {
+      const result = instance.toJSON();
+      if (isPresent(sequelize.attributes)) {
+        return select(result);
       }
-      return Model.build(values, { isNewRecord: false });
+      return result;
     }
 
-    if (sequelize.raw) {
-      return instance.toJSON();
+    if (isPresent(sequelize.attributes)) {
+      const result = select(instance.toJSON())
+      return Model.build(result, { isNewRecord: false });
     }
 
     return instance as Result;
