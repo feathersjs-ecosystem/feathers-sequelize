@@ -219,27 +219,6 @@ export class SequelizeAdapter<
     return sequelize;
   }
 
-  /**
-   * returns either the model instance / jsonified object for an id or all unpaginated
-   * items for `params` if id is null
-   *
-   * @deprecated Use `_get` or `_find` instead. `_getOrFind` will be removed in a future release.
-   */
-  async _getOrFind (id: Id, _params?: ServiceParams): Promise<Result>
-  async _getOrFind (id: null, _params?: ServiceParams): Promise<Result[]>
-  async _getOrFind (id: NullableId, _params: ServiceParams) {
-    const params = _params || {} as ServiceParams;
-    if (id === null) {
-      return this._find({
-        ...params,
-        paginate: false
-      });
-    }
-
-    return this._get(id, params);
-  }
-
-
   async _find (params?: ServiceParams & { paginate?: PaginationOptions }): Promise<Paginated<Result>>
   async _find (params?: ServiceParams & { paginate: false }): Promise<Result[]>
   async _find (params?: ServiceParams): Promise<Paginated<Result> | Result[]>
