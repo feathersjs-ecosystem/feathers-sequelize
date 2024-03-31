@@ -88,7 +88,8 @@ __Options:__
 - `paginate` (*optional*) - A [pagination object](https://docs.feathersjs.com/api/databases/common.html#pagination) containing a `default` and `max` page size
 - `multi` (*optional*) - Allow `create` with arrays and `update` and `remove` with `id` `null` to change multiple items. Can be `true` for all methods or an array of allowed methods (e.g. `[ 'remove', 'create' ]`)
 - `operatorMap` (*optional*) - A mapping from query syntax property names to to [Sequelize secure operators](http://docs.sequelizejs.com/manual/tutorial/querying.html)
-- `operators` (*optional*) - A list of additional query parameters to allow (e..g `[ '$regex', '$geoNear' ]`). Default is the supported `operators`
+- `operators` (*optional*) - An array of additional query operators to allow (e..g `[ '$regex', '$geoNear' ]`). Default is the supported `operators`
+- `filters` (*optional*) - An object of additional query parameters to allow (e..g `{ '$post.id$': true }`).`
 
 ### params.sequelize
 
@@ -115,6 +116,10 @@ app.service('messages').hooks({
 Other options that `params.sequelize` allows you to pass can be found in [Sequelize querying docs](https://sequelize.org/master/manual/model-querying-basics.html).
 Beware that when setting a [top-level `where` property](https://sequelize.org/master/manual/eager-loading.html#complex-where-clauses-at-the-top-level) (usually for querying based on a column on an associated model), the `where` in `params.sequelize` will overwrite your `query`.
 
+This library offers some additional functionality when using `sequelize.returning` in services that support `multi`. The `multi` option allows you to create, patch, and remove multiple records at once. When using `sequelize.returning` with `multi`, the `sequelize.returning` is used to indicate if the method should return any results. This is helpful when updating large numbers of records and you do not need the API (or events) to be bogged down with results.
+
+```js
+
 
 ### operatorMap
 
@@ -137,7 +142,7 @@ Sequelize deprecated string based operators a while ago for security reasons. St
 '$and'
 ```
 
-```
+```js
 // Find all users with name similar to Dav
 app.service('users').find({
   query: {
@@ -316,7 +321,7 @@ Additionally to the [common querying mechanism](https://docs.feathersjs.com/api/
 
 ### Querying a nested column
 
-To query based on a column in an associated model, you can use Sequelize's [nested column syntax](https://sequelize.org/master/manual/eager-loading.html#complex-where-clauses-at-the-top-level) in a query. The nested column syntax is considered an operator by Feathers, and so each such usage has to be [whitelisted](#options-whitelist).
+To query based on a column in an associated model, you can use Sequelize's [nested column syntax](https://sequelize.org/master/manual/eager-loading.html#complex-where-clauses-at-the-top-level) in a query. The nested column syntax is considered a `filter` by Feathers, and so each such usage has to be [whitelisted](#whitelist).
 
 Example:
 ```js
@@ -331,7 +336,7 @@ app.service('users').find({
 });
 ```
 
-For this case to work, you'll need to add '$post.id$' to the service options' ['whitelist' property](#options-whitelist).
+For this case to work, you'll need to add '$post.id$' to the service options' ['filters' property](#whitelist).
 
 ## Working with Sequelize Model instances
 
@@ -349,7 +354,7 @@ It is highly recommended to use `raw` queries, which is the default. However, th
 1. Use the new `hydrate` hook in the "after" phase:
 
     ```js
-    const hydrate = require('feathers-sequelize/hooks/hydrate');
+    const { hydrate } = require('feathers-sequelize');
     hooks.after.find = [hydrate()];
 
     // Or, if you need to include associated models, you can do the following:
@@ -637,6 +642,12 @@ Copyright (c) 2022
 
 Licensed under the [MIT license](LICENSE).
 
+### whitelist
+
+The `whitelist` property is no longer, you should use `filters` instead. Checkout the migration guide below.
+
+> Feathers v5 introduces a convention for `options.operators` and `options.filters`. The way feathers-sequelize worked in previous version is not compatible with these conventions. Please read https://dove.feathersjs.com/guides/migrating.html#custom-filters-operators.
+
 ## Migrate to Feathers v5 (dove)
 
 There are several breaking changes for feathers-sequelize in Feathers v5. This guide will help you to migrate your existing Feathers v4 application to Feathers v5.
@@ -689,7 +700,3 @@ app.use('/messages', new SequelizeService({
   }
 }));
 ```
-
-### whitelist
-
-> Feathers v5 introduces a convention for `options.operators` and `options.filters`. The way feathers-sequelize worked in previous version is not compatible with these conventions. Please read https://dove.feathersjs.com/guides/migrating.html#custom-filters-operators.
