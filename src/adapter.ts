@@ -114,6 +114,15 @@ export class SequelizeAdapter<
 
   ModelWithScope (params: ServiceParams) {
     return this.applyScope(params);
+  };
+
+  ModelWithSequelizeParams (params: ServiceParams) {
+    let Model = this.getModel(params)
+
+    if (params?.sequelize?.scope) Model = Model.scope(params.sequelize.scope)
+    if (params?.sequelize?.schema) Model = Model.schema(params.sequelize.schema)
+
+    return Model
   }
 
   convertOperators (q: any): Query {
@@ -231,7 +240,7 @@ export class SequelizeAdapter<
   async _find (params: ServiceParams = {} as ServiceParams): Promise<Paginated<Result> | Result[]> {
     const { paginate } = this.filterQuery(params);
 
-    const Model = this.ModelWithScope(params);
+    const Model = this.ModelWithSequelizeParams(params);
     const q = this.paramsToAdapter(null, params);
 
     try {
@@ -253,7 +262,7 @@ export class SequelizeAdapter<
   }
 
   async _get (id: Id, params: ServiceParams = {} as ServiceParams): Promise<Result> {
-    const Model = this.ModelWithScope(params);
+    const Model = this.ModelWithSequelizeParams(params);
     const q = this.paramsToAdapter(id, params);
 
     // findById calls findAll under the hood. We use findAll so that
@@ -291,7 +300,7 @@ export class SequelizeAdapter<
       returning: true
     }, options, { raw: ignoreSetters });
     const isArray = Array.isArray(data);
-    const Model = this.ModelWithScope(params);
+    const Model = this.ModelWithSequelizeParams(params);
 
     try {
       const result = isArray
@@ -318,7 +327,7 @@ export class SequelizeAdapter<
       throw new MethodNotAllowed('Can not patch multiple entries')
     }
 
-    const Model = this.ModelWithScope(params);
+    const Model = this.ModelWithSequelizeParams(params);
 
     // Get a list of ids that match the id/query. Overwrite the
     // $select because only the id is needed for this idList
@@ -404,7 +413,7 @@ export class SequelizeAdapter<
       throw new MethodNotAllowed('Can not remove multiple entries')
     }
 
-    const Model = this.ModelWithScope(params);
+    const Model = this.ModelWithSequelizeParams(params);
 
     const findParams = { ...params };
     if (params.$returning === false) {

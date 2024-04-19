@@ -633,6 +633,45 @@ describe('Feathers Sequelize Service', () => {
 
       await people.remove(person.id);
     });
+
+    it('can set the schema', async () => {
+      const ModelAlt = sequelize.define('people', {
+        name: {
+          type: Sequelize.STRING,
+          allowNull: false
+        },
+        age: {
+          type: Sequelize.INTEGER
+        },
+        created: {
+          type: Sequelize.BOOLEAN
+        },
+        time: {
+          type: Sequelize.BIGINT
+        },
+        status: {
+          type: Sequelize.STRING,
+          defaultValue: 'pending'
+        }
+      }, {
+        schema: 'alternative',
+        freezeTableName: true
+      });
+      await ModelAlt.sync({ force: true })
+
+      const people= app.service('people')
+      const data = { name: 'Jiri Schema' };
+      const SCHEMA_DEFAULT = { sequelize: { schema: 'default' } };
+      const SCHEMA_ALTERNATIVE = { sequelize: { schema: 'alternative' } };
+      const personDefault = await people.create(data, SCHEMA_DEFAULT);
+      const personAlternative = await people.create(data, SCHEMA_ALTERNATIVE);
+
+      assert.ok(personDefault)
+      assert.ok(personAlternative)
+
+      await people.remove(personDefault.id, SCHEMA_DEFAULT);
+      await people.remove(personAlternative.id, SCHEMA_ALTERNATIVE);
+    })
   });
 
   describe('ORM functionality', () => {
