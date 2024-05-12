@@ -8,6 +8,7 @@ export * from './declarations'
 export * from './adapter'
 export * from './hooks';
 export { ERROR, errorHandler } from './utils';
+
 export class SequelizeService<Result = any, Data = Partial<Result>, ServiceParams extends Params<any> = SequelizeAdapterParams, PatchData = Partial<Data>>
   extends SequelizeAdapter<Result, Data, ServiceParams, PatchData>
   implements ServiceMethods<Result | Paginated<Result>, Data, ServiceParams, PatchData>

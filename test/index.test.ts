@@ -85,7 +85,7 @@ const testSuite = adaptertests([
 ]);
 
 // The base tests require the use of Sequelize.BIGINT to avoid 'out of range errors'
-// Unfortunetly BIGINT's are serialized as Strings:
+// Unfortunately BIGINT's are serialized as Strings:
 // https://github.com/sequelize/sequelize/issues/1774
 pg.defaults.parseInt8 = true;
 
@@ -176,7 +176,6 @@ Order.belongsTo(Model);
 describe('Feathers Sequelize Service', () => {
   before(async () => {
     await Model.sync({ force: true });
-
     await CustomId.sync({ force: true });
     await CustomGetterSetter.sync({ force: true });
     await Order.sync({ force: true });
@@ -255,15 +254,12 @@ describe('Feathers Sequelize Service', () => {
       .use('custom-getter-setter', new SequelizeService({
         Model: CustomGetterSetter,
         events: ['testing'],
+        raw: false,
         multi: true
       }));
 
-    before(() => {
-      return app.service('people').remove(null, { query: { $limit: 1000 } })
-    });
-
-    after(() => app.service('people')
-      .remove(null, { query: { $limit: 1000 } })
+    afterEach(() => app.service('people')
+      .remove(null, { query: {} })
     );
 
     describe('Common functionality', () => {
@@ -274,18 +270,14 @@ describe('Feathers Sequelize Service', () => {
         kirsten = await people.create({ name: 'Kirsten', age: 30 });
       });
 
-      afterEach(() => people.remove(kirsten.id).catch(() => {}));
-
       it('allows querying for null values (#45)', async () => {
         const name = 'Null test';
-        const person = await people.create({ name });
+        await people.create({ name });
         const { data } = await people.find({ query: { age: null } }) as Paginated<any>;
 
         assert.strictEqual(data.length, 1);
         assert.strictEqual(data[0].name, name);
         assert.strictEqual(data[0].age, null);
-
-        await people.remove(person.id);
       });
 
       it('cleans up the query prototype', async () => {
@@ -301,7 +293,7 @@ describe('Feathers Sequelize Service', () => {
 
       it('still allows querying with Sequelize operators', async () => {
         const name = 'Age test';
-        const person = await people.create({ name, age: 10 });
+        await people.create({ name, age: 10 });
         const { data } = await people.find({
           query:
           { age: { [Sequelize.Op.eq]: 10 } }
@@ -310,13 +302,11 @@ describe('Feathers Sequelize Service', () => {
         assert.strictEqual(data.length, 1);
         assert.strictEqual(data[0].name, name);
         assert.strictEqual(data[0].age, 10);
-
-        await people.remove(person.id);
       });
 
       it('$like works', async () => {
         const name = 'Like test';
-        const person = await people.create({ name, age: 10 });
+        await people.create({ name, age: 10 });
         const { data } = await people.find({
           query:
           { name: { $like: '%ike%' } }
@@ -325,8 +315,6 @@ describe('Feathers Sequelize Service', () => {
         assert.strictEqual(data.length, 1);
         assert.strictEqual(data[0].name, name);
         assert.strictEqual(data[0].age, 10);
-
-        await people.remove(person.id);
       });
 
       it('does not allow raw attribute $select', async () => {
@@ -385,6 +373,40 @@ describe('Feathers Sequelize Service', () => {
         }
       });
 
+      it('multi patch with correct sort', async () => {
+        const people = app.service('people');
+        const john = await people.create({ name: 'John', age: 30 });
+        const jane = await people.create({ name: 'Jane', age: 30 });
+        const updated = await people.patch(null, { age: 31 }, {
+          query: {
+            id: { $in: [john.id, jane.id] },
+            $sort: { name: 1 }
+          }
+        });
+
+        assert.strictEqual(updated.length, 2);
+        assert.strictEqual(updated[0].id, jane.id);
+        assert.strictEqual(updated[1].id, john.id);
+      });
+
+      it('single patch with $select', async () => {
+        const updateName = 'Ryan';
+
+        const result = await people.patch(kirsten.id, { name: updateName }, { query: { $select: ['id'] } });
+
+        assert.deepStrictEqual(result, { id: kirsten.id });
+
+        const updatedPerson = await people.get(kirsten.id);
+
+        assert.strictEqual(updatedPerson.name, updateName);
+      });
+
+      it('does not use $skip in get()', async () => {
+        const result = await people.get(kirsten.id, { query: { $skip: 10 } });
+
+        assert.strictEqual(result.id, kirsten.id);
+      })
+
       it('filterQuery does not convert dates and symbols', () => {
         const mySymbol = Symbol('test');
         const date = new Date();
@@ -398,17 +420,9 @@ describe('Feathers Sequelize Service', () => {
       });
 
       it('get works with custom $and', async () => {
-        let johnId;
-        try {
-          const john = await people.create({ name: 'John', age: 30 });
-          johnId = john.id;
-          const foundJohn = await people.get(john.id, { query: { $and: [{ age: 30 }, { status: 'pending' }] } });
-          assert.strictEqual(foundJohn.id, john.id);
-        } finally {
-          if (johnId) {
-            await people.remove(johnId);
-          }
-        }
+        const john = await people.create({ name: 'John', age: 30 });
+        const foundJohn = await people.get(john.id, { query: { $and: [{ age: 30 }, { status: 'pending' }] } });
+        assert.strictEqual(foundJohn.id, john.id);
       });
     });
 
@@ -435,11 +449,11 @@ describe('Feathers Sequelize Service', () => {
       });
 
       afterEach(async () =>
-        await orders.remove(null, { query: { $limit: 1000 } })
-          .then(() => people.remove(null, { query: { $limit: 1000 } }))
+        await orders.remove(null, { query: {} })
+          .then(() => people.remove(null, { query: {} }))
       );
 
-      it('find() returns correct total when using includes for non-raw requests (#137)', async () => {
+      it('find() returns correct total when using includes for non-raw requests #137', async () => {
         const options = { sequelize: { raw: false, include: Order } };
 
         const result = await people.find(options) as Paginated<any>;
@@ -464,6 +478,24 @@ describe('Feathers Sequelize Service', () => {
         expect(result).to.have.property('orders.id');
       });
 
+      it('patch() includes associations and query', async () => {
+        const params = { sequelize: { include: Order } };
+        const data = { name: 'Patched' };
+
+        const current = await people.get(kirsten.id, params);
+
+        const result = await people.patch(kirsten.id, data, {
+          query: { name: current.name },
+          ...params
+        });
+
+        delete current.updatedAt;
+        // @ts-ignore
+        delete result.updatedAt
+
+        assert.deepStrictEqual(result, { ...current, ...data });
+      });
+
       it('update() includes associations', async () => {
         const params = { sequelize: { include: Order } };
         const data = { name: 'Updated' };
@@ -473,14 +505,32 @@ describe('Feathers Sequelize Service', () => {
         expect(result).to.have.property('orders.id');
       });
 
+      it('update() includes associations and query', async () => {
+        const params = { sequelize: { include: Order } };
+        const data = { name: 'Updated' };
+
+        const current = await people.get(kirsten.id, params);
+
+        const result = await people.update(kirsten.id, {
+          ...current,
+          ...data
+        }, {
+          query: { name: current.name },
+          ...params
+        });
+
+        delete current.updatedAt;
+        delete result.updatedAt;
+
+        assert.deepStrictEqual(result, { ...current, ...data });
+      });
+
       it('remove() includes associations', async () => {
         const params = { sequelize: { include: Order } };
 
         const result = await people.remove(kirsten.id, params);
 
         expect(result).to.have.property('orders.id');
-
-        kirsten = await people.create({ name: 'Kirsten', age: 30 });
       });
 
       it('can use $dollar.notation$', async () => {
@@ -506,25 +556,54 @@ describe('Feathers Sequelize Service', () => {
     });
 
     describe('Custom getters and setters', () => {
-      it('calls custom getters and setters (#113)', async () => {
-        const value = 0;
-        const service = app.service('custom-getter-setter');
-        const data = { addsOneOnGet: value, addsOneOnSet: value };
-        const result = await service.create(data);
+      const service = app.service('custom-getter-setter');
+      const value = 0;
+      const updatedValue = value + 1;
+      const data = { addsOneOnGet: value, addsOneOnSet: value };
 
-        assert.strictEqual(result.addsOneOnGet, value + 1);
-        assert.strictEqual(result.addsOneOnSet, value + 1);
+      it('calls custom getters and setters (#113)', async () => {
+        const created = await service.create(data);
+        const createdArray = await service.create([data]) as any;
+        const updated = await service.update(created.id, data);
+        const patched = await service.patch(created.id, data) as any;
+        const patchedArray = await service.patch(null, data) as any;
+        const removed = await service.remove(created.id) as any;
+        await service.create(data);
+        const removedArray = await service.remove(null)
+
+        assert.strictEqual(created.addsOneOnGet, updatedValue);
+        assert.strictEqual(createdArray[0].addsOneOnGet, updatedValue);
+        assert.strictEqual(updated.addsOneOnGet, updatedValue);
+        assert.strictEqual(patched.addsOneOnGet, updatedValue);
+        assert.strictEqual(patchedArray[0].addsOneOnGet, updatedValue);
+        assert.strictEqual(removed.addsOneOnGet, updatedValue);
+        assert.strictEqual(removedArray[0].addsOneOnGet, updatedValue);
+
+        assert.strictEqual(created.addsOneOnSet, updatedValue);
+        assert.strictEqual(createdArray[0].addsOneOnSet, updatedValue);
+        assert.strictEqual(updated.addsOneOnSet, updatedValue);
+        assert.strictEqual(patched.addsOneOnSet, updatedValue);
+        assert.strictEqual(patchedArray[0].addsOneOnSet, updatedValue);
       });
 
       it('can ignore custom getters and setters (#113)', async () => {
-        const value = 0;
-        const service = app.service('custom-getter-setter');
-        const data = { addsOneOnGet: value, addsOneOnSet: value };
-        const IGNORE_SETTERS = { sequelize: { ignoreSetters: true } };
-        const result = await service.create(data, IGNORE_SETTERS);
+        // Getters cannot be ignored
+        // https://sequelize.org/api/v7/interfaces/_sequelize_core.index.createoptions#raw
+        // Note it says that it ignores "field and virtual setters"
+        // bulkCreate/bulkUpdate also do not support raw for getters/setters
+        const IGNORE_SETTERS = { sequelize: { raw: true } };
+        const created = await service.create(data, IGNORE_SETTERS);
+        const updated = await service.update(created.id, data, IGNORE_SETTERS);
+        const patched = await service.patch(created.id, data, IGNORE_SETTERS) as any;
 
-        assert.strictEqual(result.addsOneOnGet, value + 1);
-        assert.strictEqual(result.addsOneOnSet, value);
+        // This code demonstrates that the raw option does not ignore getters
+        // assert.strictEqual(created.addsOneOnGet, updatedValue);
+        // assert.strictEqual(updated.addsOneOnGet, updatedValue);
+        // assert.strictEqual(patched.addsOneOnGet, updatedValue);
+
+        assert.strictEqual(created.addsOneOnSet, value);
+        assert.strictEqual(updated.addsOneOnSet, value);
+        assert.strictEqual(patched.addsOneOnSet, value);
       });
     });
 
@@ -618,20 +697,18 @@ describe('Feathers Sequelize Service', () => {
       });
     });
 
-    it('can set the scope of an operation#130', async () => {
+    it('can set the scope of an operation #130', async () => {
       const people = app.service('people');
       const data = { name: 'Active', status: 'active' };
       const SCOPE_TO_ACTIVE = { sequelize: { scope: 'active' } };
       const SCOPE_TO_PENDING = { sequelize: { scope: 'pending' } };
-      const person = await people.create(data);
+      await people.create(data);
 
       const staPeople = await people.find(SCOPE_TO_ACTIVE) as Paginated<any>;
       assert.strictEqual(staPeople.data.length, 1);
 
       const stpPeople = await people.find(SCOPE_TO_PENDING) as Paginated<any>;
       assert.strictEqual(stpPeople.data.length, 0);
-
-      await people.remove(person.id);
     });
   });
 
@@ -661,7 +738,7 @@ describe('Feathers Sequelize Service', () => {
         david = await people.create({ name: 'David' });
       });
 
-      afterEach(() => people.remove(david.id).catch(() => {}));
+      afterEach(() => people.remove(null, { query: { } }).catch(() => {}));
 
       it('find() returns model instances', async () => {
         const results = await people.find() as any as any[];
@@ -679,8 +756,6 @@ describe('Feathers Sequelize Service', () => {
         const instance = await people.create({ name: 'Sarah' });
 
         expect(instance).to.be.an.instanceOf(Model);
-
-        await people.remove(instance.id);
       });
 
       it('bulk create() returns model instances', async () => {
@@ -693,9 +768,18 @@ describe('Feathers Sequelize Service', () => {
         expect(results[0]).to.be.an.instanceOf(Model);
         assert.ok(results[0].id);
         assert.ok(results[1].id);
+      });
 
-        await people.remove(results[0].id);
-        await people.remove(results[1].id);
+      it('create() with returning=false returns empty array', async () => {
+        const responseSingle = await people.create({ name: 'delete' }, {
+          sequelize: { returning: false }
+        });
+        const responseMulti = await people.create([{ name: 'delete' }], {
+          sequelize: { returning: false }
+        });
+
+        expect(responseSingle).to.be.an.instanceOf(Model);
+        expect(responseMulti).to.deep.equal([]);
       });
 
       it('patch() returns a model instance', async () => {
@@ -704,10 +788,17 @@ describe('Feathers Sequelize Service', () => {
         expect(instance).to.be.an.instanceOf(Model);
       });
 
-      it('patch() with $returning=false returns empty array', async () => {
-        const response = await people.patch(david.id, { name: 'Sarah' }, { $returning: false });
+      it('patch() with returning=false returns empty array', async () => {
+        const responseSingle = await people.patch(david.id, { name: 'Sarah' }, {
+          sequelize: { returning: false }
+        });
+        const responseMulti = await people.patch(null, { name: 'Sarah' }, {
+          query: { name: 'Sarah' },
+          sequelize: { returning: false }
+        });
 
-        expect(response).to.deep.equal([]);
+        expect(responseSingle).to.be.an.instanceOf(Model);
+        expect(responseMulti).to.deep.equal([]);
       });
 
       it('update() returns a model instance', async () => {
@@ -722,10 +813,18 @@ describe('Feathers Sequelize Service', () => {
         expect(instance).to.be.an.instanceOf(Model);
       });
 
-      it('remove() with $returning=false returns empty array', async () => {
-        const response = await people.remove(david.id, { $returning: false });
+      it('remove() with returning=false returns empty array', async () => {
+        const responseSingle = await people.remove(david.id, {
+          sequelize: { returning: false }
+        });
+        david = await people.create({ name: 'David' });
+        const responseMulti = await people.remove(null, {
+          query: { name: 'David' },
+          sequelize: { returning: false }
+        });
 
-        expect(response).to.deep.equal([]);
+        expect(responseSingle).to.be.an.instanceOf(Model);
+        expect(responseMulti).to.deep.equal([]);
       });
     });
 
@@ -737,7 +836,7 @@ describe('Feathers Sequelize Service', () => {
         david = await rawPeople.create({ name: 'David' });
       });
 
-      afterEach(() => rawPeople.remove(david.id).catch(() => {}));
+      afterEach(() => rawPeople.remove(null, { query: {} }).catch(() => {}));
 
       it('`raw: false` works for find()', async () => {
         const results = await rawPeople.find(NOT_RAW) as any as any[];
@@ -755,8 +854,6 @@ describe('Feathers Sequelize Service', () => {
         const instance = await rawPeople.create({ name: 'Sarah' }, NOT_RAW);
 
         expect(instance).to.be.an.instanceof(Model);
-
-        await rawPeople.remove(instance.id);
       });
 
       it('`raw: false` works for bulk create()', async () => {
@@ -764,8 +861,6 @@ describe('Feathers Sequelize Service', () => {
 
         expect(results.length).to.equal(1);
         expect(results[0]).to.be.an.instanceof(Model);
-
-        await rawPeople.remove(results[0].id);
       });
 
       it('`raw: false` works for patch()', async () => {
@@ -788,19 +883,20 @@ describe('Feathers Sequelize Service', () => {
     });
   });
 
-  describe('ORM functionality with overidden getModel method', () => {
+  describe('ORM functionality with overridden getModel method', () => {
     const EXPECTED_ATTRIBUTE_VALUE = 42;
 
     function getExtraParams (
-      additionalTopLevelParams: Record<string, any> = {},
-      additionalSequelizeParams: Record<string, any> = {}
+      params?: Record<string, any>
     ) {
-      return Object.assign({
-        sequelize: Object.assign({
+      return {
+        ...params,
+        sequelize: {
           expectedAttribute: EXPECTED_ATTRIBUTE_VALUE,
-          getModelCalls: { count: 0 }
-        }, additionalSequelizeParams)
-      }, additionalTopLevelParams);
+          getModelCalls: { count: 0 },
+          ...params?.sequelize
+        }
+      }
     }
 
     class ExtendedService extends SequelizeService {
@@ -910,12 +1006,30 @@ describe('Feathers Sequelize Service', () => {
         expect(instance).to.be.an.instanceof(Model);
       });
 
-      it('patch() with $returning=false returns empty array', async () => {
-        const params = getExtraParams({ $returning: false });
-        const response = await people.patch(david.id, { name: 'Sarah' }, params);
-        expect(params.sequelize.getModelCalls.count).to.gte(1);
+      it('create() with returning=false returns empty array', async () => {
+        const params = getExtraParams({ sequelize: { returning: false } });
+        const responseSingle = await people.create({ name: 'delete' }, params);
+        const responseMulti = await people.create([{ name: 'delete' }], params);
 
-        expect(response).to.deep.equal([]);
+        expect(responseSingle).to.be.an('object').that.has.property('id');
+        expect(responseMulti).to.deep.equal([]);
+
+        await people.remove(null, { ...params, query: { name: 'delete' } });
+      });
+
+      it('patch() with returning=false returns empty array', async () => {
+        const params = getExtraParams({ sequelize: { returning: false } });
+        const responseSingle = await people.patch(david.id, { name: 'Sarah' },
+          params
+        );
+        const responseMulti = await people.patch(null, { name: 'Sarah' }, {
+          ...params,
+          query: { name: 'Sarah' },
+          sequelize: { ...params.sequelize }
+        });
+
+        expect(responseSingle).to.be.an('object').with.property('id').that.equals(david.id);
+        expect(responseMulti).to.deep.equal([]);
       });
 
       it('update() returns a model instance', async () => {
@@ -933,12 +1047,17 @@ describe('Feathers Sequelize Service', () => {
         expect(instance).to.be.an.instanceof(Model);
       });
 
-      it('remove() with $returning=false returns empty array', async () => {
-        const params = getExtraParams({ $returning: false });
-        const response = await people.remove(david.id, params);
-        expect(params.sequelize.getModelCalls.count).to.gte(1);
+      it('remove() with returning=false returns empty array', async () => {
+        const params = getExtraParams({ sequelize: { returning: false } });
+        const responseSingle = await people.remove(david.id, params);
+        david = await people.create({ name: 'David' }, params);
+        const responseMulti = await people.remove(null, {
+          ...params,
+          query: { name: 'David' }
+        });
 
-        expect(response).to.deep.equal([]);
+        expect(responseSingle).to.be.an('object').that.has.property('id');
+        expect(responseMulti).to.deep.equal([]);
       });
     });
 
@@ -954,7 +1073,7 @@ describe('Feathers Sequelize Service', () => {
       afterEach(() => rawPeople.remove(david.id, getExtraParams()).catch(() => {}));
 
       it('`raw: false` works for find()', async () => {
-        const params = getExtraParams({}, NOT_RAW);
+        const params = getExtraParams({ sequelize: NOT_RAW });
         const results = (await rawPeople.find(params)) as any as any[];
         expect(params.sequelize.getModelCalls.count).to.gte(1);
 
@@ -962,7 +1081,7 @@ describe('Feathers Sequelize Service', () => {
       });
 
       it('`raw: false` works for get()', async () => {
-        const params = getExtraParams({}, NOT_RAW);
+        const params = getExtraParams({ sequelize: NOT_RAW });
         const instance = await rawPeople.get(david.id, params);
         expect(params.sequelize.getModelCalls.count).to.gte(1);
 
@@ -970,7 +1089,7 @@ describe('Feathers Sequelize Service', () => {
       });
 
       it('`raw: false` works for create()', async () => {
-        const params = getExtraParams({}, NOT_RAW);
+        const params = getExtraParams({ sequelize: NOT_RAW });
         const instance = await rawPeople.create({ name: 'Sarah' }, params);
         expect(params.sequelize.getModelCalls.count).to.gte(1);
 
@@ -982,7 +1101,7 @@ describe('Feathers Sequelize Service', () => {
       });
 
       it('`raw: false` works for bulk create()', async () => {
-        const params = getExtraParams({}, NOT_RAW);
+        const params = getExtraParams({ sequelize: NOT_RAW });
         const results = await rawPeople.create([{ name: 'Sarah' }], params);
         expect(params.sequelize.getModelCalls.count).to.gte(1);
 
@@ -995,7 +1114,7 @@ describe('Feathers Sequelize Service', () => {
       });
 
       it('`raw: false` works for patch()', async () => {
-        const params = getExtraParams({}, NOT_RAW);
+        const params = getExtraParams({ sequelize: NOT_RAW });
         const instance = await rawPeople.patch(david.id, { name: 'Sarah' }, params);
         expect(params.sequelize.getModelCalls.count).to.gte(1);
 
@@ -1003,7 +1122,7 @@ describe('Feathers Sequelize Service', () => {
       });
 
       it('`raw: false` works for update()', async () => {
-        const params = getExtraParams({}, NOT_RAW);
+        const params = getExtraParams({ sequelize: NOT_RAW });
         const instance = await rawPeople.update(david.id, david, params);
         expect(params.sequelize.getModelCalls.count).to.gte(1);
 
@@ -1011,7 +1130,7 @@ describe('Feathers Sequelize Service', () => {
       });
 
       it('`raw: false` works for remove()', async () => {
-        const params = getExtraParams({}, NOT_RAW);
+        const params = getExtraParams({ sequelize: NOT_RAW });
         const instance = await rawPeople.remove(david.id, params);
         expect(params.sequelize.getModelCalls.count).to.gte(1);
 

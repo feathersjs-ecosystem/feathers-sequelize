@@ -2,6 +2,7 @@ import type { FeathersError } from '@feathersjs/errors';
 import { BadRequest, Forbidden, GeneralError, NotFound, Timeout, Unavailable } from '@feathersjs/errors';
 import type { BaseError } from 'sequelize';
 export const ERROR = Symbol('feathers-sequelize/error');
+
 const wrap = (error: FeathersError, original: BaseError) => Object.assign(error, { [ERROR]: original });
 
 export const errorHandler = (error: any) => {
@@ -47,6 +48,16 @@ export const getOrder = (sort: Record<string, any> = {}) => Object.keys(sort).re
   return order;
 }, []);
 
-export const isPlainObject = (obj: any) => {
-  return obj && obj.constructor === {}.constructor;
+export const isPlainObject = (obj: any): boolean => {
+  return !!obj && obj.constructor === {}.constructor;
+};
+
+export const isPresent = (obj: any): boolean => {
+  if (Array.isArray(obj)) {
+    return obj.length > 0;
+  }
+  if (isPlainObject(obj)) {
+    return Object.keys(obj).length > 0;
+  }
+  return !!obj;
 };

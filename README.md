@@ -27,6 +27,7 @@ A [Feathers](https://feathersjs.com) database adapter for [Sequelize](http://seq
   - [Querying a nested column](#querying-a-nested-column)
 - [Working with Sequelize Model instances](#working-with-sequelize-model-instances)
 - [Validation](#validation)
+- [Errors](#errors)
 - [Testing sequelize queries in isolation](#testing-sequelize-queries-in-isolation)
   - [1. Build a test file](#1-build-a-test-file)
   - [2. Integrate the query using a "before" hook](#2-integrate-the-query-using-a-before-hook)
@@ -87,7 +88,8 @@ __Options:__
 - `paginate` (*optional*) - A [pagination object](https://docs.feathersjs.com/api/databases/common.html#pagination) containing a `default` and `max` page size
 - `multi` (*optional*) - Allow `create` with arrays and `update` and `remove` with `id` `null` to change multiple items. Can be `true` for all methods or an array of allowed methods (e.g. `[ 'remove', 'create' ]`)
 - `operatorMap` (*optional*) - A mapping from query syntax property names to to [Sequelize secure operators](http://docs.sequelizejs.com/manual/tutorial/querying.html)
-- `operators` (*optional*) - A list of additional query parameters to allow (e..g `[ '$regex', '$geoNear' ]`). Default is the supported `operators`
+- `operators` (*optional*) - An array of additional query operators to allow (e..g `[ '$regex', '$geoNear' ]`). Default is the supported `operators`
+- `filters` (*optional*) - An object of additional query parameters to allow (e..g `{ '$post.id$': true }`).`
 
 ### params.sequelize
 
@@ -114,6 +116,10 @@ app.service('messages').hooks({
 Other options that `params.sequelize` allows you to pass can be found in [Sequelize querying docs](https://sequelize.org/master/manual/model-querying-basics.html).
 Beware that when setting a [top-level `where` property](https://sequelize.org/master/manual/eager-loading.html#complex-where-clauses-at-the-top-level) (usually for querying based on a column on an associated model), the `where` in `params.sequelize` will overwrite your `query`.
 
+This library offers some additional functionality when using `sequelize.returning` in services that support `multi`. The `multi` option allows you to create, patch, and remove multiple records at once. When using `sequelize.returning` with `multi`, the `sequelize.returning` is used to indicate if the method should return any results. This is helpful when updating large numbers of records and you do not need the API (or events) to be bogged down with results.
+
+```js
+
 
 ### operatorMap
 
@@ -136,7 +142,7 @@ Sequelize deprecated string based operators a while ago for security reasons. St
 '$and'
 ```
 
-```
+```js
 // Find all users with name similar to Dav
 app.service('users').find({
   query: {
@@ -162,7 +168,7 @@ By default, all `feathers-sequelize` operations will return `raw` data (using `r
  - associated data loads a bit differently
  - ...and several other issues that one might not expect
 
-Don't worry! The solution is easy. Please read the guides about [working with model instances](#working-with-sequelize-model-instances).
+Don't worry! The solution is easy. Please read the guides about [working with model instances](#working-with-sequelize-model-instances). You can also pass `{ raw: true/false}` in `params.sequelize` to change the behavior per service call.
 
 ### Working with MSSQL
 
@@ -175,7 +181,7 @@ model.beforeFind(model => model.order.push(['id', 'ASC']))
 Or in a hook like this:
 
 ```js
-module.exports = function (options = {}) {
+export default function (options = {}) {
   return async context => {
     const { query = {} } = context.params;
     // Sort by id field ascending (or any other property you want)
@@ -289,7 +295,7 @@ function (context) {
    if (include) {
       const AssociatedModel = context.app.services.fooservice.Model;
       context.params.sequelize = {
-         include: [{ model: AssociatedModel }]
+        include: [{ model: AssociatedModel }]
       };
       // Update the query to not include `include`
       context.params.query = query;
@@ -313,11 +319,9 @@ For more information, follow up up in the [Sequelize documentation for associati
 
 Additionally to the [common querying mechanism](https://docs.feathersjs.com/api/databases/querying.html) this adapter also supports all [Sequelize query operators](http://docs.sequelizejs.com/manual/tutorial/querying.html).
 
-> **Note**: This adapter supports an additional `$returning` parameter for patch and remove queries. By setting `params.$returning = false` it will disable feathers and sequelize from returning what was changed, so mass updates can be done without overwhelming node and/or clients.
-
 ### Querying a nested column
 
-To query based on a column in an associated model, you can use Sequelize's [nested column syntax](https://sequelize.org/master/manual/eager-loading.html#complex-where-clauses-at-the-top-level) in a query. The nested column syntax is considered an operator by Feathers, and so each such usage has to be [whitelisted](#options-whitelist).
+To query based on a column in an associated model, you can use Sequelize's [nested column syntax](https://sequelize.org/master/manual/eager-loading.html#complex-where-clauses-at-the-top-level) in a query. The nested column syntax is considered a `filter` by Feathers, and so each such usage has to be [whitelisted](#whitelist).
 
 Example:
 ```js
@@ -332,7 +336,7 @@ app.service('users').find({
 });
 ```
 
-For this case to work, you'll need to add '$post.id$' to the service options' ['whitelist' property](#options-whitelist).
+For this case to work, you'll need to add '$post.id$' to the service options' ['filters' property](#whitelist).
 
 ## Working with Sequelize Model instances
 
@@ -340,41 +344,87 @@ It is highly recommended to use `raw` queries, which is the default. However, th
 
 1. Set `{ raw: false }` in a "before" hook:
     ```js
-    function rawFalse(context) {
-        if (!context.params.sequelize) context.params.sequelize = {};
-        Object.assign(context.params.sequelize, { raw: false });
-        return context;
+    const rawFalse = () => (context) => {
+      if (!context.params.sequelize) context.params.sequelize = {};
+      Object.assign(context.params.sequelize, { raw: false });
+      return context;
     }
-    hooks.before.find = [rawFalse];
+
+    export default {
+      after: {
+        // ...
+        find: [rawFalse()]
+        // ...
+      },
+      // ...
+    };
+
     ```
-1. Use the new `hydrate` hook in the "after" phase:
+1. Use the `hydrate` hook in the "after" phase:
 
     ```js
-    const hydrate = require('feathers-sequelize/hooks/hydrate');
-    hooks.after.find = [hydrate()];
+    import { hydrate } from 'feathers-sequelize';
+
+    export default {
+      after: {
+        // ...
+        find: [hydrate()]
+        // ...
+      },
+      // ...
+    };
 
     // Or, if you need to include associated models, you can do the following:
-     function includeAssociated (context) {
-         return hydrate({
-            include: [{ model: context.app.services.fooservice.Model }]
-         }).call(this, context);
-     }
-     hooks.after.find = [includeAssociated];
-     ```
+    const includeAssociated = () => (context) => hydrate({
+      include: [{ model: context.app.services.fooservice.Model }]
+    });
+
+    export default {
+      after: {
+        // ...
+        find: [includeAssociated()]
+        // ...
+      },
+      // ...
+    };
+    ```
 
   For a more complete example see this [gist](https://gist.github.com/sicruse/bfaa17008990bab2fd1d76a670c3923f).
 
 > **Important:** When working with Sequelize Instances, most of the feathers-hooks-common will no longer work. If you need to use a common hook or other 3rd party hooks, you should use the "dehydrate" hook to convert data back to a plain object:
 > ```js
-> const { dehydrate, hydrate } = require('feathers-sequelize');
-> const { populate } = require('feathers-hooks-common');
+> import { dehydrate, hydrate } from 'feathers-sequelize';
+> import { populate } = from 'feathers-hooks-common';
 >
-> hooks.after.find = [hydrate(), doSomethingCustom(), dehydrate(), populate()];
+> export default {
+>   after: {
+>     // ...
+>     find: [hydrate(), doSomethingCustom(), dehydrate(), populate()]
+>     // ...
+>   },
+>   // ...
+> };
 > ```
 
 ## Validation
 
 Sequelize by default gives you the ability to [add validations at the model level](http://docs.sequelizejs.com/en/latest/docs/models-definition/#validations). Using an error handler like the one that [comes with Feathers](https://github.com/feathersjs/feathers-errors/blob/master/src/error-handler.js) your validation errors will be formatted nicely right out of the box!
+
+## Errors
+
+Errors do not contain Sequelize specific information. The original Sequelize error can be retrieved on the server via:
+
+```js
+import { ERROR } = from 'feathers-sequelize';
+
+try {
+  await sequelizeService.doSomething();
+} catch(error) {
+  // error is a FeathersError
+  // Safely retrieve the Sequelize error
+  const sequelizeError = error[ERROR];
+}
+```
 
 ## Testing sequelize queries in isolation
 
@@ -382,21 +432,22 @@ If you wish to use some of the more advanced features of sequelize, you should f
 
 ### 1. Build a test file
 
-Creat a temporary file in your project root like this:
+Create a temporary file in your project root like this:
 
 ```js
 // test.js
-const app = require('./src/app');
+import app from from './src/app';
 // run setup to initialize relations
 app.setup();
+
 const seqClient = app.get('sequelizeClient');
 const SomeModel = seqClient.models['some-model'];
 const log = console.log.bind(console);
 
 SomeModel.findAll({
-   /*
-    * Build your custom query here. We will use this object later.
-    */
+  /*
+  * Build your custom query here. We will use this object later.
+  */
 }).then(log).catch(log);
 ```
 
@@ -616,37 +667,17 @@ In the unfortunate case where you must revert your app to a previous state, it i
 1. Revert your code back to the previous state
 1. Start your app
 
-### Migrating
-
-`feathers-sequelize` 4.0.0 comes with important security and usability updates.
-
-> __Important:__ For general migration information to the new database adapter functionality see [crow.docs.feathersjs.com/migrating.html#database-adapters](https://crow.docs.feathersjs.com/migrating.html#database-adapters).
-
-The following breaking changes have been introduced:
-
-- All methods now take `params.sequelize` into account
-- All methods allow additional query parameters
-- Multiple updates are disabled by default (see the `multi` option)
-- Upgraded to secure Sequelize operators (see the [operators](#operators) option)
-- Errors no longer contain Sequelize specific information. The original Sequelize error can be retrieved on the server via:
-
-```js
-const { ERROR } = require('feathers-sequelize');
-
-try {
-  await sequelizeService.doSomethign();
-} catch(error) {
-  // error is a FeathersError
-  // Safely retrieve the Sequelize error
-  const sequelizeError = error[ERROR];
-}
-```
-
 ## License
 
-Copyright (c) 2022
+Copyright (c) 2024
 
 Licensed under the [MIT license](LICENSE).
+
+### whitelist
+
+The `whitelist` property is no longer, you should use `filters` instead. Checkout the migration guide below.
+
+> Feathers v5 introduces a convention for `options.operators` and `options.filters`. The way feathers-sequelize worked in previous version is not compatible with these conventions. Please read https://dove.feathersjs.com/guides/migrating.html#custom-filters-operators.
 
 ## Migrate to Feathers v5 (dove)
 
@@ -656,7 +687,7 @@ There are several breaking changes for feathers-sequelize in Feathers v5. This g
 
 The default export of `feathers-sequelize` has been removed. You now have to import the `SequelizeService` class directly:
 ```js
-const { SequelizeService } = require('feathers-sequelize');
+import { SequelizeService } from 'feathers-sequelize';
 
 app.use('/messages', new SequelizeService({ ... }));
 ```
@@ -669,8 +700,8 @@ This follows conventions from feathers v5.
 The old `options.operators` object is renamed to `options.operatorMap`:
 
 ```js
-const { SequelizeService } = require('feathers-sequelize');
-const { Op } = require('sequelize');
+import { SequelizeService } from 'feathers-sequelize';
+import { Op } from 'sequelize';
 
 app.use('/messages', new SequelizeService({
   Model,
@@ -681,8 +712,6 @@ app.use('/messages', new SequelizeService({
 }));
 ```
 
-The new `options.operators` option is an array of allowed operators.
-
 ### filters
 
 > Feathers v5 introduces a convention for `options.operators` and `options.filters`. The way feathers-sequelize worked in previous version is not compatible with these conventions. Please read https://dove.feathersjs.com/guides/migrating.html#custom-filters-operators first.
@@ -690,7 +719,7 @@ The new `options.operators` option is an array of allowed operators.
 Feathers v5 introduces a new `filters` option. It is an object to verify filters. Here you need to add `$dollar.notation$` operators, if you have some.
 
 ```js
-const { SequelizeService } = require('feathers-sequelize');
+import { SequelizeService } from 'feathers-sequelize';
 
 app.use('/messages', new SequelizeService({
   Model,
@@ -700,7 +729,3 @@ app.use('/messages', new SequelizeService({
   }
 }));
 ```
-
-### whitelist
-
-> Feathers v5 introduces a convention for `options.operators` and `options.filters`. The way feathers-sequelize worked in previous version is not compatible with these conventions. Please read https://dove.feathersjs.com/guides/migrating.html#custom-filters-operators.
