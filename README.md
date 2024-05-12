@@ -181,7 +181,7 @@ model.beforeFind(model => model.order.push(['id', 'ASC']))
 Or in a hook like this:
 
 ```js
-module.exports = function (options = {}) {
+export default function (options = {}) {
   return async context => {
     const { query = {} } = context.params;
     // Sort by id field ascending (or any other property you want)
@@ -295,7 +295,7 @@ function (context) {
    if (include) {
       const AssociatedModel = context.app.services.fooservice.Model;
       context.params.sequelize = {
-         include: [{ model: AssociatedModel }]
+        include: [{ model: AssociatedModel }]
       };
       // Update the query to not include `include`
       context.params.query = query;
@@ -344,36 +344,66 @@ It is highly recommended to use `raw` queries, which is the default. However, th
 
 1. Set `{ raw: false }` in a "before" hook:
     ```js
-    function rawFalse(context) {
-        if (!context.params.sequelize) context.params.sequelize = {};
-        Object.assign(context.params.sequelize, { raw: false });
-        return context;
+    const rawFalse = () => (context) => {
+      if (!context.params.sequelize) context.params.sequelize = {};
+      Object.assign(context.params.sequelize, { raw: false });
+      return context;
     }
-    hooks.before.find = [rawFalse];
+
+    export default {
+      after: {
+        // ...
+        find: [rawFalse()]
+        // ...
+      },
+      // ...
+    };
+
     ```
-1. Use the new `hydrate` hook in the "after" phase:
+1. Use the `hydrate` hook in the "after" phase:
 
     ```js
-    const { hydrate } = require('feathers-sequelize');
-    hooks.after.find = [hydrate()];
+    import { hydrate } from 'feathers-sequelize';
+
+    export default {
+      after: {
+        // ...
+        find: [hydrate()]
+        // ...
+      },
+      // ...
+    };
 
     // Or, if you need to include associated models, you can do the following:
-     function includeAssociated (context) {
-         return hydrate({
-            include: [{ model: context.app.services.fooservice.Model }]
-         }).call(this, context);
-     }
-     hooks.after.find = [includeAssociated];
-     ```
+    const includeAssociated = () => (context) => hydrate({
+      include: [{ model: context.app.services.fooservice.Model }]
+    });
+
+    export default {
+      after: {
+        // ...
+        find: [includeAssociated()]
+        // ...
+      },
+      // ...
+    };
+    ```
 
   For a more complete example see this [gist](https://gist.github.com/sicruse/bfaa17008990bab2fd1d76a670c3923f).
 
 > **Important:** When working with Sequelize Instances, most of the feathers-hooks-common will no longer work. If you need to use a common hook or other 3rd party hooks, you should use the "dehydrate" hook to convert data back to a plain object:
 > ```js
-> const { dehydrate, hydrate } = require('feathers-sequelize');
-> const { populate } = require('feathers-hooks-common');
+> import { dehydrate, hydrate } from 'feathers-sequelize';
+> import { populate } = from 'feathers-hooks-common';
 >
-> hooks.after.find = [hydrate(), doSomethingCustom(), dehydrate(), populate()];
+> export default {
+>   after: {
+>     // ...
+>     find: [hydrate(), doSomethingCustom(), dehydrate(), populate()]
+>     // ...
+>   },
+>   // ...
+> };
 > ```
 
 ## Validation
@@ -385,10 +415,10 @@ Sequelize by default gives you the ability to [add validations at the model leve
 Errors do not contain Sequelize specific information. The original Sequelize error can be retrieved on the server via:
 
 ```js
-const { ERROR } = require('feathers-sequelize');
+import { ERROR } = from 'feathers-sequelize';
 
 try {
-  await sequelizeService.doSomethign();
+  await sequelizeService.doSomething();
 } catch(error) {
   // error is a FeathersError
   // Safely retrieve the Sequelize error
@@ -406,17 +436,18 @@ Create a temporary file in your project root like this:
 
 ```js
 // test.js
-const app = require('./src/app');
+import app from from './src/app';
 // run setup to initialize relations
 app.setup();
+
 const seqClient = app.get('sequelizeClient');
 const SomeModel = seqClient.models['some-model'];
 const log = console.log.bind(console);
 
 SomeModel.findAll({
-   /*
-    * Build your custom query here. We will use this object later.
-    */
+  /*
+  * Build your custom query here. We will use this object later.
+  */
 }).then(log).catch(log);
 ```
 
@@ -638,7 +669,7 @@ In the unfortunate case where you must revert your app to a previous state, it i
 
 ## License
 
-Copyright (c) 2022
+Copyright (c) 2024
 
 Licensed under the [MIT license](LICENSE).
 
@@ -656,7 +687,7 @@ There are several breaking changes for feathers-sequelize in Feathers v5. This g
 
 The default export of `feathers-sequelize` has been removed. You now have to import the `SequelizeService` class directly:
 ```js
-const { SequelizeService } = require('feathers-sequelize');
+import { SequelizeService } from 'feathers-sequelize';
 
 app.use('/messages', new SequelizeService({ ... }));
 ```
@@ -669,8 +700,8 @@ This follows conventions from feathers v5.
 The old `options.operators` object is renamed to `options.operatorMap`:
 
 ```js
-const { SequelizeService } = require('feathers-sequelize');
-const { Op } = require('sequelize');
+import { SequelizeService } from 'feathers-sequelize';
+import { Op } from 'sequelize';
 
 app.use('/messages', new SequelizeService({
   Model,
@@ -681,8 +712,6 @@ app.use('/messages', new SequelizeService({
 }));
 ```
 
-The new `options.operators` option is an array of allowed operators.
-
 ### filters
 
 > Feathers v5 introduces a convention for `options.operators` and `options.filters`. The way feathers-sequelize worked in previous version is not compatible with these conventions. Please read https://dove.feathersjs.com/guides/migrating.html#custom-filters-operators first.
@@ -690,7 +719,7 @@ The new `options.operators` option is an array of allowed operators.
 Feathers v5 introduces a new `filters` option. It is an object to verify filters. Here you need to add `$dollar.notation$` operators, if you have some.
 
 ```js
-const { SequelizeService } = require('feathers-sequelize');
+import { SequelizeService } from 'feathers-sequelize';
 
 app.use('/messages', new SequelizeService({
   Model,
