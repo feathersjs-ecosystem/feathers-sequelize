@@ -2,15 +2,33 @@
 
 ## [Unreleased](https://github.com/feathersjs-ecosystem/feathers-sequelize/tree/HEAD)
 
-[Full Changelog](https://github.com/feathersjs-ecosystem/feathers-sequelize/compare/v7.0.3...HEAD)
+[Full Changelog](https://github.com/feathersjs-ecosystem/feathers-sequelize/compare/v8.0.0-pre.0...HEAD)
 
 **Merged pull requests:**
 
-- chore\(dependencies\): Update all dependencies [\#423](https://github.com/feathersjs-ecosystem/feathers-sequelize/pull/423) ([daffl](https://github.com/daffl))
+- chore: update dependencies [\#435](https://github.com/feathersjs-ecosystem/feathers-sequelize/pull/435) ([fratzinger](https://github.com/fratzinger))
+- refactor!: perf, restructuring, rm \_getOrFind, rm params.$returning, use instance methods [\#429](https://github.com/feathersjs-ecosystem/feathers-sequelize/pull/429) ([fratzinger](https://github.com/fratzinger))
+
+## [v8.0.0-pre.0](https://github.com/feathersjs-ecosystem/feathers-sequelize/tree/v8.0.0-pre.0) (2024-05-12)
+
+[Full Changelog](https://github.com/feathersjs-ecosystem/feathers-sequelize/compare/v7.0.4-pre.0...v8.0.0-pre.0)
+
+## [v7.0.4-pre.0](https://github.com/feathersjs-ecosystem/feathers-sequelize/tree/v7.0.4-pre.0) (2024-05-12)
+
+[Full Changelog](https://github.com/feathersjs-ecosystem/feathers-sequelize/compare/v7.0.3...v7.0.4-pre.0)
+
+**Closed issues:**
+
+- Use consistent $select in all methods, optimize select function [\#384](https://github.com/feathersjs-ecosystem/feathers-sequelize/issues/384)
+- Optimize multi patch when $returning is false. [\#382](https://github.com/feathersjs-ecosystem/feathers-sequelize/issues/382)
 
 ## [v7.0.3](https://github.com/feathersjs-ecosystem/feathers-sequelize/tree/v7.0.3) (2023-11-01)
 
 [Full Changelog](https://github.com/feathersjs-ecosystem/feathers-sequelize/compare/v7.0.2...v7.0.3)
+
+**Merged pull requests:**
+
+- chore\(dependencies\): Update all dependencies [\#423](https://github.com/feathersjs-ecosystem/feathers-sequelize/pull/423) ([daffl](https://github.com/daffl))
 
 ## [v7.0.2](https://github.com/feathersjs-ecosystem/feathers-sequelize/tree/v7.0.2) (2023-06-21)
 
@@ -138,7 +156,7 @@
 - Be able to sort nulls before or after not-nulls values [\#370](https://github.com/feathersjs-ecosystem/feathers-sequelize/pull/370) ([MariaCamilaCubides](https://github.com/MariaCamilaCubides))
 - typing: add 'operators' to SequelizeServiceOptions [\#367](https://github.com/feathersjs-ecosystem/feathers-sequelize/pull/367) ([fratzinger](https://github.com/fratzinger))
 - Upgrade dependencies [\#359](https://github.com/feathersjs-ecosystem/feathers-sequelize/pull/359) ([silvestreh](https://github.com/silvestreh))
-- Update README.md [\#353](https://github.com/feathersjs-ecosystem/feathers-sequelize/pull/353) ([max-b-old](https://github.com/max-b-old))
+- Update README.md [\#353](https://github.com/feathersjs-ecosystem/feathers-sequelize/pull/353) ([max-bertinetti](https://github.com/max-bertinetti))
 
 ## [v6.2.0](https://github.com/feathersjs-ecosystem/feathers-sequelize/tree/v6.2.0) (2020-04-29)
 
@@ -566,7 +584,6 @@
 **Closed issues:**
 
 - The patch on postgres is selecting every row from the table before updating [\#168](https://github.com/feathersjs-ecosystem/feathers-sequelize/issues/168)
-- Can't override id field when declaring a \(MySQL\) service [\#164](https://github.com/feathersjs-ecosystem/feathers-sequelize/issues/164)
 - Run tests against all sequelize dialects [\#163](https://github.com/feathersjs-ecosystem/feathers-sequelize/issues/163)
 - Adding model includes returns incorrect paging count [\#161](https://github.com/feathersjs-ecosystem/feathers-sequelize/issues/161)
 - Raw associations prevent pagination total being available [\#137](https://github.com/feathersjs-ecosystem/feathers-sequelize/issues/137)
