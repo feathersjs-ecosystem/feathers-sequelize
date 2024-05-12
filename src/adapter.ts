@@ -85,13 +85,16 @@ export class SequelizeAdapter<
     });
   }
 
-  get raw () {
+  get raw (): boolean {
     return this.options.raw !== false;
   }
 
-  get Op () {
-    // @ts-ignore
-    return this.options.Model.sequelize.Sequelize.Op;
+  /**
+   *
+   * @deprecated Use `Op` from `sequelize` directly
+   */
+  get Op (): typeof Op {
+    return Op;
   }
 
   get Model () {
@@ -208,9 +211,9 @@ export class SequelizeAdapter<
     }
 
     if (this.id in where) {
-      const { and } = this.Op;
-      where[and] = where[and]
-        ? [...where[and], { [this.id]: id }]
+      const { and } = Op;
+      where[and as any] = where[and as any]
+        ? [...where[and as any], { [this.id]: id }]
         : { [this.id]: id };
     } else {
       where[this.id] = id;
@@ -225,41 +228,40 @@ export class SequelizeAdapter<
   async _find (params: ServiceParams = {} as ServiceParams): Promise<Paginated<Result> | Result[]> {
     const Model = this.ModelWithScope(params);
     const { paginate } = this.filterQuery(params);
-    const sequelize = this.paramsToAdapter(null, params);
+    const sequelizeOptions = this.paramsToAdapter(null, params);
 
     if (!paginate || !paginate.default) {
-      const result = await Model.findAll(sequelize).catch(errorHandler);
+      const result = await Model.findAll(sequelizeOptions).catch(errorHandler);
       return result;
     }
 
-    if (sequelize.limit === 0) {
-      const total = await Model
-        .count({ ...sequelize, attributes: undefined })
-        .catch(errorHandler);
+    if (sequelizeOptions.limit === 0) {
+      const total = (await Model
+        .count({ ...sequelizeOptions, attributes: undefined })
+        .catch(errorHandler)) as any as number;
 
       return {
-        // @ts-ignore
         total,
-        limit: sequelize.limit,
-        skip: sequelize.offset || 0,
+        limit: sequelizeOptions.limit,
+        skip: sequelizeOptions.offset || 0,
         data: []
       }
     }
 
-    const result = await Model.findAndCountAll(sequelize).catch(errorHandler);
+    const result = await Model.findAndCountAll(sequelizeOptions).catch(errorHandler);
 
     return {
       total: result.count,
-      limit: sequelize.limit,
-      skip: sequelize.offset || 0,
+      limit: sequelizeOptions.limit,
+      skip: sequelizeOptions.offset || 0,
       data: result.rows
     }
   }
 
   async _get (id: Id, params: ServiceParams = {} as ServiceParams): Promise<Result> {
     const Model = this.ModelWithScope(params);
-    const sequelize = this.paramsToAdapter(id, params);
-    const result = await Model.findAll(sequelize).catch(errorHandler);
+    const sequelizeOptions = this.paramsToAdapter(id, params);
+    const result = await Model.findAll(sequelizeOptions).catch(errorHandler);
     if (result.length === 0) {
       throw new NotFound(`No record found for id '${id}'`);
     }
@@ -282,20 +284,20 @@ export class SequelizeAdapter<
     }
 
     const Model = this.ModelWithScope(params);
-    const sequelize = this.paramsToAdapter(null, params);
+    const sequelizeOptions = this.paramsToAdapter(null, params);
 
     if (isArray) {
       const instances = await Model
-        .bulkCreate(data as any[], sequelize)
+        .bulkCreate(data as any[], sequelizeOptions)
         .catch(errorHandler);
 
-      if (sequelize.returning === false) {
+      if (sequelizeOptions.returning === false) {
         return [];
       }
 
-      if (sequelize.raw) {
+      if (sequelizeOptions.raw) {
         const result = instances.map((instance) => {
-          if (isPresent(sequelize.attributes)) {
+          if (isPresent(sequelizeOptions.attributes)) {
             return select(instance.toJSON());
           }
           return instance.toJSON();
@@ -303,7 +305,7 @@ export class SequelizeAdapter<
         return result;
       }
 
-      if (isPresent(sequelize.attributes)) {
+      if (isPresent(sequelizeOptions.attributes)) {
         const result = instances.map((instance) => {
           const result = select(instance.toJSON())
           return Model.build(result, { isNewRecord: false });
@@ -315,10 +317,10 @@ export class SequelizeAdapter<
     }
 
     const result = await Model
-      .create(data as any, sequelize as CreateOptions)
+      .create(data as any, sequelizeOptions as CreateOptions)
       .catch(errorHandler);
 
-    if (sequelize.raw) {
+    if (sequelizeOptions.raw) {
       return select((result as Model).toJSON())
     }
 
@@ -333,10 +335,9 @@ export class SequelizeAdapter<
     }
 
     const Model = this.ModelWithScope(params);
-    const sequelize = this.paramsToAdapter(id, params);
+    const sequelizeOptions = this.paramsToAdapter(id, params);
     const select = selector(params, this.id);
     const values = _.omit(data, this.id);
-    let ids: Id[] | null = null;
 
     if (id === null) {
       const current = await this._find({
@@ -352,17 +353,16 @@ export class SequelizeAdapter<
         return []
       }
 
-      ids = current.map((item: any) => item[this.id]);
+      const ids = current.map((item: any) => item[this.id]);
 
-      // @ts-ignore
       let [, instances] = await Model
         .update(values, {
-          ...sequelize,
-          where: { [this.id]: ids.length === 1 ? ids[0] : { [this.Op.in]: ids } }
+          ...sequelizeOptions,
+          where: { [this.id]: ids.length === 1 ? ids[0] : { [Op.in]: ids } }
         } as UpdateOptions)
         .catch(errorHandler) as [number, Model[]?];
 
-      if (sequelize.returning === false) {
+      if (sequelizeOptions.returning === false) {
         return []
       }
 
@@ -373,7 +373,7 @@ export class SequelizeAdapter<
         instances = null;
       }
 
-      const selected = isPresent(sequelize.attributes);
+      const hasAttributes = isPresent(sequelizeOptions.attributes);
 
       if (instances) {
         if (isPresent(params.query?.$sort)) {
@@ -382,8 +382,7 @@ export class SequelizeAdapter<
 
           current.forEach((item: any) => {
             const id = item[this.id];
-            // @ts-ignore
-            const instance = instances.find(instance => instance[this.id] === id);
+            const instance = instances.find(instance => (instance as any)[this.id] === id);
             if (instance) {
               sortedInstances.push(instance);
             } else {
@@ -394,9 +393,9 @@ export class SequelizeAdapter<
           instances = [...sortedInstances, ...unsortedInstances];
         }
 
-        if (sequelize.raw) {
+        if (sequelizeOptions.raw) {
           const result = instances.map((instance) => {
-            if (selected) {
+            if (hasAttributes) {
               return select(instance.toJSON());
             }
             return instance.toJSON();
@@ -404,7 +403,7 @@ export class SequelizeAdapter<
           return result;
         }
 
-        if (selected) {
+        if (hasAttributes) {
           const result = instances.map((instance) => {
             const result = select(instance.toJSON())
             return Model.build(result, { isNewRecord: false });
@@ -412,7 +411,7 @@ export class SequelizeAdapter<
           return result;
         }
 
-        return instances as Result[];
+        return instances as unknown as Result[];
       }
 
       const result = await this._find({
@@ -428,49 +427,48 @@ export class SequelizeAdapter<
       return result;
     }
 
-
     const instance = await this._get(id, {
       ...params,
       sequelize: { ...params.sequelize, raw: false }
-    }) as Model;
+    }) as unknown as Model;
 
     await instance
       .set(values)
-      .update(values, sequelize)
+      .update(values, sequelizeOptions)
       .catch(errorHandler);
 
-    if (isPresent(sequelize.include)) {
+    if (isPresent(sequelizeOptions.include)) {
       return this._get(id, {
         ...params,
         query: { $select: params.query?.$select }
       });
     }
 
-    if (sequelize.raw) {
+    if (sequelizeOptions.raw) {
       const result = instance.toJSON();
-      if (isPresent(sequelize.attributes)) {
+      if (isPresent(sequelizeOptions.attributes)) {
         return select(result);
       }
       return result;
     }
 
-    if (isPresent(sequelize.attributes)) {
+    if (isPresent(sequelizeOptions.attributes)) {
       const result = select(instance.toJSON())
       return Model.build(result, { isNewRecord: false });
     }
 
-    return instance as Result;
+    return instance as unknown as Result;
   }
 
   async _update (id: Id, data: Data, params: ServiceParams = {} as ServiceParams): Promise<Result> {
     const Model = this.ModelWithScope(params);
-    const sequelize = this.paramsToAdapter(id, params);
+    const sequelizeOptions = this.paramsToAdapter(id, params);
     const select = selector(params, this.id);
 
     const instance = await this._get(id, {
       ...params,
       sequelize: { ...params.sequelize, raw: false }
-    }) as Model;
+    }) as unknown as Model;
 
     const values = Object.values(Model.getAttributes())
       .reduce((values, attribute: any) => {
@@ -478,37 +476,36 @@ export class SequelizeAdapter<
         if (key === this.id) {
           return values
         }
-        // @ts-ignore
-        values[key] = key in data ? data[key] : null;
+        values[key] = key in (data as any) ? (data as any)[key] : null;
         return values;
-      }, {});
+      }, {} as Record<string, any>);
 
     await instance
       .set(values)
-      .update(values, sequelize)
+      .update(values, sequelizeOptions)
       .catch(errorHandler);
 
-    if (isPresent(sequelize.include)) {
+    if (isPresent(sequelizeOptions.include)) {
       return this._get(id, {
         ...params,
         query: { $select: params.query?.$select }
       });
     }
 
-    if (sequelize.raw) {
+    if (sequelizeOptions.raw) {
       const result = instance.toJSON();
-      if (isPresent(sequelize.attributes)) {
+      if (isPresent(sequelizeOptions.attributes)) {
         return select(result);
       }
       return result;
     }
 
-    if (isPresent(sequelize.attributes)) {
+    if (isPresent(sequelizeOptions.attributes)) {
       const result = select(instance.toJSON())
       return Model.build(result, { isNewRecord: false });
     }
 
-    return instance as Result;
+    return instance as unknown as Result;
   }
 
   async _remove (id: null, params?: ServiceParams): Promise<Result[]>
@@ -519,10 +516,10 @@ export class SequelizeAdapter<
     }
 
     const Model = this.ModelWithScope(params);
-    const sequelize = this.paramsToAdapter(id, params);
+    const sequelizeOptions = this.paramsToAdapter(id, params);
 
     if (id === null) {
-      const $select = sequelize.returning === false
+      const $select = sequelizeOptions.returning === false
         ? [this.id]
         : params?.query?.$select
 
@@ -540,10 +537,10 @@ export class SequelizeAdapter<
 
       await Model.destroy({
         ...params.sequelize,
-        where: { [this.id]: ids.length === 1 ? ids[0] : { [this.Op.in]: ids } }
+        where: { [this.id]: ids.length === 1 ? ids[0] : { [Op.in]: ids } }
       }).catch(errorHandler);
 
-      if (sequelize.returning === false) {
+      if (sequelizeOptions.returning === false) {
         return [];
       }
 
@@ -554,7 +551,7 @@ export class SequelizeAdapter<
 
     const instance = result instanceof Model ? result : Model.build(result as any, { isNewRecord: false });
 
-    await instance.destroy(sequelize);
+    await instance.destroy(sequelizeOptions);
 
     return result;
   }

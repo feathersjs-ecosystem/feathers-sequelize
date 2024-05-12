@@ -520,7 +520,7 @@ describe('Feathers Sequelize Service', () => {
         });
 
         delete current.updatedAt;
-        delete result.updatedAt
+        delete result.updatedAt;
 
         assert.deepStrictEqual(result, { ...current, ...data });
       });
