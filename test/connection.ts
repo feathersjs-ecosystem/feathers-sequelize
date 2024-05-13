@@ -1,6 +1,7 @@
 import { Sequelize } from 'sequelize';
 
 export default (DB?: 'postgres' | 'mysql') => {
+  console.log('DB:', DB);
   if (DB === 'postgres') {
     return new Sequelize('sequelize', 'postgres', 'password', {
       host: 'localhost',
