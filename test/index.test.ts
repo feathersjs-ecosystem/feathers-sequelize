@@ -89,7 +89,7 @@ const testSuite = adaptertests([
 // https://github.com/sequelize/sequelize/issues/1774
 pg.defaults.parseInt8 = true;
 
-const sequelize = makeConnection();
+const sequelize = makeConnection(process.env.DB);
 
 const Model = sequelize.define('people', {
   name: {

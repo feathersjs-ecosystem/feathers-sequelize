@@ -4,7 +4,7 @@ import Sequelize from 'sequelize';
 
 import { hydrate } from '../src/hooks/hydrate';
 import makeConnection from './connection'
-const sequelize = makeConnection();
+const sequelize = makeConnection(process.env.DB);
 
 type MethodName = 'find' | 'get' | 'create' | 'update' | 'patch' | 'remove';
 
