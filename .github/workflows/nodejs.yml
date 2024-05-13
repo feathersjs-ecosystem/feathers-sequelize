@@ -2,6 +2,11 @@ name: CI
 
 on: [push, pull_request]
 
+env:
+  POSTGRES_USER: postgres
+  POSTGRES_PASSWORD: password
+  POSTGRES_DB: sequelize
+
 jobs:
   build:
 
@@ -11,9 +16,9 @@ jobs:
       postgres:
         image: postgres:12.12
         env:
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: password
-          POSTGRES_DB: sequelize
+          POSTGRES_USER: ${{ env.POSTGRES_USER }}
+          POSTGRES_PASSWORD: ${{ env.POSTGRES_PASSWORD }}
+          POSTGRES_DB: ${{ env.POSTGRES_DB }}
         ports:
           - 5432:5432
         # needed because the postgres container does not provide a healthcheck
