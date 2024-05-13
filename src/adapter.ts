@@ -363,11 +363,6 @@ export class SequelizeAdapter<
         } as UpdateOptions)
         .catch(errorHandler) as [number, Model[]?];
 
-      if (instances?.length) {
-        // eslint-disable-next-line no-console
-        console.log('instanceof', instances[0] instanceof Model);
-      }
-
       if (sequelizeOptions.returning === false) {
         return []
       }

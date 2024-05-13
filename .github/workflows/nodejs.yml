@@ -7,6 +7,10 @@ env:
   POSTGRES_PASSWORD: password
   POSTGRES_DB: sequelize
 
+  MYSQL_USER: sequelize
+  MYSQL_DATABASE: sequelize
+  MYSQL_PASSWORD: password
+
 jobs:
   build:
 
@@ -24,10 +28,27 @@ jobs:
         # needed because the postgres container does not provide a healthcheck
         options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
 
+      mysql:
+        image: mysql:8.4
+        env:
+          # The MySQL docker container requires these environment variables to be set
+          # so we can create and migrate the test database.
+          # See: https://hub.docker.com/_/mysql
+          MYSQL_DATABASE: ${{ env.MYSQL_DATABASE }}
+          MYSQL_ROOT_PASSWORD: ${{ env.MYSQL_PASSWORD }}
+          MYSQL_USER: ${{ env.MYSQL_USER }}
+          MYSQL_PASSWORD: ${{ env.MYSQL_PASSWORD }}
+        ports:
+          # Opens port 3306 on service container and host
+          # https://docs.github.com/en/actions/using-containerized-services/about-service-containers
+          - 3306:3306
+          # Before continuing, verify the mysql container is reachable from the ubuntu host
+        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries 5
+
     strategy:
       matrix:
         node-version: [18.x, 20.x, 22.x]
-        database: ['sqlite', 'postgres']
+        database: ['sqlite', 'postgres', 'mysql']
 
     steps:
       - uses: actions/checkout@v3

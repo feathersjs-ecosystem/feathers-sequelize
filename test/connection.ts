@@ -5,7 +5,6 @@ export default (DB?: 'postgres' | 'mysql' | string) => {
   const logging: Options['logging'] = false;
 
   if (DB === 'postgres') {
-    console.log(process.env.POSTGRES_DB, process.env.POSTGRES_USER, process.env.POSTGRES_PASSWORD)
     return new Sequelize(
       process.env.POSTGRES_DB ?? 'sequelize',
       process.env.POSTGRES_USER ?? 'postgres',
@@ -17,11 +16,16 @@ export default (DB?: 'postgres' | 'mysql' | string) => {
       }
     );
   } else if (DB === 'mysql') {
-    return new Sequelize('sequelize', 'root', '', {
-      host: '127.0.0.1',
-      dialect: 'mysql',
-      logging
-    });
+    return new Sequelize(
+      process.env.MYSQl_DATABASE ?? 'sequelize',
+      process.env.MYSQL_USER ?? 'root',
+      process.env.MYSQL_PASSWORD ?? '',
+      {
+        host: '127.0.0.1',
+        dialect: 'mysql',
+        logging
+      }
+    );
   } else {
     return new Sequelize('sequelize', '', '', {
       dialect: 'sqlite',
