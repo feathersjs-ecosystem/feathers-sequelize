@@ -2,16 +2,29 @@
 
 ## [Unreleased](https://github.com/feathersjs-ecosystem/feathers-sequelize/tree/HEAD)
 
-[Full Changelog](https://github.com/feathersjs-ecosystem/feathers-sequelize/compare/v8.0.0-pre.0...HEAD)
+[Full Changelog](https://github.com/feathersjs-ecosystem/feathers-sequelize/compare/v8.0.0-pre.1...HEAD)
+
+**Merged pull requests:**
+
+- fix: multi patch raw false [\#436](https://github.com/feathersjs-ecosystem/feathers-sequelize/pull/436) ([fratzinger](https://github.com/fratzinger))
+
+## [v8.0.0-pre.1](https://github.com/feathersjs-ecosystem/feathers-sequelize/tree/v8.0.0-pre.1) (2024-05-13)
+
+[Full Changelog](https://github.com/feathersjs-ecosystem/feathers-sequelize/compare/v8.0.0-pre.0...v8.0.0-pre.1)
+
+**Closed issues:**
+
+- Allow join queries on remove [\#402](https://github.com/feathersjs-ecosystem/feathers-sequelize/issues/402)
+- Use proper $and in patch and remove methods [\#383](https://github.com/feathersjs-ecosystem/feathers-sequelize/issues/383)
+
+## [v8.0.0-pre.0](https://github.com/feathersjs-ecosystem/feathers-sequelize/tree/v8.0.0-pre.0) (2024-05-12)
+
+[Full Changelog](https://github.com/feathersjs-ecosystem/feathers-sequelize/compare/v7.0.4-pre.0...v8.0.0-pre.0)
 
 **Merged pull requests:**
 
 - chore: update dependencies [\#435](https://github.com/feathersjs-ecosystem/feathers-sequelize/pull/435) ([fratzinger](https://github.com/fratzinger))
 - refactor!: perf, restructuring, rm \_getOrFind, rm params.$returning, use instance methods [\#429](https://github.com/feathersjs-ecosystem/feathers-sequelize/pull/429) ([fratzinger](https://github.com/fratzinger))
-
-## [v8.0.0-pre.0](https://github.com/feathersjs-ecosystem/feathers-sequelize/tree/v8.0.0-pre.0) (2024-05-12)
-
-[Full Changelog](https://github.com/feathersjs-ecosystem/feathers-sequelize/compare/v7.0.4-pre.0...v8.0.0-pre.0)
 
 ## [v7.0.4-pre.0](https://github.com/feathersjs-ecosystem/feathers-sequelize/tree/v7.0.4-pre.0) (2024-05-12)
 
