@@ -25,18 +25,19 @@ const testSuite = adaptertests([
   '.get',
   '.get + $select',
   '.get + id + query',
-  '.get + NotFound',
+  // '.get + NotFound', // add '.get + NotFound (integer)' once https://github.com/feathersjs/feathers/pull/3486 is merged and published
   '.find',
   '.remove',
   '.remove + $select',
   '.remove + id + query',
+  // add '.remove + NotFound (integer)' once https://github.com/feathersjs/feathers/pull/3486 is merged and published
   '.remove + multi',
   '.remove + multi no pagination',
   '.update',
   '.update + $select',
   '.update + id + query',
   '.update + query + NotFound',
-  '.update + NotFound',
+  // '.update + NotFound', // add '.update + NotFound (integer)' once https://github.com/feathersjs/feathers/pull/3486 is merged and published
   '.patch',
   '.patch + $select',
   '.patch + id + query',
@@ -45,7 +46,7 @@ const testSuite = adaptertests([
   '.patch multi query same',
   '.patch multi query changed',
   '.patch + query + NotFound',
-  '.patch + NotFound',
+  // '.patch + NotFound', // add '.patch + NotFound (integer)' once https://github.com/feathersjs/feathers/pull/3486 is merged and published
   '.create',
   '.create + $select',
   '.create multi',
@@ -89,7 +90,7 @@ const testSuite = adaptertests([
 // https://github.com/sequelize/sequelize/issues/1774
 pg.defaults.parseInt8 = true;
 
-const sequelize = makeConnection();
+const sequelize = makeConnection(process.env.DB);
 
 const Model = sequelize.define('people', {
   name: {
@@ -228,6 +229,89 @@ describe('Feathers Sequelize Service', () => {
 
     testSuite(app, errors, 'people', 'id');
     testSuite(app, errors, 'people-customid', 'customid');
+
+    describe('remove this when https://github.com/feathersjs/feathers/pull/3486 is merged and published', () => {
+      it('.get + NotFound (integer)', async () => {
+        try {
+          await app.service('people').get(123456789)
+          throw new Error('Should never get here')
+        } catch (error: any) {
+          assert.strictEqual(error.name, 'NotFound', 'Error is a NotFound Feathers error')
+        }
+      });
+
+      it('.get + NotFound (integer)', async () => {
+        try {
+          await app.service('people-customid').get(123456789)
+          throw new Error('Should never get here')
+        } catch (error: any) {
+          assert.strictEqual(error.name, 'NotFound', 'Error is a NotFound Feathers error')
+        }
+      });
+
+      it('.remove + NotFound (integer)', async () => {
+        try {
+          await app.service('people').remove(123456789)
+          throw new Error('Should never get here')
+        } catch (error: any) {
+          assert.strictEqual(error.name, 'NotFound', 'Error is a NotFound Feathers error')
+        }
+      })
+
+      it('.remove + NotFound (integer)', async () => {
+        try {
+          await app.service('people-customid').remove(123456789)
+          throw new Error('Should never get here')
+        } catch (error: any) {
+          assert.strictEqual(error.name, 'NotFound', 'Error is a NotFound Feathers error')
+        }
+      })
+
+      it('.update + NotFound (integer)', async () => {
+        try {
+          await app.service('people').update(123456789, {
+            name: 'NotFound'
+          })
+          throw new Error('Should never get here')
+        } catch (error: any) {
+          assert.strictEqual(error.name, 'NotFound', 'Error is a NotFound Feathers error')
+        }
+      })
+
+      it('.update + NotFound (integer)', async () => {
+        try {
+          await app.service('people-customid').update(123456789, {
+            name: 'NotFound'
+          })
+          throw new Error('Should never get here')
+        } catch (error: any) {
+          assert.strictEqual(error.name, 'NotFound', 'Error is a NotFound Feathers error')
+        }
+      })
+
+      it('.patch + NotFound (integer)', async () => {
+        try {
+          await app.service('people').patch(123456789, {
+            name: 'PatchDoug'
+          })
+          throw new Error('Should never get here')
+        } catch (error: any) {
+          assert.strictEqual(error.name, 'NotFound', 'Error is a NotFound Feathers error')
+        }
+      })
+
+      it('.patch + NotFound (integer)', async () => {
+        try {
+          await app.service('people-customid').patch(123456789, {
+            name: 'PatchDoug'
+          })
+          throw new Error('Should never get here')
+        } catch (error: any) {
+          assert.strictEqual(error.name, 'NotFound', 'Error is a NotFound Feathers error')
+        }
+      })
+    });
+
   });
 
   describe('Feathers-Sequelize Specific Tests', () => {
@@ -746,16 +830,39 @@ describe('Feathers Sequelize Service', () => {
         expect(results[0]).to.be.an.instanceof(Model);
       });
 
+      it('find() with `params.sequelize.raw: true` returns raw data', async () => {
+        const results = await people.find({ sequelize: {
+          raw: true
+        } }) as any as any[];
+
+        expect(results[0]).to.be.an('object');
+        expect(results[0]).to.not.be.instanceOf(Model);
+      });
+
       it('get() returns a model instance', async () => {
         const instance = await people.get(david.id);
 
         expect(instance).to.be.an.instanceOf(Model);
       });
 
+      it('get() with `params.sequelize.raw: true` returns raw data', async () => {
+        const instance = await people.get(david.id, { sequelize: { raw: true } });
+
+        expect(instance).to.be.an('object');
+        expect(instance).to.not.be.instanceOf(Model);
+      });
+
       it('create() returns a model instance', async () => {
         const instance = await people.create({ name: 'Sarah' });
 
         expect(instance).to.be.an.instanceOf(Model);
+      });
+
+      it('create() with `params.sequelize.raw: true` returns raw data', async () => {
+        const instance = await people.create({ name: 'Sarah' }, { sequelize: { raw: true } });
+
+        expect(instance).to.be.an('object');
+        expect(instance).to.not.be.instanceOf(Model);
       });
 
       it('bulk create() returns model instances', async () => {
@@ -770,15 +877,30 @@ describe('Feathers Sequelize Service', () => {
         assert.ok(results[1].id);
       });
 
+      it('bulk create() with `params.sequelize.raw: true` returns raw data', async () => {
+        const results = await people.create([
+          { name: 'Sarah' },
+          { name: 'Connor' }
+        ], { sequelize: { raw: true } });
+
+        expect(results.length).to.equal(2);
+        expect(results[0]).to.be.an('object');
+        expect(results[0]).to.not.be.instanceOf(Model);
+        assert.ok(results[0].id);
+        assert.ok(results[1].id);
+      });
+
       it('create() with returning=false returns empty array', async () => {
+        // does not work for single requests
         const responseSingle = await people.create({ name: 'delete' }, {
           sequelize: { returning: false }
         });
+        expect(responseSingle).to.be.an.instanceOf(Model);
+
+        // works for bulk requests
         const responseMulti = await people.create([{ name: 'delete' }], {
           sequelize: { returning: false }
         });
-
-        expect(responseSingle).to.be.an.instanceOf(Model);
         expect(responseMulti).to.deep.equal([]);
       });
 
@@ -788,16 +910,34 @@ describe('Feathers Sequelize Service', () => {
         expect(instance).to.be.an.instanceOf(Model);
       });
 
+      it('bulk patch() returns model instances', async () => {
+        const results = await people.patch(null, { name: 'Sarah' });
+
+        expect(results).to.be.an('array').with.lengthOf(1);
+        expect(results[0]).to.be.an.instanceOf(Model);
+      });
+
+      it('bulk patch() with `params.sequelize.raw: true` returns raw data', async () => {
+        const results = await people.patch(null, { name: 'Sarah' }, { sequelize: { raw: true } });
+
+        expect(results).to.be.an('array').with.lengthOf(1);
+        expect(results[0]).to.be.an('object');
+        expect(results[0]).to.not.be.instanceOf(Model);
+      });
+
       it('patch() with returning=false returns empty array', async () => {
+        // does not work for single requests
         const responseSingle = await people.patch(david.id, { name: 'Sarah' }, {
           sequelize: { returning: false }
         });
+        expect(responseSingle).to.be.an.instanceOf(Model);
+
+        // works for bulk requests
         const responseMulti = await people.patch(null, { name: 'Sarah' }, {
           query: { name: 'Sarah' },
           sequelize: { returning: false }
         });
 
-        expect(responseSingle).to.be.an.instanceOf(Model);
         expect(responseMulti).to.deep.equal([]);
       });
 
@@ -807,24 +947,122 @@ describe('Feathers Sequelize Service', () => {
         expect(instance).to.be.an.instanceOf(Model);
       });
 
+      it('update() with `params.sequelize.raw: true` returns raw data', async () => {
+        const instance = await people.update(david.id, david, { sequelize: { raw: true } });
+
+        expect(instance).to.be.an('object');
+        expect(instance).to.not.be.instanceOf(Model);
+      });
+
       it('remove() returns a model instance', async () => {
         const instance = await people.remove(david.id);
 
         expect(instance).to.be.an.instanceOf(Model);
       });
 
+      it('remove() with `params.sequelize.raw: true` returns raw data', async () => {
+        const instance = await people.remove(david.id, { sequelize: { raw: true } });
+
+        expect(instance).to.be.an('object');
+        expect(instance).to.not.be.instanceOf(Model);
+      });
+
+      it('bulk remove() returns model instances', async () => {
+        const results = await people.remove(null, { query: {} });
+
+        expect(results).to.be.an('array').with.lengthOf(1);
+        expect(results[0]).to.be.an.instanceOf(Model);
+      });
+
+      it('bulk remove() with `params.sequelize.raw: true` returns raw data', async () => {
+        const results = await people.remove(null, { query: {}, sequelize: { raw: true } });
+
+        expect(results).to.be.an('array').with.lengthOf(1);
+        expect(results[0]).to.be.an('object');
+        expect(results[0]).to.not.be.instanceOf(Model);
+      });
+
       it('remove() with returning=false returns empty array', async () => {
+        // does not work for single requests
         const responseSingle = await people.remove(david.id, {
           sequelize: { returning: false }
         });
+        expect(responseSingle).to.be.an.instanceOf(Model);
+
         david = await people.create({ name: 'David' });
         const responseMulti = await people.remove(null, {
           query: { name: 'David' },
           sequelize: { returning: false }
         });
-
-        expect(responseSingle).to.be.an.instanceOf(Model);
         expect(responseMulti).to.deep.equal([]);
+      });
+    });
+
+    describe('raw Service', () => {
+      let david: any;
+
+      beforeEach(async () => {
+        david = await rawPeople.create({ name: 'David' });
+      });
+
+      afterEach(() => rawPeople.remove(null, { query: {} }).catch(() => {}));
+
+      it('find() returns raw', async () => {
+        const results = await rawPeople.find() as any as any[];
+
+        expect(results).to.be.an('array').with.lengthOf(1);
+        expect(results[0]).to.not.be.an.instanceof(Model);
+      });
+
+      it('get() returns raw', async () => {
+        const instance = await rawPeople.get(david.id);
+
+        expect(instance).to.not.be.an.instanceof(Model);
+      });
+
+      it('create() returns raw', async () => {
+        const instance = await rawPeople.create({ name: 'Sarah' });
+
+        expect(instance).to.not.be.an.instanceof(Model);
+      });
+
+      it('bulk create() returns raw', async () => {
+        const results = await rawPeople.create([{ name: 'Sarah' }]);
+
+        expect(results).to.be.an('array').with.lengthOf(1);
+        expect(results[0]).to.not.be.an.instanceof(Model);
+      });
+
+      it('patch() returns raw', async () => {
+        const instance = await rawPeople.patch(david.id, { name: 'Sarah' });
+
+        expect(instance).to.not.be.an.instanceof(Model);
+      });
+
+      it('bulk patch() returns raw', async () => {
+        const results = await rawPeople.patch(null, { name: 'Sarah' }, { query: { id: { $in: [david.id] } } });
+
+        expect(results).to.be.an('array').with.lengthOf(1);
+        expect(results[0]).to.not.be.an.instanceof(Model);
+      });
+
+      it('update() returns raw', async () => {
+        const instance = await rawPeople.update(david.id, david);
+
+        expect(instance).to.not.be.an.instanceof(Model);
+      });
+
+      it('remove() returns raw', async () => {
+        const instance = await rawPeople.remove(david.id);
+
+        expect(instance).to.not.be.an.instanceof(Model);
+      });
+
+      it('bulk remove() returns raw', async () => {
+        const results = await rawPeople.remove(null);
+
+        expect(results).to.be.an('array').with.lengthOf(1);
+        expect(results[0]).to.not.be.an.instanceof(Model);
       });
     });
 
@@ -837,6 +1075,13 @@ describe('Feathers Sequelize Service', () => {
       });
 
       afterEach(() => rawPeople.remove(null, { query: {} }).catch(() => {}));
+
+      it('find() returns raw', async () => {
+        const results = await rawPeople.find() as any as any[];
+
+        expect(results).to.be.an('array').with.lengthOf(1);
+        expect(results[0]).to.be.not.an.instanceof(Model);
+      });
 
       it('`raw: false` works for find()', async () => {
         const results = await rawPeople.find(NOT_RAW) as any as any[];
@@ -859,7 +1104,7 @@ describe('Feathers Sequelize Service', () => {
       it('`raw: false` works for bulk create()', async () => {
         const results = await rawPeople.create([{ name: 'Sarah' }], NOT_RAW);
 
-        expect(results.length).to.equal(1);
+        expect(results).to.be.an('array').with.lengthOf(1);
         expect(results[0]).to.be.an.instanceof(Model);
       });
 
@@ -867,6 +1112,13 @@ describe('Feathers Sequelize Service', () => {
         const instance = await rawPeople.patch(david.id, { name: 'Sarah' }, NOT_RAW);
 
         expect(instance).to.be.an.instanceof(Model);
+      });
+
+      it('`raw: false` works for bulk patch()', async () => {
+        const results = await rawPeople.patch(null, { name: 'Sarah' }, NOT_RAW);
+
+        expect(results).to.be.an('array').with.lengthOf(1);
+        expect(results[0]).to.be.an.instanceof(Model);
       });
 
       it('`raw: false` works for update()', async () => {
@@ -879,6 +1131,13 @@ describe('Feathers Sequelize Service', () => {
         const instance = await rawPeople.remove(david.id, NOT_RAW);
 
         expect(instance).to.be.an.instanceof(Model);
+      });
+
+      it('`raw: false` works for bulk remove()', async () => {
+        const results = await rawPeople.remove(null, NOT_RAW);
+
+        expect(results).to.be.an('array').with.lengthOf(1);
+        expect(results[0]).to.be.an.instanceof(Model);
       });
     });
   });
@@ -991,7 +1250,7 @@ describe('Feathers Sequelize Service', () => {
         const results = await people.create([{ name: 'Sarah' }], params);
         expect(params.sequelize.getModelCalls.count).to.gte(1);
 
-        expect(results.length).to.equal(1);
+        expect(results).to.be.an('array').with.lengthOf(1);
         expect(results[0]).to.be.an.instanceof(Model);
 
         const removeParams = getExtraParams();
@@ -1105,7 +1364,7 @@ describe('Feathers Sequelize Service', () => {
         const results = await rawPeople.create([{ name: 'Sarah' }], params);
         expect(params.sequelize.getModelCalls.count).to.gte(1);
 
-        expect(results.length).to.equal(1);
+        expect(results).to.be.an('array').with.lengthOf(1);
         expect(results[0]).to.be.an.instanceof(Model);
 
         const removeParams = getExtraParams();

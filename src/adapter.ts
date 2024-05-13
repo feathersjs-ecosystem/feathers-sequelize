@@ -358,6 +358,7 @@ export class SequelizeAdapter<
       let [, instances] = await Model
         .update(values, {
           ...sequelizeOptions,
+          raw: false,
           where: { [this.id]: ids.length === 1 ? ids[0] : { [Op.in]: ids } }
         } as UpdateOptions)
         .catch(errorHandler) as [number, Model[]?];
