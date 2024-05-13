@@ -25,18 +25,19 @@ const testSuite = adaptertests([
   '.get',
   '.get + $select',
   '.get + id + query',
-  '.get + NotFound',
+  // '.get + NotFound', // add '.get + NotFound (integer)' once https://github.com/feathersjs/feathers/pull/3486 is merged and published
   '.find',
   '.remove',
   '.remove + $select',
   '.remove + id + query',
+  // add '.remove + NotFound (integer)' once https://github.com/feathersjs/feathers/pull/3486 is merged and published
   '.remove + multi',
   '.remove + multi no pagination',
   '.update',
   '.update + $select',
   '.update + id + query',
   '.update + query + NotFound',
-  '.update + NotFound',
+  // '.update + NotFound', // add '.update + NotFound (integer)' once https://github.com/feathersjs/feathers/pull/3486 is merged and published
   '.patch',
   '.patch + $select',
   '.patch + id + query',
@@ -45,7 +46,7 @@ const testSuite = adaptertests([
   '.patch multi query same',
   '.patch multi query changed',
   '.patch + query + NotFound',
-  '.patch + NotFound',
+  // '.patch + NotFound', // add '.patch + NotFound (integer)' once https://github.com/feathersjs/feathers/pull/3486 is merged and published
   '.create',
   '.create + $select',
   '.create multi',
@@ -228,6 +229,89 @@ describe('Feathers Sequelize Service', () => {
 
     testSuite(app, errors, 'people', 'id');
     testSuite(app, errors, 'people-customid', 'customid');
+
+    describe('remove this when https://github.com/feathersjs/feathers/pull/3486 is merged and published', () => {
+      it('.get + NotFound (integer)', async () => {
+        try {
+          await app.service('people').get(123456789)
+          throw new Error('Should never get here')
+        } catch (error: any) {
+          assert.strictEqual(error.name, 'NotFound', 'Error is a NotFound Feathers error')
+        }
+      });
+
+      it('.get + NotFound (integer)', async () => {
+        try {
+          await app.service('people-customid').get(123456789)
+          throw new Error('Should never get here')
+        } catch (error: any) {
+          assert.strictEqual(error.name, 'NotFound', 'Error is a NotFound Feathers error')
+        }
+      });
+
+      it('.remove + NotFound (integer)', async () => {
+        try {
+          await app.service('people').remove(123456789)
+          throw new Error('Should never get here')
+        } catch (error: any) {
+          assert.strictEqual(error.name, 'NotFound', 'Error is a NotFound Feathers error')
+        }
+      })
+
+      it('.remove + NotFound (integer)', async () => {
+        try {
+          await app.service('people-customid').remove(123456789)
+          throw new Error('Should never get here')
+        } catch (error: any) {
+          assert.strictEqual(error.name, 'NotFound', 'Error is a NotFound Feathers error')
+        }
+      })
+
+      it('.update + NotFound (integer)', async () => {
+        try {
+          await app.service('people').update(123456789, {
+            name: 'NotFound'
+          })
+          throw new Error('Should never get here')
+        } catch (error: any) {
+          assert.strictEqual(error.name, 'NotFound', 'Error is a NotFound Feathers error')
+        }
+      })
+
+      it('.update + NotFound (integer)', async () => {
+        try {
+          await app.service('people-customid').update(123456789, {
+            name: 'NotFound'
+          })
+          throw new Error('Should never get here')
+        } catch (error: any) {
+          assert.strictEqual(error.name, 'NotFound', 'Error is a NotFound Feathers error')
+        }
+      })
+
+      it('.patch + NotFound (integer)', async () => {
+        try {
+          await app.service('people').patch(123456789, {
+            name: 'PatchDoug'
+          })
+          throw new Error('Should never get here')
+        } catch (error: any) {
+          assert.strictEqual(error.name, 'NotFound', 'Error is a NotFound Feathers error')
+        }
+      })
+
+      it('.patch + NotFound (integer)', async () => {
+        try {
+          await app.service('people-customid').patch(123456789, {
+            name: 'PatchDoug'
+          })
+          throw new Error('Should never get here')
+        } catch (error: any) {
+          assert.strictEqual(error.name, 'NotFound', 'Error is a NotFound Feathers error')
+        }
+      })
+    });
+
   });
 
   describe('Feathers-Sequelize Specific Tests', () => {
