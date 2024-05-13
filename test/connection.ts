@@ -4,6 +4,8 @@ import { Sequelize } from 'sequelize';
 export default (DB?: 'postgres' | 'mysql' | string) => {
   const logging: Options['logging'] = false;
 
+  console.log('DB:', DB);
+
   if (DB === 'postgres') {
     return new Sequelize(
       process.env.POSTGRES_DB ?? 'sequelize',
