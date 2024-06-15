@@ -25,19 +25,19 @@ const testSuite = adaptertests([
   '.get',
   '.get + $select',
   '.get + id + query',
-  '.get + NotFound (integer)',
+  '.get + NotFound (integer)',  // skipping '.get + NotFound' because it expects id as string
   '.find',
   '.remove',
   '.remove + $select',
   '.remove + id + query',
-  '.remove + NotFound (integer)',
+  '.remove + NotFound (integer)', // skipping '.remove + NotFound' because it expects id as string
   '.remove + multi',
   '.remove + multi no pagination',
   '.update',
   '.update + $select',
   '.update + id + query',
   '.update + query + NotFound',
-  '.update + NotFound (integer)',
+  '.update + NotFound (integer)', // skipping '.update + NotFound' because it expects id as string
   '.patch',
   '.patch + $select',
   '.patch + id + query',
@@ -46,9 +46,10 @@ const testSuite = adaptertests([
   '.patch multi query same',
   '.patch multi query changed',
   '.patch + query + NotFound',
-  '.patch + NotFound (integer)',
+  '.patch + NotFound (integer)',  // skipping '.patch + NotFound' because it expects id as string
   '.create',
   '.create + $select',
+  '.create ignores query',
   '.create multi',
   'internal .find',
   'internal .get',
@@ -74,6 +75,8 @@ const testSuite = adaptertests([
   '.find + $ne',
   '.find + $gt + $lt + $sort',
   '.find + $or nested + $sort',
+  '.find + $and',
+  '.find + $and + $or',
   '.find + paginate',
   '.find + paginate + query',
   '.find + paginate + $limit + $skip',
@@ -260,6 +263,10 @@ describe('Feathers Sequelize Service', () => {
         multi: true
       }));
 
+    afterEach(() => app.service('people')
+      .remove(null, { query: {} })
+    );
+
     describe('Common functionality', () => {
       const people = app.service('people');
       let kirsten: any;
@@ -267,8 +274,6 @@ describe('Feathers Sequelize Service', () => {
       beforeEach(async () => {
         kirsten = await people.create({ name: 'Kirsten', age: 30 });
       });
-
-      afterEach(() => people.remove(null, { query: {} }));
 
       it('allows querying for null values (#45)', async () => {
         const name = 'Null test';
@@ -530,7 +535,7 @@ describe('Feathers Sequelize Service', () => {
 
         const result = await people.remove(kirsten.id, params);
 
-        expect(result).to.have.property('orders.id');
+        expect(result).to.have.property('orders').with.lengthOf(3);
       });
 
       it('can use $dollar.notation$', async () => {
