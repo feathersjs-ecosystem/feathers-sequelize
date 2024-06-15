@@ -2,7 +2,7 @@ import pg from 'pg';
 import assert from 'assert';
 import { expect } from 'chai';
 
-import Sequelize, { Op } from 'sequelize';
+import { DataTypes, Op } from 'sequelize';
 import errors from '@feathersjs/errors';
 import type { Paginated } from '@feathersjs/feathers';
 import { feathers } from '@feathersjs/feathers';
@@ -25,19 +25,19 @@ const testSuite = adaptertests([
   '.get',
   '.get + $select',
   '.get + id + query',
-  // '.get + NotFound', // add '.get + NotFound (integer)' once https://github.com/feathersjs/feathers/pull/3486 is merged and published
+  '.get + NotFound (integer)',  // skipping '.get + NotFound' because it expects id as string
   '.find',
   '.remove',
   '.remove + $select',
   '.remove + id + query',
-  // add '.remove + NotFound (integer)' once https://github.com/feathersjs/feathers/pull/3486 is merged and published
+  '.remove + NotFound (integer)', // skipping '.remove + NotFound' because it expects id as string
   '.remove + multi',
   '.remove + multi no pagination',
   '.update',
   '.update + $select',
   '.update + id + query',
   '.update + query + NotFound',
-  // '.update + NotFound', // add '.update + NotFound (integer)' once https://github.com/feathersjs/feathers/pull/3486 is merged and published
+  '.update + NotFound (integer)', // skipping '.update + NotFound' because it expects id as string
   '.patch',
   '.patch + $select',
   '.patch + id + query',
@@ -46,9 +46,10 @@ const testSuite = adaptertests([
   '.patch multi query same',
   '.patch multi query changed',
   '.patch + query + NotFound',
-  // '.patch + NotFound', // add '.patch + NotFound (integer)' once https://github.com/feathersjs/feathers/pull/3486 is merged and published
+  '.patch + NotFound (integer)',  // skipping '.patch + NotFound' because it expects id as string
   '.create',
   '.create + $select',
+  '.create ignores query',
   '.create multi',
   'internal .find',
   'internal .get',
@@ -74,6 +75,8 @@ const testSuite = adaptertests([
   '.find + $ne',
   '.find + $gt + $lt + $sort',
   '.find + $or nested + $sort',
+  '.find + $and',
+  '.find + $and + $or',
   '.find + paginate',
   '.find + paginate + query',
   '.find + paginate + $limit + $skip',
@@ -94,20 +97,20 @@ const sequelize = makeConnection(process.env.DB);
 
 const Model = sequelize.define('people', {
   name: {
-    type: Sequelize.STRING,
+    type: DataTypes.STRING,
     allowNull: false
   },
   age: {
-    type: Sequelize.INTEGER
+    type: DataTypes.INTEGER
   },
   created: {
-    type: Sequelize.BOOLEAN
+    type: DataTypes.BOOLEAN
   },
   time: {
-    type: Sequelize.BIGINT
+    type: DataTypes.BIGINT
   },
   status: {
-    type: Sequelize.STRING,
+    type: DataTypes.STRING,
     defaultValue: 'pending'
   }
 }, {
@@ -127,43 +130,46 @@ const Model = sequelize.define('people', {
 });
 const Order = sequelize.define('orders', {
   name: {
-    type: Sequelize.STRING,
+    type: DataTypes.STRING,
     allowNull: false
   }
 }, {
   freezeTableName: true
 });
+Model.hasMany(Order);
+Order.belongsTo(Model);
+
 const CustomId = sequelize.define('people-customid', {
   customid: {
-    type: Sequelize.INTEGER,
+    type: DataTypes.INTEGER,
     autoIncrement: true,
     primaryKey: true
   },
   name: {
-    type: Sequelize.STRING,
+    type: DataTypes.STRING,
     allowNull: false
   },
   age: {
-    type: Sequelize.INTEGER
+    type: DataTypes.INTEGER
   },
   created: {
-    type: Sequelize.BOOLEAN
+    type: DataTypes.BOOLEAN
   },
   time: {
-    type: Sequelize.BIGINT
+    type: DataTypes.BIGINT
   }
 }, {
   freezeTableName: true
 });
 const CustomGetterSetter = sequelize.define('custom-getter-setter', {
   addsOneOnSet: {
-    type: Sequelize.INTEGER,
+    type: DataTypes.INTEGER,
     set (val: any) {
       this.setDataValue('addsOneOnSet', val + 1);
     }
   },
   addsOneOnGet: {
-    type: Sequelize.INTEGER,
+    type: DataTypes.INTEGER,
     get () {
       return this.getDataValue('addsOneOnGet') + 1;
     }
@@ -171,8 +177,6 @@ const CustomGetterSetter = sequelize.define('custom-getter-setter', {
 }, {
   freezeTableName: true
 });
-Model.hasMany(Order);
-Order.belongsTo(Model);
 
 describe('Feathers Sequelize Service', () => {
   before(async () => {
@@ -229,89 +233,6 @@ describe('Feathers Sequelize Service', () => {
 
     testSuite(app, errors, 'people', 'id');
     testSuite(app, errors, 'people-customid', 'customid');
-
-    describe('remove this when https://github.com/feathersjs/feathers/pull/3486 is merged and published', () => {
-      it('.get + NotFound (integer)', async () => {
-        try {
-          await app.service('people').get(123456789)
-          throw new Error('Should never get here')
-        } catch (error: any) {
-          assert.strictEqual(error.name, 'NotFound', 'Error is a NotFound Feathers error')
-        }
-      });
-
-      it('.get + NotFound (integer)', async () => {
-        try {
-          await app.service('people-customid').get(123456789)
-          throw new Error('Should never get here')
-        } catch (error: any) {
-          assert.strictEqual(error.name, 'NotFound', 'Error is a NotFound Feathers error')
-        }
-      });
-
-      it('.remove + NotFound (integer)', async () => {
-        try {
-          await app.service('people').remove(123456789)
-          throw new Error('Should never get here')
-        } catch (error: any) {
-          assert.strictEqual(error.name, 'NotFound', 'Error is a NotFound Feathers error')
-        }
-      })
-
-      it('.remove + NotFound (integer)', async () => {
-        try {
-          await app.service('people-customid').remove(123456789)
-          throw new Error('Should never get here')
-        } catch (error: any) {
-          assert.strictEqual(error.name, 'NotFound', 'Error is a NotFound Feathers error')
-        }
-      })
-
-      it('.update + NotFound (integer)', async () => {
-        try {
-          await app.service('people').update(123456789, {
-            name: 'NotFound'
-          })
-          throw new Error('Should never get here')
-        } catch (error: any) {
-          assert.strictEqual(error.name, 'NotFound', 'Error is a NotFound Feathers error')
-        }
-      })
-
-      it('.update + NotFound (integer)', async () => {
-        try {
-          await app.service('people-customid').update(123456789, {
-            name: 'NotFound'
-          })
-          throw new Error('Should never get here')
-        } catch (error: any) {
-          assert.strictEqual(error.name, 'NotFound', 'Error is a NotFound Feathers error')
-        }
-      })
-
-      it('.patch + NotFound (integer)', async () => {
-        try {
-          await app.service('people').patch(123456789, {
-            name: 'PatchDoug'
-          })
-          throw new Error('Should never get here')
-        } catch (error: any) {
-          assert.strictEqual(error.name, 'NotFound', 'Error is a NotFound Feathers error')
-        }
-      })
-
-      it('.patch + NotFound (integer)', async () => {
-        try {
-          await app.service('people-customid').patch(123456789, {
-            name: 'PatchDoug'
-          })
-          throw new Error('Should never get here')
-        } catch (error: any) {
-          assert.strictEqual(error.name, 'NotFound', 'Error is a NotFound Feathers error')
-        }
-      })
-    });
-
   });
 
   describe('Feathers-Sequelize Specific Tests', () => {
@@ -380,7 +301,7 @@ describe('Feathers Sequelize Service', () => {
         await people.create({ name, age: 10 });
         const { data } = await people.find({
           query:
-          { age: { [Sequelize.Op.eq]: 10 } }
+          { age: { [Op.eq]: 10 } }
         }) as Paginated<any>;
 
         assert.strictEqual(data.length, 1);
@@ -614,7 +535,7 @@ describe('Feathers Sequelize Service', () => {
 
         const result = await people.remove(kirsten.id, params);
 
-        expect(result).to.have.property('orders.id');
+        expect(result).to.have.property('orders').with.lengthOf(3);
       });
 
       it('can use $dollar.notation$', async () => {
@@ -745,7 +666,7 @@ describe('Feathers Sequelize Service', () => {
         app.use('ops-and-whitelist', new SequelizeService({
           Model,
           whitelist: ['$between'],
-          operatorMap: { $between: Sequelize.Op.between }
+          operatorMap: { $between: Op.between }
         }));
         const ops = app.service('ops-and-whitelist');
         await ops.find({ query: { name: { $like: 'Beau' } } });
