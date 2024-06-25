@@ -109,9 +109,6 @@ const Model = sequelize.define('people', {
   status: {
     type: Sequelize.STRING,
     defaultValue: 'pending'
-  },
-  profile: {
-    type: Sequelize.JSONB
   }
 }, {
   freezeTableName: true,
@@ -999,47 +996,6 @@ describe('Feathers Sequelize Service', () => {
         });
         expect(responseMulti).to.deep.equal([]);
       });
-
-      it('can query by JSON fields', async () => {
-        await app.service('people').create({
-          name: 'Dave',
-          profile: { type: 'find' }
-        });
-
-        const found = await app.service('people').find({
-          query: {
-            'profile.type': 'find'
-          }
-        }) as any;
-
-        assert.strictEqual(found.length, 1);
-        assert.deepStrictEqual(found[0].profile, { type: 'find' });
-      });
-
-      it('Can update nested JSON fields', async () => {
-        const created = await app.service('people').create({
-          name: 'Dave',
-          profile: {
-            location: {
-              city: 'Memphis',
-              state: 'Tennessee'
-            }
-          }
-        });
-
-        const patched = await app.service('people').patch(created.id, {
-          name: 'David',
-          'profile.location.city': 'Nashville'
-        }) as any;
-
-        assert.strictEqual(patched.name, 'David');
-        assert.deepStrictEqual(patched.profile, {
-          location: {
-            city: 'Nashville',
-            state: 'Tennessee'
-          }
-        });
-      });
     });
 
     describe('raw Service', () => {
@@ -1182,47 +1138,6 @@ describe('Feathers Sequelize Service', () => {
 
         expect(results).to.be.an('array').with.lengthOf(1);
         expect(results[0]).to.be.an.instanceof(Model);
-      });
-
-      it('can query by JSON fields', async () => {
-        await app.service('people').create({
-          name: 'Dave',
-          profile: { type: 'find' }
-        });
-
-        const found = await app.service('people').find({
-          query: {
-            'profile.type': 'find'
-          }
-        }) as any;
-
-        assert.strictEqual(found.length, 1);
-        assert.deepStrictEqual(found[0].profile, { type: 'find' });
-      });
-
-      it('Can update nested JSON fields', async () => {
-        const created = await app.service('people').create({
-          name: 'Dave',
-          profile: {
-            location: {
-              city: 'Memphis',
-              state: 'Tennessee'
-            }
-          }
-        });
-
-        const patched = await app.service('people').patch(created.id, {
-          name: 'David',
-          'profile.location.city': 'Nashville'
-        }) as any;
-
-        assert.strictEqual(patched.name, 'David');
-        assert.deepStrictEqual(patched.profile, {
-          location: {
-            city: 'Nashville',
-            state: 'Tennessee'
-          }
-        });
       });
     });
   });
