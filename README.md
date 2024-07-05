@@ -15,7 +15,7 @@ A [Feathers](https://feathersjs.com) database adapter for [Sequelize](http://seq
 - [API](#api)
   - [`service(options)`](#serviceoptions)
   - [params.sequelize](#paramssequelize)
-  - [operators](#operators)
+  - [operators](#operatormap)
 - [Caveats](#caveats)
   - [Sequelize `raw` queries](#sequelize-raw-queries)
   - [Working with MSSQL](#working-with-mssql)
@@ -117,9 +117,6 @@ Other options that `params.sequelize` allows you to pass can be found in [Sequel
 Beware that when setting a [top-level `where` property](https://sequelize.org/master/manual/eager-loading.html#complex-where-clauses-at-the-top-level) (usually for querying based on a column on an associated model), the `where` in `params.sequelize` will overwrite your `query`.
 
 This library offers some additional functionality when using `sequelize.returning` in services that support `multi`. The `multi` option allows you to create, patch, and remove multiple records at once. When using `sequelize.returning` with `multi`, the `sequelize.returning` is used to indicate if the method should return any results. This is helpful when updating large numbers of records and you do not need the API (or events) to be bogged down with results.
-
-```js
-
 
 ### operatorMap
 
