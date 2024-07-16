@@ -8,7 +8,7 @@
 
 > NOTE: This is the version for Feathers v5. For Feathers v4 use [feathers-sequelize v6](https://github.com/feathersjs-ecosystem/feathers-sequelize/tree/crow)
 
-A [Feathers](https://feathersjs.com) database adapter for [Sequelize](http://sequelizejs.com), an ORM for Node.js. It supports PostgreSQL, MySQL, MariaDB, SQLite and MSSQL and features transaction support, relations, read replication and more.
+A [Feathers](https://feathersjs.com) database adapter for [Sequelize](https://sequelize.org/), an ORM for Node.js. It supports PostgreSQL, MySQL, MariaDB, SQLite and MSSQL and features transaction support, relations, read replication and more.
 
 <!-- TOC -->
 
@@ -46,13 +46,13 @@ A [Feathers](https://feathersjs.com) database adapter for [Sequelize](http://seq
 
 <!-- /TOC -->
 
-> __Very Important:__ Before using this adapter you have to be familiar with both, the [Feathers Basics](https://docs.feathersjs.com/guides/basics/setup.html) and general use of [Sequelize](http://docs.sequelizejs.com/). For associations and relations see the [associations](#associations) section. This adapter may not cover all use cases but they can still be implemented using Sequelize models directly in a [Custom Feathers service](https://docs.feathersjs.com/guides/basics/services.html).
+> __Very Important:__ Before using this adapter you have to be familiar with both, the [Feathers Basics](https://docs.feathersjs.com/guides/basics/setup.html) and general use of [Sequelize](https://sequelize.org/docs/v6/). For associations and relations see the [associations](#associations) section. This adapter may not cover all use cases but they can still be implemented using Sequelize models directly in a [Custom Feathers service](https://docs.feathersjs.com/guides/basics/services.html).
 
 ```bash
 npm install --save feathers-sequelize@pre
 ```
 
-And [one of the following](http://docs.sequelizejs.com/en/latest/docs/getting-started/):
+And [one of the following](https://sequelize.org/docs/v6/getting-started/):
 
 ```bash
 npm install --save pg pg-hstore
@@ -62,7 +62,7 @@ npm install --save tedious // MSSQL
 ```
 
 > __Important:__ `feathers-sequelize` implements the [Feathers Common database adapter API](https://docs.feathersjs.com/api/databases/common.html) and [querying syntax](https://docs.feathersjs.com/api/databases/querying.html).
-> For more information about models and general Sequelize usage, follow up in the [Sequelize documentation](http://docs.sequelizejs.com/en/latest/).
+> For more information about models and general Sequelize usage, follow up in the [Sequelize documentation](https://sequelize.org/docs/v6/).
 
 ## API
 
@@ -87,7 +87,7 @@ __Options:__
 - `events` (*optional*) - A list of [custom service events](https://docs.feathersjs.com/api/events.html#custom-events) sent by this service
 - `paginate` (*optional*) - A [pagination object](https://docs.feathersjs.com/api/databases/common.html#pagination) containing a `default` and `max` page size
 - `multi` (*optional*) - Allow `create` with arrays and `update` and `remove` with `id` `null` to change multiple items. Can be `true` for all methods or an array of allowed methods (e.g. `[ 'remove', 'create' ]`)
-- `operatorMap` (*optional*) - A mapping from query syntax property names to to [Sequelize secure operators](http://docs.sequelizejs.com/manual/tutorial/querying.html)
+- `operatorMap` (*optional*) - A mapping from query syntax property names to to [Sequelize secure operators](https://sequelize.org/docs/v6/core-concepts/model-querying-basics/#operators)
 - `operators` (*optional*) - An array of additional query operators to allow (e..g `[ '$regex', '$geoNear' ]`). Default is the supported `operators`
 - `filters` (*optional*) - An object of additional query parameters to allow (e..g `{ '$post.id$': true }`).`
 
@@ -278,7 +278,7 @@ Run the example with `node app` and go to [localhost:3030/messages](http://local
 
 ### Embrace the ORM
 
-The documentation on [Sequelize associations and relations](http://docs.sequelizejs.com/manual/tutorial/associations.html) is essential to implementing associations with this adapter and one of the steepest parts of the Sequelize learning curve. If you have never used an ORM, let it do a lot of the heavy lifting for you!
+The documentation on [Sequelize associations and relations](https://sequelize.org/docs/v6/core-concepts/assocs/) is essential to implementing associations with this adapter and one of the steepest parts of the Sequelize learning curve. If you have never used an ORM, let it do a lot of the heavy lifting for you!
 
 ### Setting `params.sequelize.include`
 
@@ -310,11 +310,11 @@ const options = Object.assign({ where: { name: 'John' }}, context.params.sequeli
 YourModel.findAndCount(options);
 ```
 
-For more information, follow up up in the [Sequelize documentation for associations](http://docs.sequelizejs.com/manual/tutorial/associations.html) and [this issue](https://github.com/feathersjs-ecosystem/feathers-sequelize/issues/20).
+For more information, follow up up in the [Sequelize documentation for associations](https://sequelize.org/docs/v6/core-concepts/assocs/) and [this issue](https://github.com/feathersjs-ecosystem/feathers-sequelize/issues/20).
 
 ## Querying
 
-Additionally to the [common querying mechanism](https://docs.feathersjs.com/api/databases/querying.html) this adapter also supports all [Sequelize query operators](http://docs.sequelizejs.com/manual/tutorial/querying.html).
+Additionally to the [common querying mechanism](https://docs.feathersjs.com/api/databases/querying.html) this adapter also supports all [Sequelize query operators](https://sequelize.org/docs/v6/core-concepts/model-querying-basics/#operators).
 
 ### Querying a nested column
 
@@ -337,7 +337,7 @@ For this case to work, you'll need to add '$post.id$' to the service options' ['
 
 ## Working with Sequelize Model instances
 
-It is highly recommended to use `raw` queries, which is the default. However, there are times when you will want to take advantage of [Sequelize Instance](http://docs.sequelizejs.com/en/latest/api/instance/) methods. There are two ways to tell feathers to return Sequelize instances:
+It is highly recommended to use `raw` queries, which is the default. However, there are times when you will want to take advantage of [Sequelize Instance](https://sequelize.org/docs/v6/core-concepts/model-instances/) methods. There are two ways to tell feathers to return Sequelize instances:
 
 1. Set `{ raw: false }` in a "before" hook:
     ```js
@@ -405,7 +405,7 @@ It is highly recommended to use `raw` queries, which is the default. However, th
 
 ## Validation
 
-Sequelize by default gives you the ability to [add validations at the model level](http://docs.sequelizejs.com/en/latest/docs/models-definition/#validations). Using an error handler like the one that [comes with Feathers](https://github.com/feathersjs/feathers-errors/blob/master/src/error-handler.js) your validation errors will be formatted nicely right out of the box!
+Sequelize by default gives you the ability to [add validations at the model level](https://sequelize.org/docs/v6/core-concepts/validations-and-constraints/). Using an error handler like the one that [comes with Feathers](https://github.com/feathersjs/feathers-errors/blob/master/src/error-handler.js) your validation errors will be formatted nicely right out of the box!
 
 ## Errors
 
@@ -570,7 +570,7 @@ This will create a new file in the `migrations/scripts` folder. All migration fi
 
 #### Add the up/down scripts:
 
-Open the newly created migration file and write the code to both apply and undo the migration. Please refer to the [sequelize migration functions](http://docs.sequelizejs.com/en/latest/docs/migrations/#functions) for available operations. **Do not be lazy - write the down script too and test!** Here is an example of converting a `NOT NULL` column accept null values:
+Open the newly created migration file and write the code to both apply and undo the migration. Please refer to the [sequelize migration functions](https://sequelize.org/docs/v6/other-topics/migrations/) for available operations. **Do not be lazy - write the down script too and test!** Here is an example of converting a `NOT NULL` column accept null values:
 
 ```js
 'use strict';
