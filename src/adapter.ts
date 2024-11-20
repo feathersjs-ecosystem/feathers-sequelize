@@ -1,7 +1,7 @@
 import { MethodNotAllowed, NotFound } from '@feathersjs/errors';
 import { _ } from '@feathersjs/commons';
 import {
-  select as selector,
+  select as _selector,
   AdapterBase,
   filterQuery
 } from '@feathersjs/adapter-commons';
@@ -222,6 +222,10 @@ export class SequelizeAdapter<
     return sequelize;
   }
 
+  private selector (params?: ServiceParams) {
+    return _selector(params, this.id);
+  }
+
   async _find (params?: ServiceParams & { paginate?: PaginationOptions }): Promise<Paginated<Result>>
   async _find (params?: ServiceParams & { paginate: false }): Promise<Result[]>
   async _find (params?: ServiceParams): Promise<Paginated<Result> | Result[]>
@@ -273,7 +277,6 @@ export class SequelizeAdapter<
   async _create (data: Data | Data[], params?: ServiceParams): Promise<Result | Result[]>
   async _create (data: Data | Data[], params: ServiceParams = {} as ServiceParams): Promise<Result | Result[]> {
     const isArray = Array.isArray(data);
-    const select = selector(params, this.id);
 
     if (isArray && !this.allowsMulti('create', params)) {
       throw new MethodNotAllowed('Can not create multiple entries')
@@ -296,8 +299,9 @@ export class SequelizeAdapter<
       }
 
       if (sequelizeOptions.raw) {
+        const select = isPresent(sequelizeOptions.attributes) ? this.selector(params) : undefined;
         const result = instances.map((instance) => {
-          if (isPresent(sequelizeOptions.attributes)) {
+          if (select) {
             return select(instance.toJSON());
           }
           return instance.toJSON();
@@ -306,6 +310,7 @@ export class SequelizeAdapter<
       }
 
       if (isPresent(sequelizeOptions.attributes)) {
+        const select = this.selector(params);
         const result = instances.map((instance) => {
           const result = select(instance.toJSON())
           return Model.build(result, { isNewRecord: false });
@@ -321,7 +326,7 @@ export class SequelizeAdapter<
       .catch(errorHandler);
 
     if (sequelizeOptions.raw) {
-      return select((result as Model).toJSON())
+      return this.selector(params)((result as Model).toJSON())
     }
 
     return result;
@@ -336,7 +341,6 @@ export class SequelizeAdapter<
 
     const Model = this.ModelWithScope(params);
     const sequelizeOptions = this.paramsToAdapter(id, params);
-    const select = selector(params, this.id);
     const values = _.omit(data, this.id);
 
     if (id === null) {
@@ -395,16 +399,16 @@ export class SequelizeAdapter<
         }
 
         if (sequelizeOptions.raw) {
-          const result = instances.map((instance) => {
-            if (hasAttributes) {
-              return select(instance.toJSON());
-            }
-            return instance.toJSON();
-          })
+          const select = hasAttributes ? this.selector(params) : undefined;
+          const result = instances.map((instance) => select
+            ? select(instance.toJSON())
+            : instance.toJSON()
+          )
           return result;
         }
 
         if (hasAttributes) {
+          const select = this.selector(params);
           const result = instances.map((instance) => {
             const result = select(instance.toJSON())
             return Model.build(result, { isNewRecord: false });
@@ -448,13 +452,13 @@ export class SequelizeAdapter<
     if (sequelizeOptions.raw) {
       const result = instance.toJSON();
       if (isPresent(sequelizeOptions.attributes)) {
-        return select(result);
+        return this.selector(params)(result);
       }
       return result;
     }
 
     if (isPresent(sequelizeOptions.attributes)) {
-      const result = select(instance.toJSON())
+      const result = this.selector(params)(instance.toJSON())
       return Model.build(result, { isNewRecord: false });
     }
 
@@ -464,7 +468,6 @@ export class SequelizeAdapter<
   async _update (id: Id, data: Data, params: ServiceParams = {} as ServiceParams): Promise<Result> {
     const Model = this.ModelWithScope(params);
     const sequelizeOptions = this.paramsToAdapter(id, params);
-    const select = selector(params, this.id);
 
     const instance = await this._get(id, {
       ...params,
@@ -496,13 +499,13 @@ export class SequelizeAdapter<
     if (sequelizeOptions.raw) {
       const result = instance.toJSON();
       if (isPresent(sequelizeOptions.attributes)) {
-        return select(result);
+        return this.selector(params)(result);
       }
       return result;
     }
 
     if (isPresent(sequelizeOptions.attributes)) {
-      const result = select(instance.toJSON())
+      const result = this.selector(params)(instance.toJSON())
       return Model.build(result, { isNewRecord: false });
     }
 
@@ -548,12 +551,26 @@ export class SequelizeAdapter<
       return current;
     }
 
-    const result = await this._get(id, params);
+    const instance = await this._get(id, {
+      ...params,
+      sequelize: { ...params.sequelize, raw: false }
+    }) as unknown as Model;
 
-    const instance = result instanceof Model ? result : Model.build(result as any, { isNewRecord: false });
+    await instance.destroy(sequelizeOptions).catch(errorHandler);
 
-    await instance.destroy(sequelizeOptions);
+    if (sequelizeOptions.raw) {
+      const result = instance.toJSON();
+      if (isPresent(sequelizeOptions.attributes)) {
+        return this.selector(params)(result);
+      }
+      return result;
+    }
 
-    return result;
+    if (isPresent(sequelizeOptions.attributes)) {
+      const result = this.selector(params)(instance.toJSON())
+      return Model.build(result, { isNewRecord: false });
+    }
+
+    return instance as unknown as Result;
   }
 }
