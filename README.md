@@ -165,10 +165,10 @@ const { SequelizeService } = require('feathers-sequelize');
 class Service extends SequelizeService {
   getModel(params) {
     let Model = this.options.Model;
-    if(params?.sequelize?.scope) {
+    if (params?.sequelize?.scope) {
       Model = Model.scope(params?.sequelize?.scope);
     }
-    if(params?.sequelize?.schema) {
+    if (params?.sequelize?.schema) {
       Model = Model.schema(params?.sequelize?.schema);
     }
     return Model;
