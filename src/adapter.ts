@@ -215,6 +215,10 @@ export class SequelizeAdapter<
     return sequelize;
   }
 
+  handleError (error: any) {
+    return errorHandler(error);
+  }
+
   async _find (params?: ServiceParams & { paginate?: PaginationOptions }): Promise<Paginated<Result>>
   async _find (params?: ServiceParams & { paginate: false }): Promise<Result[]>
   async _find (params?: ServiceParams): Promise<Paginated<Result> | Result[]>
@@ -224,14 +228,14 @@ export class SequelizeAdapter<
     const sequelizeOptions = this.paramsToAdapter(null, params);
 
     if (!paginate || !paginate.default) {
-      const result = await Model.findAll(sequelizeOptions).catch(errorHandler);
+      const result = await Model.findAll(sequelizeOptions).catch(this.handleError);
       return result;
     }
 
     if (sequelizeOptions.limit === 0) {
       const total = (await Model
         .count({ ...sequelizeOptions, attributes: undefined })
-        .catch(errorHandler)) as any as number;
+        .catch(this.handleError)) as any as number;
 
       return {
         total,
@@ -241,7 +245,7 @@ export class SequelizeAdapter<
       }
     }
 
-    const result = await Model.findAndCountAll(sequelizeOptions).catch(errorHandler);
+    const result = await Model.findAndCountAll(sequelizeOptions).catch(this.handleError);
 
     return {
       total: result.count,
@@ -254,7 +258,7 @@ export class SequelizeAdapter<
   async _get (id: Id, params: ServiceParams = {} as ServiceParams): Promise<Result> {
     const Model = this.getModel(params);
     const sequelizeOptions = this.paramsToAdapter(id, params);
-    const result = await Model.findAll(sequelizeOptions).catch(errorHandler);
+    const result = await Model.findAll(sequelizeOptions).catch(this.handleError);
     if (result.length === 0) {
       throw new NotFound(`No record found for id '${id}'`);
     }
@@ -282,7 +286,7 @@ export class SequelizeAdapter<
     if (isArray) {
       const instances = await Model
         .bulkCreate(data as any[], sequelizeOptions)
-        .catch(errorHandler);
+        .catch(this.handleError);
 
       if (sequelizeOptions.returning === false) {
         return [];
@@ -311,7 +315,7 @@ export class SequelizeAdapter<
 
     const result = await Model
       .create(data as any, sequelizeOptions as CreateOptions)
-      .catch(errorHandler);
+      .catch(this.handleError);
 
     if (sequelizeOptions.raw) {
       return select((result as Model).toJSON())
@@ -354,7 +358,7 @@ export class SequelizeAdapter<
           raw: false,
           where: { [this.id]: ids.length === 1 ? ids[0] : { [Op.in]: ids } }
         } as UpdateOptions)
-        .catch(errorHandler) as [number, Model[]?];
+        .catch(this.handleError) as [number, Model[]?];
 
       if (sequelizeOptions.returning === false) {
         return []
@@ -429,7 +433,7 @@ export class SequelizeAdapter<
     await instance
       .set(values)
       .update(values, sequelizeOptions)
-      .catch(errorHandler);
+      .catch(this.handleError);
 
     if (isPresent(sequelizeOptions.include)) {
       return this._get(id, {
@@ -477,7 +481,7 @@ export class SequelizeAdapter<
     await instance
       .set(values)
       .update(values, sequelizeOptions)
-      .catch(errorHandler);
+      .catch(this.handleError);
 
     if (isPresent(sequelizeOptions.include)) {
       return this._get(id, {
@@ -532,7 +536,7 @@ export class SequelizeAdapter<
       await Model.destroy({
         ...params.sequelize,
         where: { [this.id]: ids.length === 1 ? ids[0] : { [Op.in]: ids } }
-      }).catch(errorHandler);
+      }).catch(this.handleError);
 
       if (sequelizeOptions.returning === false) {
         return [];
