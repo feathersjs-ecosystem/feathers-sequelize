@@ -111,16 +111,9 @@ export class SequelizeAdapter<
       throw new Error('getModel was called without a Model present in the constructor options and without overriding getModel! Perhaps you intended to override getModel in a child class?');
     }
 
-    return this.options.Model;
+    return this.options.Model
   }
 
-  ModelWithScope (params: ServiceParams) {
-    const Model = this.getModel(params);
-    if (params?.sequelize?.scope) {
-      return Model.scope(params.sequelize.scope);
-    }
-    return Model;
-  }
 
   convertOperators (q: any): Query {
     if (Array.isArray(q)) {
@@ -226,7 +219,7 @@ export class SequelizeAdapter<
   async _find (params?: ServiceParams & { paginate: false }): Promise<Result[]>
   async _find (params?: ServiceParams): Promise<Paginated<Result> | Result[]>
   async _find (params: ServiceParams = {} as ServiceParams): Promise<Paginated<Result> | Result[]> {
-    const Model = this.ModelWithScope(params);
+    const Model = this.getModel(params);
     const { paginate } = this.filterQuery(params);
     const sequelizeOptions = this.paramsToAdapter(null, params);
 
@@ -259,7 +252,7 @@ export class SequelizeAdapter<
   }
 
   async _get (id: Id, params: ServiceParams = {} as ServiceParams): Promise<Result> {
-    const Model = this.ModelWithScope(params);
+    const Model = this.getModel(params);
     const sequelizeOptions = this.paramsToAdapter(id, params);
     const result = await Model.findAll(sequelizeOptions).catch(errorHandler);
     if (result.length === 0) {
@@ -283,7 +276,7 @@ export class SequelizeAdapter<
       return []
     }
 
-    const Model = this.ModelWithScope(params);
+    const Model = this.getModel(params);
     const sequelizeOptions = this.paramsToAdapter(null, params);
 
     if (isArray) {
@@ -334,7 +327,7 @@ export class SequelizeAdapter<
       throw new MethodNotAllowed('Can not patch multiple entries')
     }
 
-    const Model = this.ModelWithScope(params);
+    const Model = this.getModel(params);
     const sequelizeOptions = this.paramsToAdapter(id, params);
     const select = selector(params, this.id);
     const values = _.omit(data, this.id);
@@ -462,7 +455,7 @@ export class SequelizeAdapter<
   }
 
   async _update (id: Id, data: Data, params: ServiceParams = {} as ServiceParams): Promise<Result> {
-    const Model = this.ModelWithScope(params);
+    const Model = this.getModel(params);
     const sequelizeOptions = this.paramsToAdapter(id, params);
     const select = selector(params, this.id);
 
@@ -516,7 +509,7 @@ export class SequelizeAdapter<
       throw new MethodNotAllowed('Can not remove multiple entries')
     }
 
-    const Model = this.ModelWithScope(params);
+    const Model = this.getModel(params);
     const sequelizeOptions = this.paramsToAdapter(id, params);
 
     if (id === null) {

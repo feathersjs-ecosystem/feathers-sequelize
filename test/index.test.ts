@@ -111,19 +111,7 @@ const Model = sequelize.define('people', {
     defaultValue: 'pending'
   }
 }, {
-  freezeTableName: true,
-  scopes: {
-    active: {
-      where: {
-        status: 'active'
-      }
-    },
-    pending: {
-      where: {
-        status: 'pending'
-      }
-    }
-  }
+  freezeTableName: true
 });
 const Order = sequelize.define('orders', {
   name: {
@@ -779,20 +767,6 @@ describe('Feathers Sequelize Service', () => {
           assert.strictEqual(error.message, 'Invalid query parameter $invalidOp');
         }
       });
-    });
-
-    it('can set the scope of an operation #130', async () => {
-      const people = app.service('people');
-      const data = { name: 'Active', status: 'active' };
-      const SCOPE_TO_ACTIVE = { sequelize: { scope: 'active' } };
-      const SCOPE_TO_PENDING = { sequelize: { scope: 'pending' } };
-      await people.create(data);
-
-      const staPeople = await people.find(SCOPE_TO_ACTIVE) as Paginated<any>;
-      assert.strictEqual(staPeople.data.length, 1);
-
-      const stpPeople = await people.find(SCOPE_TO_PENDING) as Paginated<any>;
-      assert.strictEqual(stpPeople.data.length, 0);
     });
   });
 

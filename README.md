@@ -16,6 +16,7 @@ A [Feathers](https://feathersjs.com) database adapter for [Sequelize](http://seq
   - [`service(options)`](#serviceoptions)
   - [params.sequelize](#paramssequelize)
   - [operators](#operatormap)
+  - [Modifying the model](#modifyModel)
 - [Caveats](#caveats)
   - [Sequelize `raw` queries](#sequelize-raw-queries)
   - [Working with MSSQL](#working-with-mssql)
@@ -152,6 +153,27 @@ app.service('users').find({
 
 ```
 GET /users?name[$like]=Dav%
+```
+
+## Modifying the Model
+
+Sequelize allows you to call methods like `Model.scope()`, `Model.schema()`, and others. To use these methods, extend the class to overwrite the `getModel` method.
+
+```js
+const { SequelizeService } = require('feathers-sequelize');
+
+class Service extends SequelizeService {
+  getModel(params) {
+    let Model = this.options.Model;
+    if(params?.sequelize?.scope) {
+      Model = Model.scope(params?.sequelize?.scope);
+    }
+    if(params?.sequelize?.schema) {
+      Model = Model.schema(params?.sequelize?.schema);
+    }
+    return Model;
+  }
+}
 ```
 
 ## Caveats
