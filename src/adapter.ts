@@ -111,7 +111,7 @@ export class SequelizeAdapter<
       throw new Error('getModel was called without a Model present in the constructor options and without overriding getModel! Perhaps you intended to override getModel in a child class?');
     }
 
-    return this.options.Model
+    return this.options.Model;
   }
 
 
