@@ -2,11 +2,31 @@
 
 ## [Unreleased](https://github.com/feathersjs-ecosystem/feathers-sequelize/tree/HEAD)
 
-[Full Changelog](https://github.com/feathersjs-ecosystem/feathers-sequelize/compare/v8.0.0-pre.1...HEAD)
+[Full Changelog](https://github.com/feathersjs-ecosystem/feathers-sequelize/compare/v8.0.0-pre.2...HEAD)
 
 **Merged pull requests:**
 
-- fix: multi patch raw false [\#436](https://github.com/feathersjs-ecosystem/feathers-sequelize/pull/436) ([fratzinger](https://github.com/fratzinger))
+- Remove `ModelWithScope` and add `handleError` [\#450](https://github.com/feathersjs-ecosystem/feathers-sequelize/pull/450) ([DaddyWarbucks](https://github.com/DaddyWarbucks))
+- chore: fix broken and outdated sequelize doc links [\#441](https://github.com/feathersjs-ecosystem/feathers-sequelize/pull/441) ([reeceyang](https://github.com/reeceyang))
+- chore: fix README.md formatting [\#440](https://github.com/feathersjs-ecosystem/feathers-sequelize/pull/440) ([reeceyang](https://github.com/reeceyang))
+
+## [v8.0.0-pre.2](https://github.com/feathersjs-ecosystem/feathers-sequelize/tree/v8.0.0-pre.2) (2025-03-12)
+
+[Full Changelog](https://github.com/feathersjs-ecosystem/feathers-sequelize/compare/v8.0.0-pre.1...v8.0.0-pre.2)
+
+**Implemented enhancements:**
+
+- Allow hydrated instances to enter into the adapter [\#131](https://github.com/feathersjs-ecosystem/feathers-sequelize/issues/131)
+
+**Closed issues:**
+
+- Check/add support for nested JSONB set. [\#439](https://github.com/feathersjs-ecosystem/feathers-sequelize/issues/439)
+- feathers sequlize type confict when overwritting find and calling super.find [\#432](https://github.com/feathersjs-ecosystem/feathers-sequelize/issues/432)
+- feathers-sequelize remove method rewrite breaking change when deleting multiple items without id in table [\#409](https://github.com/feathersjs-ecosystem/feathers-sequelize/issues/409)
+- Better handle paranoid models [\#405](https://github.com/feathersjs-ecosystem/feathers-sequelize/issues/405)
+- iLike method with accent. [\#385](https://github.com/feathersjs-ecosystem/feathers-sequelize/issues/385)
+- Support Deep Aware for JSON Objects on Patch [\#371](https://github.com/feathersjs-ecosystem/feathers-sequelize/issues/371)
+- app.service\('users'\).get\(message.userId, params\) returns createdAt and updatedAt dates as string rather than Date object on SQLite [\#366](https://github.com/feathersjs-ecosystem/feathers-sequelize/issues/366)
 
 ## [v8.0.0-pre.1](https://github.com/feathersjs-ecosystem/feathers-sequelize/tree/v8.0.0-pre.1) (2024-05-13)
 
@@ -16,6 +36,10 @@
 
 - Allow join queries on remove [\#402](https://github.com/feathersjs-ecosystem/feathers-sequelize/issues/402)
 - Use proper $and in patch and remove methods [\#383](https://github.com/feathersjs-ecosystem/feathers-sequelize/issues/383)
+
+**Merged pull requests:**
+
+- fix: multi patch raw false [\#436](https://github.com/feathersjs-ecosystem/feathers-sequelize/pull/436) ([fratzinger](https://github.com/fratzinger))
 
 ## [v8.0.0-pre.0](https://github.com/feathersjs-ecosystem/feathers-sequelize/tree/v8.0.0-pre.0) (2024-05-12)
 
@@ -597,6 +621,7 @@
 **Closed issues:**
 
 - The patch on postgres is selecting every row from the table before updating [\#168](https://github.com/feathersjs-ecosystem/feathers-sequelize/issues/168)
+- Can't override id field when declaring a \(MySQL\) service [\#164](https://github.com/feathersjs-ecosystem/feathers-sequelize/issues/164)
 - Run tests against all sequelize dialects [\#163](https://github.com/feathersjs-ecosystem/feathers-sequelize/issues/163)
 - Adding model includes returns incorrect paging count [\#161](https://github.com/feathersjs-ecosystem/feathers-sequelize/issues/161)
 - Raw associations prevent pagination total being available [\#137](https://github.com/feathersjs-ecosystem/feathers-sequelize/issues/137)
