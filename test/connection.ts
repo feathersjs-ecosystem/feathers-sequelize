@@ -29,10 +29,11 @@ export default (DB?: 'postgres' | 'mysql' | 'mariadb' | (string & {})) => {
   } else if (DB === 'mariadb') {
     return new Sequelize(
       process.env.MARIADB_DATABASE ?? 'sequelize',
-      process.env.MARIADB_USER ?? 'root',
-      process.env.MARIADB_PASSWORD ?? '',
+      process.env.MARIADB_USER ?? 'sequelize',
+      process.env.MARIADB_PASSWORD ?? 'password',
       {
-        host: '127.0.0.1',
+        host: 'localhost',
+        port: 3306,
         dialect: 'mariadb',
         logging,
       },

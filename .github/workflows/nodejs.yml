@@ -107,7 +107,7 @@ jobs:
         image: mariadb:${{ matrix.mariadb-version }}
         env:
           MARIADB_DATABASE: sequelize
-          MARIADB_ROOT_PASSWORD: root_password
+          MARIADB_ROOT_PASSWORD: password
           MARIADB_USER: sequelize
           MARIADB_PASSWORD: password
         ports:
