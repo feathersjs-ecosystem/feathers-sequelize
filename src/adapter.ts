@@ -1,4 +1,4 @@
-import { MethodNotAllowed, NotFound } from '@feathersjs/errors';
+import { MethodNotAllowed, GeneralError, NotFound } from '@feathersjs/errors';
 import { _ } from '@feathersjs/commons';
 import {
   select as selector,
@@ -38,6 +38,21 @@ const defaultFilters = {
   $and: true as const
 }
 
+const catchHandler = (handler: any) => {
+  return (sequelizeError: any) => {
+    try {
+      errorHandler(sequelizeError);
+    } catch (feathersError) {
+      try {
+        handler(feathersError, sequelizeError);
+      } catch (error) {
+        throw error;
+      }
+    }
+    throw new GeneralError('`handleError` method must throw an error');
+  }
+}
+
 export class SequelizeAdapter<
   Result,
   Data = Partial<Result>,
@@ -46,11 +61,11 @@ export class SequelizeAdapter<
 > extends AdapterBase<Result, Data, PatchData, ServiceParams, SequelizeAdapterOptions> {
   constructor (options: SequelizeAdapterOptions) {
     if (!options.Model) {
-      throw new Error('You must provide a Sequelize Model');
+      throw new GeneralError('You must provide a Sequelize Model');
     }
 
     if (options.operators && !Array.isArray(options.operators)) {
-      throw new Error('The \'operators\' option must be an array. For migration from feathers.js v4 see: https://github.com/feathersjs-ecosystem/feathers-sequelize/tree/dove#migrate-to-feathers-v5-dove');
+      throw new GeneralError('The \'operators\' option must be an array. For migration from feathers.js v4 see: https://github.com/feathersjs-ecosystem/feathers-sequelize/tree/dove#migrate-to-feathers-v5-dove');
     }
 
     const operatorMap = {
@@ -99,7 +114,7 @@ export class SequelizeAdapter<
 
   get Model () {
     if (!this.options.Model) {
-      throw new Error('The Model getter was called with no Model provided in options!');
+      throw new GeneralError('The Model getter was called with no Model provided in options!');
     }
 
     return this.options.Model;
@@ -108,19 +123,12 @@ export class SequelizeAdapter<
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   getModel (_params?: ServiceParams) {
     if (!this.options.Model) {
-      throw new Error('getModel was called without a Model present in the constructor options and without overriding getModel! Perhaps you intended to override getModel in a child class?');
+      throw new GeneralError('getModel was called without a Model present in the constructor options and without overriding getModel! Perhaps you intended to override getModel in a child class?');
     }
 
     return this.options.Model;
   }
 
-  ModelWithScope (params: ServiceParams) {
-    const Model = this.getModel(params);
-    if (params?.sequelize?.scope) {
-      return Model.scope(params.sequelize.scope);
-    }
-    return Model;
-  }
 
   convertOperators (q: any): Query {
     if (Array.isArray(q)) {
@@ -222,23 +230,28 @@ export class SequelizeAdapter<
     return sequelize;
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  handleError (feathersError: any, _sequelizeError: any) {
+    throw feathersError;
+  }
+
   async _find (params?: ServiceParams & { paginate?: PaginationOptions }): Promise<Paginated<Result>>
   async _find (params?: ServiceParams & { paginate: false }): Promise<Result[]>
   async _find (params?: ServiceParams): Promise<Paginated<Result> | Result[]>
   async _find (params: ServiceParams = {} as ServiceParams): Promise<Paginated<Result> | Result[]> {
-    const Model = this.ModelWithScope(params);
+    const Model = this.getModel(params);
     const { paginate } = this.filterQuery(params);
     const sequelizeOptions = this.paramsToAdapter(null, params);
 
     if (!paginate || !paginate.default) {
-      const result = await Model.findAll(sequelizeOptions).catch(errorHandler);
+      const result = await Model.findAll(sequelizeOptions).catch(catchHandler(this.handleError));
       return result;
     }
 
     if (sequelizeOptions.limit === 0) {
       const total = (await Model
         .count({ ...sequelizeOptions, attributes: undefined })
-        .catch(errorHandler)) as any as number;
+        .catch(catchHandler(this.handleError))) as any as number;
 
       return {
         total,
@@ -248,7 +261,7 @@ export class SequelizeAdapter<
       }
     }
 
-    const result = await Model.findAndCountAll(sequelizeOptions).catch(errorHandler);
+    const result = await Model.findAndCountAll(sequelizeOptions).catch(catchHandler(this.handleError));
 
     return {
       total: result.count,
@@ -259,9 +272,9 @@ export class SequelizeAdapter<
   }
 
   async _get (id: Id, params: ServiceParams = {} as ServiceParams): Promise<Result> {
-    const Model = this.ModelWithScope(params);
+    const Model = this.getModel(params);
     const sequelizeOptions = this.paramsToAdapter(id, params);
-    const result = await Model.findAll(sequelizeOptions).catch(errorHandler);
+    const result = await Model.findAll(sequelizeOptions).catch(catchHandler(this.handleError));
     if (result.length === 0) {
       throw new NotFound(`No record found for id '${id}'`);
     }
@@ -283,13 +296,13 @@ export class SequelizeAdapter<
       return []
     }
 
-    const Model = this.ModelWithScope(params);
+    const Model = this.getModel(params);
     const sequelizeOptions = this.paramsToAdapter(null, params);
 
     if (isArray) {
       const instances = await Model
         .bulkCreate(data as any[], sequelizeOptions)
-        .catch(errorHandler);
+        .catch(catchHandler(this.handleError));
 
       if (sequelizeOptions.returning === false) {
         return [];
@@ -318,7 +331,7 @@ export class SequelizeAdapter<
 
     const result = await Model
       .create(data as any, sequelizeOptions as CreateOptions)
-      .catch(errorHandler);
+      .catch(catchHandler(this.handleError));
 
     if (sequelizeOptions.raw) {
       return select((result as Model).toJSON())
@@ -334,7 +347,7 @@ export class SequelizeAdapter<
       throw new MethodNotAllowed('Can not patch multiple entries')
     }
 
-    const Model = this.ModelWithScope(params);
+    const Model = this.getModel(params);
     const sequelizeOptions = this.paramsToAdapter(id, params);
     const select = selector(params, this.id);
     const values = _.omit(data, this.id);
@@ -361,7 +374,7 @@ export class SequelizeAdapter<
           raw: false,
           where: { [this.id]: ids.length === 1 ? ids[0] : { [Op.in]: ids } }
         } as UpdateOptions)
-        .catch(errorHandler) as [number, Model[]?];
+        .catch(catchHandler(this.handleError)) as [number, Model[]?];
 
       if (sequelizeOptions.returning === false) {
         return []
@@ -436,7 +449,7 @@ export class SequelizeAdapter<
     await instance
       .set(values)
       .update(values, sequelizeOptions)
-      .catch(errorHandler);
+      .catch(catchHandler(this.handleError));
 
     if (isPresent(sequelizeOptions.include)) {
       return this._get(id, {
@@ -462,7 +475,7 @@ export class SequelizeAdapter<
   }
 
   async _update (id: Id, data: Data, params: ServiceParams = {} as ServiceParams): Promise<Result> {
-    const Model = this.ModelWithScope(params);
+    const Model = this.getModel(params);
     const sequelizeOptions = this.paramsToAdapter(id, params);
     const select = selector(params, this.id);
 
@@ -484,7 +497,7 @@ export class SequelizeAdapter<
     await instance
       .set(values)
       .update(values, sequelizeOptions)
-      .catch(errorHandler);
+      .catch(catchHandler(this.handleError));
 
     if (isPresent(sequelizeOptions.include)) {
       return this._get(id, {
@@ -516,7 +529,7 @@ export class SequelizeAdapter<
       throw new MethodNotAllowed('Can not remove multiple entries')
     }
 
-    const Model = this.ModelWithScope(params);
+    const Model = this.getModel(params);
     const sequelizeOptions = this.paramsToAdapter(id, params);
 
     if (id === null) {
@@ -539,7 +552,7 @@ export class SequelizeAdapter<
       await Model.destroy({
         ...params.sequelize,
         where: { [this.id]: ids.length === 1 ? ids[0] : { [Op.in]: ids } }
-      }).catch(errorHandler);
+      }).catch(catchHandler(this.handleError));
 
       if (sequelizeOptions.returning === false) {
         return [];
