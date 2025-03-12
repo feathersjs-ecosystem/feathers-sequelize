@@ -1,8 +1,8 @@
-import type { Options } from 'sequelize';
-import { Sequelize } from 'sequelize';
+import type { Options } from 'sequelize'
+import { Sequelize } from 'sequelize'
 
-export default (DB?: 'postgres' | 'mysql' | string) => {
-  const logging: Options['logging'] = false;
+export default (DB?: 'postgres' | 'mysql' | 'mariadb' | (string & {})) => {
+  const logging: Options['logging'] = false
 
   if (DB === 'postgres') {
     return new Sequelize(
@@ -12,9 +12,9 @@ export default (DB?: 'postgres' | 'mysql' | string) => {
       {
         host: 'localhost',
         dialect: 'postgres',
-        logging
-      }
-    );
+        logging,
+      },
+    )
   } else if (DB === 'mysql') {
     return new Sequelize(
       process.env.MYSQl_DATABASE ?? 'sequelize',
@@ -23,14 +23,25 @@ export default (DB?: 'postgres' | 'mysql' | string) => {
       {
         host: '127.0.0.1',
         dialect: 'mysql',
-        logging
-      }
-    );
-  } else {
-    return new Sequelize('sequelize', '', '', {
-      dialect: 'sqlite',
-      storage: './db.sqlite',
-      logging
-    });
+        logging,
+      },
+    )
+  } else if (DB === 'mariadb') {
+    return new Sequelize(
+      process.env.MARIADB_DATABASE ?? 'sequelize',
+      process.env.MARIADB_USER ?? 'root',
+      process.env.MARIADB_PASSWORD ?? '',
+      {
+        host: '127.0.0.1',
+        dialect: 'mariadb',
+        logging,
+      },
+    )
   }
-};
+
+  return new Sequelize('sequelize', '', '', {
+    dialect: 'sqlite',
+    storage: './db.sqlite',
+    logging,
+  })
+}

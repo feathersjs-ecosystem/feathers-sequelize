@@ -1,2 +1,2 @@
-export * from './dehydrate';
-export * from './hydrate';
+export * from './dehydrate.js'
+export * from './hydrate.js'
