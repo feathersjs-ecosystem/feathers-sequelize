@@ -1,37 +1,37 @@
-import type { HookContext } from '@feathersjs/feathers';
+import type { HookContext } from '@feathersjs/feathers'
 
 const serialize = (item: any) => {
   if (typeof item.toJSON === 'function') {
-    return item.toJSON();
+    return item.toJSON()
   }
-  return item;
-};
+  return item
+}
 
 export const dehydrate = <H extends HookContext = HookContext>() => {
   return function (context: H) {
     switch (context.method) {
-    case 'find':
-      if (context.result.data) {
-        context.result.data = context.result.data.map(serialize);
-      } else {
-        context.result = context.result.map(serialize);
-      }
-      break;
+      case 'find':
+        if (context.result.data) {
+          context.result.data = context.result.data.map(serialize)
+        } else {
+          context.result = context.result.map(serialize)
+        }
+        break
 
-    case 'get':
-    case 'update':
-      context.result = serialize(context.result);
-      break;
+      case 'get':
+      case 'update':
+        context.result = serialize(context.result)
+        break
 
-    case 'create':
-    case 'patch':
-      if (Array.isArray(context.result)) {
-        context.result = context.result.map(serialize);
-      } else {
-        context.result = serialize(context.result);
-      }
-      break;
+      case 'create':
+      case 'patch':
+        if (Array.isArray(context.result)) {
+          context.result = context.result.map(serialize)
+        } else {
+          context.result = serialize(context.result)
+        }
+        break
     }
-    return Promise.resolve(context);
-  };
-};
+    return Promise.resolve(context)
+  }
+}
