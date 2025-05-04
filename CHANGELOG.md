@@ -2,13 +2,20 @@
 
 ## [Unreleased](https://github.com/feathersjs-ecosystem/feathers-sequelize/tree/HEAD)
 
-[Full Changelog](https://github.com/feathersjs-ecosystem/feathers-sequelize/compare/v8.0.0-pre.2...HEAD)
+[Full Changelog](https://github.com/feathersjs-ecosystem/feathers-sequelize/compare/v8.0.0-pre.3...HEAD)
 
 **Merged pull requests:**
 
-- Remove `ModelWithScope` and add `handleError` [\#450](https://github.com/feathersjs-ecosystem/feathers-sequelize/pull/450) ([DaddyWarbucks](https://github.com/DaddyWarbucks))
-- chore: fix broken and outdated sequelize doc links [\#441](https://github.com/feathersjs-ecosystem/feathers-sequelize/pull/441) ([reeceyang](https://github.com/reeceyang))
-- chore: fix README.md formatting [\#440](https://github.com/feathersjs-ecosystem/feathers-sequelize/pull/440) ([reeceyang](https://github.com/reeceyang))
+- chore: update dependencies [\#454](https://github.com/feathersjs-ecosystem/feathers-sequelize/pull/454) ([fratzinger](https://github.com/fratzinger))
+- refactor!: renovate [\#451](https://github.com/feathersjs-ecosystem/feathers-sequelize/pull/451) ([fratzinger](https://github.com/fratzinger))
+
+## [v8.0.0-pre.3](https://github.com/feathersjs-ecosystem/feathers-sequelize/tree/v8.0.0-pre.3) (2025-05-04)
+
+[Full Changelog](https://github.com/feathersjs-ecosystem/feathers-sequelize/compare/v8.0.0-pre.2...v8.0.0-pre.3)
+
+**Closed issues:**
+
+- Add `handleError` method [\#449](https://github.com/feathersjs-ecosystem/feathers-sequelize/issues/449)
 
 ## [v8.0.0-pre.2](https://github.com/feathersjs-ecosystem/feathers-sequelize/tree/v8.0.0-pre.2) (2025-03-12)
 
@@ -27,6 +34,12 @@
 - iLike method with accent. [\#385](https://github.com/feathersjs-ecosystem/feathers-sequelize/issues/385)
 - Support Deep Aware for JSON Objects on Patch [\#371](https://github.com/feathersjs-ecosystem/feathers-sequelize/issues/371)
 - app.service\('users'\).get\(message.userId, params\) returns createdAt and updatedAt dates as string rather than Date object on SQLite [\#366](https://github.com/feathersjs-ecosystem/feathers-sequelize/issues/366)
+
+**Merged pull requests:**
+
+- Remove `ModelWithScope` and add `handleError` [\#450](https://github.com/feathersjs-ecosystem/feathers-sequelize/pull/450) ([DaddyWarbucks](https://github.com/DaddyWarbucks))
+- chore: fix broken and outdated sequelize doc links [\#441](https://github.com/feathersjs-ecosystem/feathers-sequelize/pull/441) ([reeceyang](https://github.com/reeceyang))
+- chore: fix README.md formatting [\#440](https://github.com/feathersjs-ecosystem/feathers-sequelize/pull/440) ([reeceyang](https://github.com/reeceyang))
 
 ## [v8.0.0-pre.1](https://github.com/feathersjs-ecosystem/feathers-sequelize/tree/v8.0.0-pre.1) (2024-05-13)
 
