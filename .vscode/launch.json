@@ -11,10 +11,8 @@
       "name": "Mocha Tests",
       "program": "${workspaceFolder}/node_modules/mocha/bin/mocha",
       "args": [
-        "--require",
-        "ts-node/register",
         "--timeout",
-        "10000",
+        "60000",
         "--colors",
         "--recursive"
       ],
