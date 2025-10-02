@@ -177,7 +177,7 @@ export class SequelizeAdapter<
 
     const query = this.convertOperators({
       ..._query,
-      ..._.omit(filters, '$select', '$skip', '$limit', '$sort'),
+      ..._.omit(filters, '$select', '$group', '$min', '$max', '$avg', '$sum', '$count', '$skip', '$limit', '$sort'),
     })
 
     if (filters.$select) {
@@ -198,6 +198,10 @@ export class SequelizeAdapter<
   paramsToAdapter(id: NullableId, _params?: ServiceParams): any {
     const params = _params || ({} as ServiceParams)
     const { filters, query: where } = this.filterQuery(params)
+    const { $select, $group, $min, $max, $avg, $sum, $count } = filters
+
+    const Model = this.getModel(params)
+    const colPrefix = (params.colPrefix ?? Model.tableName) + '.';
 
     // Until Sequelize fix all the findAndCount issues, a few 'hacks' are needed to get the total count correct
 
@@ -207,11 +211,43 @@ export class SequelizeAdapter<
 
     const defaults = {
       where,
-      attributes: filters.$select,
+      attributes: $select,
       distinct: true,
       returning: true,
       raw: this.raw,
       ...params.sequelize,
+    }
+
+    // GROUP BY. Usage same as $select.
+    if ($group) {
+      let group = [];
+      let attributes = [];
+      for (let groupBy of $group) {
+        let col = Sequelize.col(colPrefix + groupBy);
+        group.push(col);
+        attributes.push(col);
+      }
+      defaults.group = defaults.group ? defaults.group.concat(group) : group;
+      defaults.attributes = defaults.attributes ? defaults.attributes.concat(attributes) : attributes; // always select grouped field
+    }
+
+    // Aggregate functions. Usage same as $select.
+    if ($min?.length || $max?.length || $avg?.length || $sum?.length || $count) {
+      if (!defaults.attributes) defaults.attributes = [];
+
+      const appendAttrs = (fields, fn, prefix) => {
+        if (!fields) return;
+        for (let field of fields)
+          defaults.attributes.push([Sequelize.fn(fn, Sequelize.col(colPrefix + field)), prefix + field]);
+      }
+      appendAttrs($min, 'MIN', 'min_');
+      appendAttrs($max, 'MAX', 'max_');
+      appendAttrs($avg, 'AVG', 'avg_');
+      appendAttrs($sum, 'SUM', 'sum_');
+      if ($count === true) // COUNT(*)
+        defaults.attributes.push([Sequelize.fn('COUNT', "*"), 'count']);
+      else
+        appendAttrs($count, 'COUNT', 'count_');
     }
 
     if (id === null) {
