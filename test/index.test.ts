@@ -403,6 +403,82 @@ describe('Feathers Sequelize Service', () => {
 
     afterEach(() => app.service('people').remove(null, { query: {} }))
 
+    describe('ID validation', () => {
+      const people = app.service('people')
+      let records: any[]
+
+      beforeEach(async () => {
+        await people.create([
+          { name: 'Kirsten', age: 30 },
+          { name: 'Ryan', age: 40 },
+        ])
+        records = await people.find({
+          paginate: false,
+          query: { $sort: { id: 1 } },
+        })
+      })
+
+      for (const method of ['get', '_get'] as const) {
+        for (const id of [null, undefined]) {
+          it(`${method} rejects ${id} with BadRequest`, async () => {
+            await assert.rejects(() => people[method](id as any), {
+              name: 'BadRequest',
+              code: 400,
+              message: 'Can not get an entry without an id',
+            })
+          })
+        }
+      }
+
+      for (const method of ['update', '_update'] as const) {
+        for (const id of [null, undefined]) {
+          it(`${method} rejects ${id} without changing records`, async () => {
+            await assert.rejects(
+              () => people[method](id as any, { name: 'Changed' }),
+              {
+                name: 'BadRequest',
+                code: 400,
+                message: 'Update id must not be undefined',
+              },
+            )
+
+            assert.deepStrictEqual(
+              await people.find({
+                paginate: false,
+                query: { $sort: { id: 1 } },
+              }),
+              records,
+            )
+          })
+        }
+      }
+
+      for (const method of ['patch', '_patch'] as const) {
+        for (const multi of [false, true]) {
+          it(`${method} rejects undefined when multi is ${multi} without changing records`, async () => {
+            const service = new SequelizeService({ Model, multi })
+
+            await assert.rejects(
+              () => service[method](undefined as any, { name: 'Changed' }),
+              {
+                name: 'BadRequest',
+                code: 400,
+                message: 'Patch id must not be undefined',
+              },
+            )
+
+            assert.deepStrictEqual(
+              await people.find({
+                paginate: false,
+                query: { $sort: { id: 1 } },
+              }),
+              records,
+            )
+          })
+        }
+      }
+    })
+
     describe('Common functionality', () => {
       const people = app.service('people')
       let kirsten: any
