@@ -1,4 +1,9 @@
-import { MethodNotAllowed, GeneralError, NotFound } from '@feathersjs/errors'
+import {
+  MethodNotAllowed,
+  GeneralError,
+  NotFound,
+  BadRequest,
+} from '@feathersjs/errors'
 import { _ } from '@feathersjs/commons'
 import {
   select as selector,
@@ -297,6 +302,9 @@ export class SequelizeAdapter<
     id: Id,
     params: ServiceParams = {} as ServiceParams,
   ): Promise<Result> {
+    if (id === null || id === undefined) {
+      throw new BadRequest('Can not get an entry without an id')
+    }
     const Model = this.getModel(params)
     const sequelizeOptions = this.paramsToAdapter(id, params)
     const result = await Model.findAll(sequelizeOptions).catch(
@@ -388,6 +396,10 @@ export class SequelizeAdapter<
   ): Promise<Result | Result[]> {
     if (id === null && !this.allowsMulti('patch', params)) {
       throw new MethodNotAllowed('Can not patch multiple entries')
+    }
+
+    if (id === undefined) {
+      throw new BadRequest('Patch id must not be undefined')
     }
 
     const Model = this.getModel(params)
@@ -525,6 +537,10 @@ export class SequelizeAdapter<
     data: Data,
     params: ServiceParams = {} as ServiceParams,
   ): Promise<Result> {
+    if (id === null || id === undefined) {
+      throw new BadRequest('Update id must not be undefined')
+    }
+
     const Model = this.getModel(params)
     const sequelizeOptions = this.paramsToAdapter(id, params)
     const select = selector(params, this.id)
