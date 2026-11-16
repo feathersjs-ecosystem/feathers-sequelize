@@ -1,7 +1,7 @@
 import * as _feathersjs_adapter_commons from '@feathersjs/adapter-commons';
 import { AdapterQuery, AdapterParams, AdapterServiceOptions, AdapterBase, PaginationOptions } from '@feathersjs/adapter-commons';
 import * as sequelize from 'sequelize';
-import { ModelStatic, Includeable, Op } from 'sequelize';
+import { Includeable, ModelStatic, Op } from 'sequelize';
 import { Query, NullableId, Paginated, Id, PaginationOptions as PaginationOptions$1, HookContext, Params, ServiceMethods } from '@feathersjs/feathers';
 
 interface SequelizeAdapterOptions extends AdapterServiceOptions {

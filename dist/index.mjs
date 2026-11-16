@@ -87,6 +87,9 @@ const catchHandler = (handler) => {
     throw new GeneralError("`handleError` method must throw an error");
   };
 };
+const isIdType = (id) => {
+  return typeof id === "string" || typeof id === "number";
+};
 class SequelizeAdapter extends AdapterBase {
   constructor(options) {
     if (!options.Model) {
@@ -210,27 +213,20 @@ class SequelizeAdapter extends AdapterBase {
         ...defaults
       };
     }
-    const sequelize = {
+    return {
       limit: 1,
-      ...defaults
+      ...defaults,
+      where: {
+        [Op.and]: [defaults.where ?? {}, { [this.id]: id }]
+      }
     };
-    if (where[this.id] === id) {
-      return sequelize;
-    }
-    if (this.id in where) {
-      const { and } = Op;
-      where[and] = where[and] ? [...where[and], { [this.id]: id }] : { [this.id]: id };
-    } else {
-      where[this.id] = id;
-    }
-    return sequelize;
   }
   handleError(feathersError, _sequelizeError) {
     throw feathersError;
   }
   async _find(params = {}) {
     const Model = this.getModel(params);
-    const { paginate } = this.filterQuery(params);
+    const { paginate } = this.getOptions(params);
     const sequelizeOptions = this.paramsToAdapter(null, params);
     if (!paginate || !paginate.default) {
       const result2 = await Model.findAll(sequelizeOptions).catch(
@@ -261,6 +257,9 @@ class SequelizeAdapter extends AdapterBase {
     };
   }
   async _get(id, params = {}) {
+    if (!isIdType(id)) {
+      throw new BadRequest("ID must be a string or number");
+    }
     const Model = this.getModel(params);
     const sequelizeOptions = this.paramsToAdapter(id, params);
     const result = await Model.findAll(sequelizeOptions).catch(
@@ -315,11 +314,24 @@ class SequelizeAdapter extends AdapterBase {
     if (sequelizeOptions.raw) {
       return select$1(result.toJSON());
     }
+    if (isPresent(sequelizeOptions.attributes)) {
+      const selected = select$1(result.dataValues);
+      const buildOptions = {
+        isNewRecord: false,
+        raw: true,
+        attributes: Object.keys(selected),
+        include: sequelizeOptions.include
+      };
+      return Model.build(selected, buildOptions);
+    }
     return result;
   }
   async _patch(id, data, params = {}) {
     if (id === null && !this.allowsMulti("patch", params)) {
       throw new MethodNotAllowed("Can not patch multiple entries");
+    }
+    if (id !== null && !isIdType(id)) {
+      throw new BadRequest("ID must be a string, number, or null");
     }
     const Model = this.getModel(params);
     const sequelizeOptions = this.paramsToAdapter(id, params);
@@ -338,10 +350,13 @@ class SequelizeAdapter extends AdapterBase {
         return [];
       }
       const ids = current.map((item) => item[this.id]);
+      const idWhere = {
+        [this.id]: ids.length === 1 ? ids[0] : { [Op.in]: ids }
+      };
       let [, instances] = await Model.update(values, {
         ...sequelizeOptions,
         raw: false,
-        where: { [this.id]: ids.length === 1 ? ids[0] : { [Op.in]: ids } }
+        where: idWhere
       }).catch(catchHandler(this.handleError));
       if (sequelizeOptions.returning === false) {
         return [];
@@ -352,13 +367,14 @@ class SequelizeAdapter extends AdapterBase {
       const hasAttributes = isPresent(sequelizeOptions.attributes);
       if (instances) {
         if (isPresent(params.query?.$sort)) {
+          const instancesById = new Map(
+            instances.map((instance2) => [instance2[this.id], instance2])
+          );
           const sortedInstances = [];
           const unsortedInstances = [];
           current.forEach((item) => {
             const id2 = item[this.id];
-            const instance2 = instances.find(
-              (instance3) => instance3[this.id] === id2
-            );
+            const instance2 = instancesById.get(id2);
             if (instance2) {
               sortedInstances.push(instance2);
             } else {
@@ -388,8 +404,11 @@ class SequelizeAdapter extends AdapterBase {
       const result = await this._find({
         ...params,
         paginate: false,
+        sequelize: {
+          ...params.sequelize,
+          where: idWhere
+        },
         query: {
-          [this.id]: ids.length === 1 ? ids[0] : { $in: ids },
           $select: params?.query?.$select,
           $sort: params?.query?.$sort
         }
@@ -421,6 +440,9 @@ class SequelizeAdapter extends AdapterBase {
     return instance;
   }
   async _update(id, data, params = {}) {
+    if (!isIdType(id)) {
+      throw new BadRequest("ID must be a string or number");
+    }
     const Model = this.getModel(params);
     const sequelizeOptions = this.paramsToAdapter(id, params);
     const select$1 = select(params, this.id);
@@ -487,7 +509,7 @@ class SequelizeAdapter extends AdapterBase {
     }
     const result = await this._get(id, params);
     const instance = result instanceof Model ? result : Model.build(result, { isNewRecord: false });
-    await instance.destroy(sequelizeOptions);
+    await instance.destroy(sequelizeOptions).catch(catchHandler(this.handleError));
     return result;
   }
 }
@@ -529,7 +551,7 @@ const factory = (Model, include) => {
   return (item) => {
     const shouldBuild = !(item instanceof Model);
     if (shouldBuild) {
-      return Model.build(item, { isNewRecord: false, include });
+      return Model.build(item, { isNewRecord: false, raw: true, include });
     }
     return item;
   };
@@ -542,7 +564,10 @@ const hydrate = (options) => {
         'feathers-sequelize hydrate() - should only be used as an "after" hook'
       );
     }
-    const makeInstance = factory(context.service.Model, options.include);
+    const makeInstance = factory(
+      context.service.getModel(context.params),
+      options.include
+    );
     switch (context.method) {
       case "find":
         if (context.result.data) {
