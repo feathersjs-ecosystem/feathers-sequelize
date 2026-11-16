@@ -623,7 +623,9 @@ export class SequelizeAdapter<
         ? result
         : Model.build(result as any, { isNewRecord: false })
 
-    await instance.destroy(sequelizeOptions)
+    await instance
+      .destroy(sequelizeOptions)
+      .catch(catchHandler(this.handleError))
 
     return result
   }
