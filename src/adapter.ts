@@ -223,25 +223,13 @@ export class SequelizeAdapter<
       } as FindOptions
     }
 
-    const sequelize: FindOptions = {
+    return {
       limit: 1,
       ...defaults,
-    }
-
-    if (where[this.id] === id) {
-      return sequelize
-    }
-
-    if (this.id in where) {
-      const { and } = Op
-      where[and as any] = where[and as any]
-        ? [...where[and as any], { [this.id]: id }]
-        : { [this.id]: id }
-    } else {
-      where[this.id] = id
-    }
-
-    return sequelize
+      where: {
+        [Op.and]: [defaults.where ?? {}, { [this.id]: id }],
+      },
+    } as FindOptions
   }
 
   handleError(feathersError: any, _sequelizeError: any) {

@@ -403,6 +403,87 @@ describe('Feathers Sequelize Service', () => {
 
     afterEach(() => app.service('people').remove(null, { query: {} }))
 
+    describe('ID constraints with params.sequelize.where', () => {
+      for (const [model, id] of [
+        [Model, 'id'],
+        [CustomId, 'customid'],
+      ] as const) {
+        describe(`primary key ${id}`, () => {
+          const service = new SequelizeService({ Model: model, multi: true })
+          let records: any[]
+
+          beforeEach(async () => {
+            await service.create([{ name: 'Kirsten' }, { name: 'Ryan' }])
+            records = await service.find({
+              paginate: false,
+              query: { $sort: { [id]: 1 } },
+            })
+          })
+
+          afterEach(() => service.remove(null))
+
+          for (const method of ['get', 'patch', 'update', 'remove'] as const) {
+            it(`${method} rejects conditions that exclude the requested ID without changing records`, async () => {
+              const targetId = records[1][id]
+              const params = {
+                query: { [id]: targetId },
+                sequelize: { where: { [id]: records[0][id] } },
+              }
+
+              await assert.rejects(
+                () =>
+                  method === 'get' || method === 'remove'
+                    ? service[method](targetId, params)
+                    : service[method](targetId, { name: 'Changed' }, params),
+                { name: 'NotFound', code: 404 },
+              )
+
+              assert.deepStrictEqual(
+                await service.find({
+                  paginate: false,
+                  query: { $sort: { [id]: 1 } },
+                }),
+                records,
+              )
+            })
+
+            it(`${method} preserves the requested ID when Sequelize conditions override the query`, async () => {
+              const targetId = records[1][id]
+              const where = Object.freeze({
+                [Op.or]: [{ name: 'Kirsten' }, { name: 'Ryan' }],
+              })
+              const params = {
+                query: { [id]: records[0][id], name: 'Ignored query' },
+                sequelize: { where },
+              }
+              const result =
+                method === 'get' || method === 'remove'
+                  ? await service[method](targetId, params)
+                  : await service[method](targetId, { name: 'Changed' }, params)
+
+              assert.strictEqual(result[id], targetId)
+              assert.deepStrictEqual(
+                await service.get(records[0][id]),
+                records[0],
+              )
+
+              if (method === 'remove') {
+                await assert.rejects(() => service.get(targetId), {
+                  name: 'NotFound',
+                  code: 404,
+                })
+              } else {
+                assert.strictEqual(
+                  (await service.get(targetId)).name,
+                  method === 'get' ? 'Ryan' : 'Changed',
+                )
+              }
+            })
+          }
+        })
+      }
+    })
+
     describe('Common functionality', () => {
       const people = app.service('people')
       let kirsten: any
