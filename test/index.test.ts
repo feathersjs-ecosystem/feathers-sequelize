@@ -1,5 +1,6 @@
 import pg from 'pg'
 import assert from 'node:assert'
+import { mock } from 'node:test'
 import { expect } from 'chai'
 
 import Sequelize, { Op } from 'sequelize'
@@ -597,6 +598,109 @@ describe('Feathers Sequelize Service', () => {
                   )
                 })
               }
+            }
+          })
+        }
+      }
+    })
+
+    describe('Bulk patch ordering with returned instances', () => {
+      for (const [model, id] of [
+        [Model, 'id'],
+        [CustomId, 'customid'],
+      ] as const) {
+        for (const raw of [true, false]) {
+          describe(`${id}, raw is ${raw}`, () => {
+            const service = new SequelizeService({ Model: model, multi: true })
+
+            beforeEach(() =>
+              service.create(
+                Array.from({ length: 32 }, (_, age) => ({
+                  name: 'Original',
+                  age,
+                })),
+              ),
+            )
+            afterEach(() => service.remove(null))
+
+            for (const withSelect of [true, false]) {
+              it(`preserves sort order with linear ID reads when $select is ${withSelect}`, async () => {
+                const expected = await service.find({
+                  paginate: false,
+                  query: { $sort: { age: -1 } },
+                })
+                const originalUpdate = model.update
+                let idReads = 0
+                const update = mock.method(
+                  model,
+                  'update',
+                  async (data: any, options: any) => {
+                    const result: any = await originalUpdate.call(model, data, {
+                      ...options,
+                      returning: false,
+                    })
+                    const instances: Sequelize.Model[] = result[1]
+                    assert.ok(Array.isArray(instances))
+                    instances.sort(
+                      (a, b) =>
+                        Number(a.getDataValue(id)) - Number(b.getDataValue(id)),
+                    )
+                    for (const instance of instances) {
+                      Object.defineProperty(instance, id, {
+                        get() {
+                          idReads++
+                          return instance.getDataValue(id)
+                        },
+                      })
+                    }
+                    return [result[0], instances]
+                  },
+                )
+
+                try {
+                  const result = await service.patch(
+                    null,
+                    { name: 'Updated' },
+                    {
+                      query: {
+                        $sort: { age: -1 },
+                        ...(withSelect && { $select: [id, 'name'] }),
+                      },
+                      // Individual hooks return instances on every supported dialect.
+                      sequelize: { individualHooks: true, raw },
+                    },
+                  )
+
+                  assert.ok(
+                    idReads <= expected.length * 2,
+                    `${idReads} ID reads for ${expected.length} records`,
+                  )
+                  assert.deepStrictEqual(
+                    result.map((item) => item[id]),
+                    expected.map((item) => item[id]),
+                  )
+                  for (const item of result) {
+                    assert.strictEqual(item instanceof model, !raw)
+                    assert.strictEqual(item.name, 'Updated')
+                  }
+                  if (withSelect) {
+                    assert.deepStrictEqual(
+                      result.map((item) => (raw ? item : item.toJSON())),
+                      expected.map((item) => ({
+                        [id]: item[id],
+                        name: 'Updated',
+                      })),
+                    )
+                  } else {
+                    assert.deepStrictEqual(
+                      result.map((item) => item.age),
+                      expected.map((item) => item.age),
+                    )
+                  }
+                } finally {
+                  update.mock.restore()
+                }
+              })
             }
           })
         }

@@ -437,14 +437,15 @@ export class SequelizeAdapter<
 
       if (instances) {
         if (isPresent(params.query?.$sort)) {
+          const instancesById = new Map(
+            instances.map((instance) => [(instance as any)[this.id], instance]),
+          )
           const sortedInstances: Model[] = []
           const unsortedInstances: Model[] = []
 
           current.forEach((item: any) => {
             const id = item[this.id]
-            const instance = instances!.find(
-              (instance) => (instance as any)[this.id] === id,
-            )
+            const instance = instancesById.get(id)
             if (instance) {
               sortedInstances.push(instance)
             } else {
