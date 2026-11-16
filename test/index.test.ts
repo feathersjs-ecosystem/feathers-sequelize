@@ -484,6 +484,49 @@ describe('Feathers Sequelize Service', () => {
       }
     })
 
+    describe('Single create with $select and raw: false', () => {
+      for (const [model, id] of [
+        [Model, 'id'],
+        [CustomId, 'customid'],
+      ] as const) {
+        for (const configureRaw of [true, false]) {
+          describe(`${id}, raw configured in ${configureRaw ? 'options' : 'params'}`, () => {
+            const service = new SequelizeService({
+              Model: model,
+              raw: !configureRaw,
+              multi: true,
+            })
+
+            afterEach(() => service.remove(null))
+
+            for (const method of ['create', '_create'] as const) {
+              it(`${method} returns a persisted model with only selected fields`, async () => {
+                const result = await service[method](
+                  { name: 'Sarah', age: 30 },
+                  {
+                    query: { $select: ['name'] },
+                    ...(!configureRaw && { sequelize: { raw: false } }),
+                  },
+                )
+
+                expect(result).to.be.an.instanceOf(model)
+                assert.strictEqual(result.isNewRecord, false)
+                assert.ok(result[id])
+                assert.deepStrictEqual(result.toJSON(), {
+                  [id]: result[id],
+                  name: 'Sarah',
+                })
+                assert.strictEqual(result.getDataValue('age'), undefined)
+
+                const stored = await model.findByPk(result[id])
+                assert.strictEqual(stored!.get('age'), 30)
+              })
+            }
+          })
+        }
+      }
+    })
+
     describe('Common functionality', () => {
       const people = app.service('people')
       let kirsten: any

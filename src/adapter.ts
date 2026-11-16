@@ -360,6 +360,17 @@ export class SequelizeAdapter<
       return select((result as Model).toJSON())
     }
 
+    if (isPresent(sequelizeOptions.attributes)) {
+      const selected = select((result as Model).dataValues)
+      const buildOptions = {
+        isNewRecord: false,
+        raw: true,
+        attributes: Object.keys(selected),
+        include: sequelizeOptions.include,
+      }
+      return Model.build(selected, buildOptions)
+    }
+
     return result
   }
 
