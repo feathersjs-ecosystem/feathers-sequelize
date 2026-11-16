@@ -232,25 +232,13 @@ export class SequelizeAdapter<
       } as FindOptions
     }
 
-    const sequelize: FindOptions = {
+    return {
       limit: 1,
       ...defaults,
-    }
-
-    if (where[this.id] === id) {
-      return sequelize
-    }
-
-    if (this.id in where) {
-      const { and } = Op
-      where[and as any] = where[and as any]
-        ? [...where[and as any], { [this.id]: id }]
-        : { [this.id]: id }
-    } else {
-      where[this.id] = id
-    }
-
-    return sequelize
+      where: {
+        [Op.and]: [defaults.where ?? {}, { [this.id]: id }],
+      },
+    } as FindOptions
   }
 
   handleError(feathersError: any, _sequelizeError: any) {
@@ -266,7 +254,7 @@ export class SequelizeAdapter<
     params: ServiceParams = {} as ServiceParams,
   ): Promise<Paginated<Result> | Result[]> {
     const Model = this.getModel(params)
-    const { paginate } = this.filterQuery(params)
+    const { paginate } = this.getOptions(params)
     const sequelizeOptions = this.paramsToAdapter(null, params)
 
     if (!paginate || !paginate.default) {
@@ -384,6 +372,17 @@ export class SequelizeAdapter<
       return select((result as Model).toJSON())
     }
 
+    if (isPresent(sequelizeOptions.attributes)) {
+      const selected = select((result as Model).dataValues)
+      const buildOptions = {
+        isNewRecord: false,
+        raw: true,
+        attributes: Object.keys(selected),
+        include: sequelizeOptions.include,
+      }
+      return Model.build(selected, buildOptions)
+    }
+
     return result
   }
 
@@ -426,11 +425,14 @@ export class SequelizeAdapter<
       }
 
       const ids = current.map((item: any) => item[this.id])
+      const idWhere = {
+        [this.id]: ids.length === 1 ? ids[0] : { [Op.in]: ids },
+      }
 
       let [, instances] = (await Model.update(values, {
         ...sequelizeOptions,
         raw: false,
-        where: { [this.id]: ids.length === 1 ? ids[0] : { [Op.in]: ids } },
+        where: idWhere,
       } as UpdateOptions).catch(catchHandler(this.handleError))) as [
         number,
         Model[]?,
@@ -451,14 +453,15 @@ export class SequelizeAdapter<
 
       if (instances) {
         if (isPresent(params.query?.$sort)) {
+          const instancesById = new Map(
+            instances.map((instance) => [(instance as any)[this.id], instance]),
+          )
           const sortedInstances: Model[] = []
           const unsortedInstances: Model[] = []
 
           current.forEach((item: any) => {
             const id = item[this.id]
-            const instance = instances!.find(
-              (instance) => (instance as any)[this.id] === id,
-            )
+            const instance = instancesById.get(id)
             if (instance) {
               sortedInstances.push(instance)
             } else {
@@ -493,8 +496,11 @@ export class SequelizeAdapter<
       const result = await this._find({
         ...params,
         paginate: false,
+        sequelize: {
+          ...params.sequelize,
+          where: idWhere,
+        },
         query: {
-          [this.id]: ids.length === 1 ? ids[0] : { $in: ids },
           $select: params?.query?.$select,
           $sort: params?.query?.$sort,
         },
@@ -644,7 +650,9 @@ export class SequelizeAdapter<
         ? result
         : Model.build(result as any, { isNewRecord: false })
 
-    await instance.destroy(sequelizeOptions)
+    await instance
+      .destroy(sequelizeOptions)
+      .catch(catchHandler(this.handleError))
 
     return result
   }

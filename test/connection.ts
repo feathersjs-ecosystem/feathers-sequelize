@@ -17,7 +17,7 @@ export default (DB?: 'postgres' | 'mysql' | 'mariadb' | (string & {})) => {
     )
   } else if (DB === 'mysql') {
     return new Sequelize(
-      process.env.MYSQl_DATABASE ?? 'sequelize',
+      process.env.MYSQL_DATABASE ?? 'sequelize',
       process.env.MYSQL_USER ?? 'root',
       process.env.MYSQL_PASSWORD ?? '',
       {

@@ -1,5 +1,6 @@
 import pg from 'pg'
 import assert from 'node:assert'
+import { mock } from 'node:test'
 import { expect } from 'chai'
 
 import Sequelize, { Op } from 'sequelize'
@@ -546,6 +547,309 @@ describe('Feathers Sequelize Service', () => {
 
             assert.strictEqual(result.id, records[0].id)
             assert.strictEqual((await people.get(id)).name, 'Changed')
+          })
+        }
+      }
+    })
+
+    describe('ID constraints with params.sequelize.where', () => {
+      for (const [model, id] of [
+        [Model, 'id'],
+        [CustomId, 'customid'],
+      ] as const) {
+        describe(`primary key ${id}`, () => {
+          const service = new SequelizeService({ Model: model, multi: true })
+          let records: any[]
+
+          beforeEach(async () => {
+            await service.create([{ name: 'Kirsten' }, { name: 'Ryan' }])
+            records = await service.find({
+              paginate: false,
+              query: { $sort: { [id]: 1 } },
+            })
+          })
+
+          afterEach(() => service.remove(null))
+
+          for (const method of ['get', 'patch', 'update', 'remove'] as const) {
+            it(`${method} rejects conditions that exclude the requested ID without changing records`, async () => {
+              const targetId = records[1][id]
+              const params = {
+                query: { [id]: targetId },
+                sequelize: { where: { [id]: records[0][id] } },
+              }
+
+              await assert.rejects(
+                () =>
+                  method === 'get' || method === 'remove'
+                    ? service[method](targetId, params)
+                    : service[method](targetId, { name: 'Changed' }, params),
+                { name: 'NotFound', code: 404 },
+              )
+
+              assert.deepStrictEqual(
+                await service.find({
+                  paginate: false,
+                  query: { $sort: { [id]: 1 } },
+                }),
+                records,
+              )
+            })
+
+            it(`${method} preserves the requested ID when Sequelize conditions override the query`, async () => {
+              const targetId = records[1][id]
+              const where = Object.freeze({
+                [Op.or]: [{ name: 'Kirsten' }, { name: 'Ryan' }],
+              })
+              const params = {
+                query: { [id]: records[0][id], name: 'Ignored query' },
+                sequelize: { where },
+              }
+              const result =
+                method === 'get' || method === 'remove'
+                  ? await service[method](targetId, params)
+                  : await service[method](targetId, { name: 'Changed' }, params)
+
+              assert.strictEqual(result[id], targetId)
+              assert.deepStrictEqual(
+                await service.get(records[0][id]),
+                records[0],
+              )
+
+              if (method === 'remove') {
+                await assert.rejects(() => service.get(targetId), {
+                  name: 'NotFound',
+                  code: 404,
+                })
+              } else {
+                assert.strictEqual(
+                  (await service.get(targetId)).name,
+                  method === 'get' ? 'Ryan' : 'Changed',
+                )
+              }
+            })
+          }
+        })
+      }
+    })
+
+    describe('Single create with $select and raw: false', () => {
+      for (const [model, id] of [
+        [Model, 'id'],
+        [CustomId, 'customid'],
+      ] as const) {
+        for (const configureRaw of [true, false]) {
+          describe(`${id}, raw configured in ${configureRaw ? 'options' : 'params'}`, () => {
+            const service = new SequelizeService({
+              Model: model,
+              raw: !configureRaw,
+              multi: true,
+            })
+
+            afterEach(() => service.remove(null))
+
+            for (const method of ['create', '_create'] as const) {
+              it(`${method} returns a persisted model with only selected fields`, async () => {
+                const result = await service[method](
+                  { name: 'Sarah', age: 30 },
+                  {
+                    query: { $select: ['name'] },
+                    ...(!configureRaw && { sequelize: { raw: false } }),
+                  },
+                )
+
+                expect(result).to.be.an.instanceOf(model)
+                assert.strictEqual(result.isNewRecord, false)
+                assert.ok(result[id])
+                assert.deepStrictEqual(result.toJSON(), {
+                  [id]: result[id],
+                  name: 'Sarah',
+                })
+                assert.strictEqual(result.getDataValue('age'), undefined)
+
+                const stored = await model.findByPk(result[id])
+                assert.strictEqual(stored!.get('age'), 30)
+              })
+            }
+          })
+        }
+      }
+    })
+
+    describe('Bulk patch with params.sequelize.where', () => {
+      for (const [model, id] of [
+        [Model, 'id'],
+        [CustomId, 'customid'],
+      ] as const) {
+        for (const raw of [true, false]) {
+          describe(`${id}, raw is ${raw}`, () => {
+            const service = new SequelizeService({ Model: model, multi: true })
+            let records: any[]
+
+            beforeEach(async () => {
+              await service.create([
+                { name: 'Old', age: 10 },
+                { name: 'Old', age: 20 },
+                { name: 'Old', age: 30 },
+                { name: 'New', age: 40 },
+              ])
+              records = await service.find({
+                paginate: false,
+                query: { $sort: { age: -1 }, $select: [id, 'name', 'age'] },
+              })
+            })
+
+            afterEach(() => service.remove(null))
+
+            for (const method of ['patch', '_patch'] as const) {
+              for (const limit of [1, 2]) {
+                it(`${method} returns only the ${limit} updated records after the where predicate changes`, async () => {
+                  const expected = records
+                    .filter((record) => record.name === 'Old')
+                    .slice(0, limit)
+                    .map((record) => ({ ...record, name: 'New' }))
+                  const result = await service[method](
+                    null,
+                    { name: 'New' },
+                    {
+                      query: {
+                        $limit: limit,
+                        $sort: { age: -1 },
+                        $select: [id, 'name', 'age'],
+                      },
+                      sequelize: { where: Object.freeze({ name: 'Old' }), raw },
+                    },
+                  )
+
+                  for (const item of result) {
+                    assert.strictEqual(item instanceof model, !raw)
+                  }
+                  assert.deepStrictEqual(
+                    result.map((item) => (raw ? item : item.toJSON())),
+                    expected,
+                  )
+
+                  const updatedIds = expected.map((record) => record[id])
+                  assert.deepStrictEqual(
+                    await service.find({
+                      paginate: false,
+                      query: {
+                        $sort: { age: -1 },
+                        $select: [id, 'name', 'age'],
+                      },
+                    }),
+                    records.map((record) =>
+                      updatedIds.includes(record[id])
+                        ? { ...record, name: 'New' }
+                        : record,
+                    ),
+                  )
+                })
+              }
+            }
+          })
+        }
+      }
+    })
+
+    describe('Bulk patch ordering with returned instances', () => {
+      for (const [model, id] of [
+        [Model, 'id'],
+        [CustomId, 'customid'],
+      ] as const) {
+        for (const raw of [true, false]) {
+          describe(`${id}, raw is ${raw}`, () => {
+            const service = new SequelizeService({ Model: model, multi: true })
+
+            beforeEach(() =>
+              service.create(
+                Array.from({ length: 32 }, (_, age) => ({
+                  name: 'Original',
+                  age,
+                })),
+              ),
+            )
+            afterEach(() => service.remove(null))
+
+            for (const withSelect of [true, false]) {
+              it(`preserves sort order with linear ID reads when $select is ${withSelect}`, async () => {
+                const expected = await service.find({
+                  paginate: false,
+                  query: { $sort: { age: -1 } },
+                })
+                const originalUpdate = model.update
+                let idReads = 0
+                const update = mock.method(
+                  model,
+                  'update',
+                  async (data: any, options: any) => {
+                    const result: any = await originalUpdate.call(model, data, {
+                      ...options,
+                      returning: false,
+                    })
+                    const instances: Sequelize.Model[] = result[1]
+                    assert.ok(Array.isArray(instances))
+                    instances.sort(
+                      (a, b) =>
+                        Number(a.getDataValue(id)) - Number(b.getDataValue(id)),
+                    )
+                    for (const instance of instances) {
+                      Object.defineProperty(instance, id, {
+                        get() {
+                          idReads++
+                          return instance.getDataValue(id)
+                        },
+                      })
+                    }
+                    return [result[0], instances]
+                  },
+                )
+
+                try {
+                  const result = await service.patch(
+                    null,
+                    { name: 'Updated' },
+                    {
+                      query: {
+                        $sort: { age: -1 },
+                        ...(withSelect && { $select: [id, 'name'] }),
+                      },
+                      // Individual hooks return instances on every supported dialect.
+                      sequelize: { individualHooks: true, raw },
+                    },
+                  )
+
+                  assert.ok(
+                    idReads <= expected.length * 2,
+                    `${idReads} ID reads for ${expected.length} records`,
+                  )
+                  assert.deepStrictEqual(
+                    result.map((item) => item[id]),
+                    expected.map((item) => item[id]),
+                  )
+                  for (const item of result) {
+                    assert.strictEqual(item instanceof model, !raw)
+                    assert.strictEqual(item.name, 'Updated')
+                  }
+                  if (withSelect) {
+                    assert.deepStrictEqual(
+                      result.map((item) => (raw ? item : item.toJSON())),
+                      expected.map((item) => ({
+                        [id]: item[id],
+                        name: 'Updated',
+                      })),
+                    )
+                  } else {
+                    assert.deepStrictEqual(
+                      result.map((item) => item.age),
+                      expected.map((item) => item.age),
+                    )
+                  }
+                } finally {
+                  update.mock.restore()
+                }
+              })
+            }
           })
         }
       }
