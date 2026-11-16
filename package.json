@@ -48,6 +48,7 @@
     "CHANGELOG.md",
     "LICENSE",
     "README.md",
+    "dist/**",
     "src/**",
     "lib/**"
   ],
