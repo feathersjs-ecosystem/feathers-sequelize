@@ -405,6 +405,18 @@ describe('Feathers Sequelize Service', () => {
 
     describe('ID validation', () => {
       const people = app.service('people')
+      const invalidIds = [
+        ['undefined', undefined],
+        ['true', true],
+        ['false', false],
+        ['object', {}],
+        ['query object', { $ne: null }],
+        ['empty array', []],
+        ['array containing an ID', [1]],
+        ['bigint', BigInt(1)],
+        ['symbol', Symbol('id')],
+        ['function', () => 1],
+      ] as const
       let records: any[]
 
       beforeEach(async () => {
@@ -419,26 +431,34 @@ describe('Feathers Sequelize Service', () => {
       })
 
       for (const method of ['get', '_get'] as const) {
-        for (const id of [null, undefined]) {
-          it(`${method} rejects ${id} with BadRequest`, async () => {
+        for (const [label, id] of [['null', null], ...invalidIds] as const) {
+          it(`${method} rejects ${label} with BadRequest`, async () => {
             await assert.rejects(() => people[method](id as any), {
               name: 'BadRequest',
               code: 400,
-              message: 'Can not get an entry without an id',
+              message: 'ID must be a string or number',
             })
+          })
+        }
+
+        for (const type of ['string', 'number'] as const) {
+          it(`${method} accepts a ${type} ID`, async () => {
+            const id = type === 'string' ? String(records[0].id) : records[0].id
+
+            assert.deepStrictEqual(await people[method](id), records[0])
           })
         }
       }
 
       for (const method of ['update', '_update'] as const) {
-        for (const id of [null, undefined]) {
-          it(`${method} rejects ${id} without changing records`, async () => {
+        for (const [label, id] of [['null', null], ...invalidIds] as const) {
+          it(`${method} rejects ${label} without changing records`, async () => {
             await assert.rejects(
               () => people[method](id as any, { name: 'Changed' }),
               {
                 name: 'BadRequest',
                 code: 400,
-                message: 'Update id must not be undefined',
+                message: 'ID must be a string or number',
               },
             )
 
@@ -449,31 +469,83 @@ describe('Feathers Sequelize Service', () => {
               }),
               records,
             )
+          })
+        }
+
+        for (const type of ['string', 'number'] as const) {
+          it(`${method} accepts a ${type} ID`, async () => {
+            const id = type === 'string' ? String(records[0].id) : records[0].id
+            const result = await people[method](id, { name: 'Changed' })
+
+            assert.strictEqual(result.id, records[0].id)
+            assert.strictEqual((await people.get(id)).name, 'Changed')
           })
         }
       }
 
       for (const method of ['patch', '_patch'] as const) {
         for (const multi of [false, true]) {
-          it(`${method} rejects undefined when multi is ${multi} without changing records`, async () => {
+          for (const [label, id] of invalidIds) {
+            it(`${method} rejects ${label} when multi is ${multi} without changing records`, async () => {
+              const service = new SequelizeService({ Model, multi })
+
+              await assert.rejects(
+                () => service[method](id as any, { name: 'Changed' }),
+                {
+                  name: 'BadRequest',
+                  code: 400,
+                  message: 'ID must be a string, number, or null',
+                },
+              )
+
+              assert.deepStrictEqual(
+                await people.find({
+                  paginate: false,
+                  query: { $sort: { id: 1 } },
+                }),
+                records,
+              )
+            })
+          }
+
+          it(`${method} ${multi ? 'accepts' : 'rejects'} null when multi is ${multi}`, async () => {
             const service = new SequelizeService({ Model, multi })
 
-            await assert.rejects(
-              () => service[method](undefined as any, { name: 'Changed' }),
-              {
-                name: 'BadRequest',
-                code: 400,
-                message: 'Patch id must not be undefined',
-              },
-            )
+            if (multi) {
+              const result = await service[method](null, { name: 'Changed' })
 
-            assert.deepStrictEqual(
-              await people.find({
-                paginate: false,
-                query: { $sort: { id: 1 } },
-              }),
-              records,
-            )
+              assert.strictEqual(result.length, records.length)
+              assert.deepStrictEqual(
+                await people.find({
+                  paginate: false,
+                  query: { $sort: { id: 1 }, $select: ['id', 'name'] },
+                }),
+                records.map((record) => ({ id: record.id, name: 'Changed' })),
+              )
+            } else {
+              await assert.rejects(
+                () => service[method](null, { name: 'Changed' }),
+                { name: 'MethodNotAllowed', code: 405 },
+              )
+
+              assert.deepStrictEqual(
+                await people.find({
+                  paginate: false,
+                  query: { $sort: { id: 1 } },
+                }),
+                records,
+              )
+            }
+          })
+        }
+
+        for (const type of ['string', 'number'] as const) {
+          it(`${method} accepts a ${type} ID`, async () => {
+            const id = type === 'string' ? String(records[0].id) : records[0].id
+            const result = await people[method](id, { name: 'Changed' })
+
+            assert.strictEqual(result.id, records[0].id)
+            assert.strictEqual((await people.get(id)).name, 'Changed')
           })
         }
       }

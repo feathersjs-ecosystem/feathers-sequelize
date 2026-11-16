@@ -57,6 +57,10 @@ const catchHandler = (handler: any) => {
   }
 }
 
+const isIdType = (id: any): boolean => {
+  return typeof id === 'string' || typeof id === 'number'
+}
+
 export class SequelizeAdapter<
   Result,
   Data = Partial<Result>,
@@ -302,8 +306,8 @@ export class SequelizeAdapter<
     id: Id,
     params: ServiceParams = {} as ServiceParams,
   ): Promise<Result> {
-    if (id === null || id === undefined) {
-      throw new BadRequest('Can not get an entry without an id')
+    if (!isIdType(id)) {
+      throw new BadRequest('ID must be a string or number')
     }
     const Model = this.getModel(params)
     const sequelizeOptions = this.paramsToAdapter(id, params)
@@ -398,8 +402,8 @@ export class SequelizeAdapter<
       throw new MethodNotAllowed('Can not patch multiple entries')
     }
 
-    if (id === undefined) {
-      throw new BadRequest('Patch id must not be undefined')
+    if (id !== null && !isIdType(id)) {
+      throw new BadRequest('ID must be a string, number, or null')
     }
 
     const Model = this.getModel(params)
@@ -537,8 +541,8 @@ export class SequelizeAdapter<
     data: Data,
     params: ServiceParams = {} as ServiceParams,
   ): Promise<Result> {
-    if (id === null || id === undefined) {
-      throw new BadRequest('Update id must not be undefined')
+    if (!isIdType(id)) {
+      throw new BadRequest('ID must be a string or number')
     }
 
     const Model = this.getModel(params)
