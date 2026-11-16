@@ -1,4 +1,9 @@
-import { MethodNotAllowed, GeneralError, NotFound } from '@feathersjs/errors'
+import {
+  MethodNotAllowed,
+  GeneralError,
+  NotFound,
+  BadRequest,
+} from '@feathersjs/errors'
 import { _ } from '@feathersjs/commons'
 import {
   select as selector,
@@ -50,6 +55,10 @@ const catchHandler = (handler: any) => {
     }
     throw new GeneralError('`handleError` method must throw an error')
   }
+}
+
+const isIdType = (id: any): boolean => {
+  return typeof id === 'string' || typeof id === 'number'
 }
 
 export class SequelizeAdapter<
@@ -285,6 +294,9 @@ export class SequelizeAdapter<
     id: Id,
     params: ServiceParams = {} as ServiceParams,
   ): Promise<Result> {
+    if (!isIdType(id)) {
+      throw new BadRequest('ID must be a string or number')
+    }
     const Model = this.getModel(params)
     const sequelizeOptions = this.paramsToAdapter(id, params)
     const result = await Model.findAll(sequelizeOptions).catch(
@@ -387,6 +399,10 @@ export class SequelizeAdapter<
   ): Promise<Result | Result[]> {
     if (id === null && !this.allowsMulti('patch', params)) {
       throw new MethodNotAllowed('Can not patch multiple entries')
+    }
+
+    if (id !== null && !isIdType(id)) {
+      throw new BadRequest('ID must be a string, number, or null')
     }
 
     const Model = this.getModel(params)
@@ -531,6 +547,10 @@ export class SequelizeAdapter<
     data: Data,
     params: ServiceParams = {} as ServiceParams,
   ): Promise<Result> {
+    if (!isIdType(id)) {
+      throw new BadRequest('ID must be a string or number')
+    }
+
     const Model = this.getModel(params)
     const sequelizeOptions = this.paramsToAdapter(id, params)
     const select = selector(params, this.id)
