@@ -13,7 +13,7 @@ const factory = (
     const shouldBuild = !(item instanceof Model)
 
     if (shouldBuild) {
-      return Model.build(item, { isNewRecord: false, include })
+      return Model.build(item, { isNewRecord: false, raw: true, include })
     }
 
     return item
@@ -32,7 +32,10 @@ export const hydrate = <H extends HookContext = HookContext>(
       )
     }
 
-    const makeInstance = factory(context.service.Model, options.include)
+    const makeInstance = factory(
+      context.service.getModel(context.params),
+      options.include,
+    )
     switch (context.method) {
       case 'find':
         if (context.result.data) {
