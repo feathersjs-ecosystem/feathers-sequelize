@@ -245,7 +245,7 @@ export class SequelizeAdapter<
     params: ServiceParams = {} as ServiceParams,
   ): Promise<Paginated<Result> | Result[]> {
     const Model = this.getModel(params)
-    const { paginate } = this.filterQuery(params)
+    const { paginate } = this.getOptions(params)
     const sequelizeOptions = this.paramsToAdapter(null, params)
 
     if (!paginate || !paginate.default) {
