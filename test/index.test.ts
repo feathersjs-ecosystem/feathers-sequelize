@@ -527,6 +527,82 @@ describe('Feathers Sequelize Service', () => {
       }
     })
 
+    describe('Bulk patch with params.sequelize.where', () => {
+      for (const [model, id] of [
+        [Model, 'id'],
+        [CustomId, 'customid'],
+      ] as const) {
+        for (const raw of [true, false]) {
+          describe(`${id}, raw is ${raw}`, () => {
+            const service = new SequelizeService({ Model: model, multi: true })
+            let records: any[]
+
+            beforeEach(async () => {
+              await service.create([
+                { name: 'Old', age: 10 },
+                { name: 'Old', age: 20 },
+                { name: 'Old', age: 30 },
+                { name: 'New', age: 40 },
+              ])
+              records = await service.find({
+                paginate: false,
+                query: { $sort: { age: -1 }, $select: [id, 'name', 'age'] },
+              })
+            })
+
+            afterEach(() => service.remove(null))
+
+            for (const method of ['patch', '_patch'] as const) {
+              for (const limit of [1, 2]) {
+                it(`${method} returns only the ${limit} updated records after the where predicate changes`, async () => {
+                  const expected = records
+                    .filter((record) => record.name === 'Old')
+                    .slice(0, limit)
+                    .map((record) => ({ ...record, name: 'New' }))
+                  const result = await service[method](
+                    null,
+                    { name: 'New' },
+                    {
+                      query: {
+                        $limit: limit,
+                        $sort: { age: -1 },
+                        $select: [id, 'name', 'age'],
+                      },
+                      sequelize: { where: Object.freeze({ name: 'Old' }), raw },
+                    },
+                  )
+
+                  for (const item of result) {
+                    assert.strictEqual(item instanceof model, !raw)
+                  }
+                  assert.deepStrictEqual(
+                    result.map((item) => (raw ? item : item.toJSON())),
+                    expected,
+                  )
+
+                  const updatedIds = expected.map((record) => record[id])
+                  assert.deepStrictEqual(
+                    await service.find({
+                      paginate: false,
+                      query: {
+                        $sort: { age: -1 },
+                        $select: [id, 'name', 'age'],
+                      },
+                    }),
+                    records.map((record) =>
+                      updatedIds.includes(record[id])
+                        ? { ...record, name: 'New' }
+                        : record,
+                    ),
+                  )
+                })
+              }
+            }
+          })
+        }
+      }
+    })
+
     describe('Common functionality', () => {
       const people = app.service('people')
       let kirsten: any

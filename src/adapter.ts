@@ -409,11 +409,14 @@ export class SequelizeAdapter<
       }
 
       const ids = current.map((item: any) => item[this.id])
+      const idWhere = {
+        [this.id]: ids.length === 1 ? ids[0] : { [Op.in]: ids },
+      }
 
       let [, instances] = (await Model.update(values, {
         ...sequelizeOptions,
         raw: false,
-        where: { [this.id]: ids.length === 1 ? ids[0] : { [Op.in]: ids } },
+        where: idWhere,
       } as UpdateOptions).catch(catchHandler(this.handleError))) as [
         number,
         Model[]?,
@@ -476,8 +479,11 @@ export class SequelizeAdapter<
       const result = await this._find({
         ...params,
         paginate: false,
+        sequelize: {
+          ...params.sequelize,
+          where: idWhere,
+        },
         query: {
-          [this.id]: ids.length === 1 ? ids[0] : { $in: ids },
           $select: params?.query?.$select,
           $sort: params?.query?.$sort,
         },
